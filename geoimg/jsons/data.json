@@ -1,0 +1,29 @@
+[
+  {
+    "id": "1",
+    "name": "img-1",
+    "image": "images/fs_ranikhamar_1.jpg",
+    "thumb": "thumbs/fs_ranikhamar_1_thmb.jpg",
+    "lat": "25.849668",
+    "lng": "91.361307",
+    "description": "Chandubi Lake near Rani Khamar"
+  },
+  {
+    "id": "2",
+    "name": "img-2",
+    "image": "images/fs_jagiroad_1.jpg",
+    "thumb": "thumbs/fs_jagiroad_1_thmb.jpg",
+    "lat": "26.123795",
+    "lng": "92.194476",
+    "description": "Jagiroad Railway Track Crossing"
+  },
+  {
+    "id": "3",
+    "name": "img-3",
+    "image": "images/fs_ranikhamar_2.jpg",
+    "thumb": "thumbs/fs_ranikhamar_2_thumb.jpg",
+    "lat": "25.849484",
+    "lng": "91.360972",
+    "description": "Ranikhamar Village Road"
+  }
+]
