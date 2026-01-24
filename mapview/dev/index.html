@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Browser Mapping App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+
+<!-- Font Awesome 6 -->
+<link rel="stylesheet" href="fontas/all.min.css">
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="leaflet/leaflet.css" />
+<script src="leaflet/leaflet.js"></script>
+
+<!-- Leaflet extras -->
+<script src="leaflet-ext/leaflet.markercluster.js"></script>
+<link rel="leaflet-ext/MarkerCluster.css" />
+<link rel="stylesheet" href="leaflet-ext/MarkerCluster.Default.css" />
+<script src="leaflet-ext/leaflet-heat.js"></script>
+<script src="leaflet-ext/turf.min.js"></script>
+
+<!-- Geo file support -->
+<script src="geofile/togeojson"></script>
+<script src="geofile/jszip.min.js"></script>
+
+<!-- Leaflet Routing Machine -->
+<link rel="stylesheet" href="leaflet-route/leaflet-routing-machine.css" />
+<script src="leaflet-route/leaflet-routing-machine.js"></script>
+
+<!-- Leaflet Locate Control -->
+<link rel="stylesheet" href="leaflet-loc/L.Control.Locate.min.css" />
+<script src="leaflet-loc/L.Control.Locate.min.js"></script>
+
+<!-- Leaflet Fullscreen Control -->
+<link rel="stylesheet" href="leaflet-fs/Control.FullScreen.css" />
+<script src="leaflet-fs/Control.FullScreen.js"></script>
+
+<!-- MAP -->
+<link rel="stylesheet" href="map-def/mapstyle-mnf.css">
+
+</head>
+<body>
+
+<div id="map"></div>
+
+<!-- Toolbar -->
+<div id="toolbar">
+  <div style="display: flex; gap: 6px; width: 100%;">
+    <button onclick="saveProject()">Save Project</button>
+    <input type="file" id="loadProjectFile" style="display:none" onchange="loadProject(this.files[0])">
+    <button onclick="document.getElementById('loadProjectFile').click()">Load Project</button>
+  </div>
+  <div style="width:100%;">
+    <input type="file" id="fileInput" multiple style="display:none">
+    <button style="width:100%;" onclick="document.getElementById('fileInput').click()">Add Geojson/KMZ/KML Layers</button>
+  </div>
+  <div>
+    <div style="display: flex; gap: 6px; width: 100%;">
+      <input type="text" id="searchText" placeholder="Search...">
+      <select id="searchSource">
+        <option value="nominatim">Nominatim</option>
+        <option value="google">Google</option>
+        <option value="layers">Loaded Layers</option>
+      </select>
+	</div>  
+    <div style="display: flex; gap: 6px; width: 100%;">
+	  <button onclick="clearSearch()">Clear</button>
+	  <button onclick="doSearch()">Search</button>
+	</div>
+  </div>
+  <div id="searchResults" style="max-height:100px;overflow-y:auto;font-size:12px;"></div>
+
+  <div id="navPanel" style="display:none; margin-bottom:8px; font-size:12px; border:1px solid #ccc; padding:6px; border-radius:6px;">
+    <div><strong>Navigation</strong></div>
+    <div id="waypointsInfo"></div>
+  
+    <div style="margin-top:4px;">
+      Speed: <input type="range" id="speedRange" min="10" max="200" value="40" step="1"> 
+      <span id="speedLabel">40 km/h</span>
+    </div>
+
+    <div id="travelTimeInfo" style="margin-top:4px;"></div>
+  
+    <!-- Container for alternative routes -->
+	<div id="altRoutesContainer" style="margin-top:6px;"></div>
+    <div id="turnByTurnContainer" style="margin-top:6px; max-height:150px; overflow-y:auto; font-size:12px;"></div>
+	<div style="margin-top:6px;">
+      <button id="clearAllRoutesBtn" class="btn" style="width:100%;">Clear All Routes</button>
+    </div>
+  </div>
+
+  <hr>
+  <div id="layerList"></div>
+</div>
+
+<!-- Style Modal -->
+<div id="styleModalBackdrop" class="modal-backdrop" style="display:none">
+  <div class="modal" role="dialog" aria-modal="true">
+    <h3 id="modalTitle">Layer Style</h3>
+
+    <div class="form-row">
+      <label>Color</label>
+      <input id="modalColor" type="color" value="#3388ff">
+    </div>
+    <div class="form-row">
+      <label>Opacity</label>
+      <input id="modalOpacity" type="range" min="0" max="1" step="0.1" value="0.9">
+    </div>
+    <div class="form-row">
+      <label>Line weight</label>
+      <input id="modalWeight" type="number" value="2" style="width:70px">
+    </div>
+
+    <hr>
+    <strong>Labels</strong>
+    <div class="form-row">
+      <label>Enable</label><input id="modalLabelEnable" type="checkbox">
+    </div>
+    <div class="form-row">
+      <label>Label field</label>
+      <select id="modalLabelField"></select>
+    </div>
+    <div class="form-row">
+      <label>Font size</label><input id="modalLabelSize" type="number" value="12" style="width:70px"> px
+    </div>
+    <div class="form-row">
+      <label>Font color</label><input id="modalLabelColor" type="color" value="#222222">
+    </div>
+    <div class="form-row">
+      <label>Label halo</label><input id="modalLabelHalo" type="checkbox">
+    </div>
+
+    <hr>
+    <strong>Advanced</strong>
+    <div class="form-row">
+      <label>Clustering</label><input id="modalCluster" type="checkbox">
+    </div>
+    <div class="form-row">
+      <label>Heatmap</label><input id="modalHeat" type="checkbox">
+    </div>
+
+    <!-- New Attribute List Section -->
+    <hr>
+    <strong>Popup Attributes</strong>
+    <ul id="modalAttributeList" style="list-style:none; padding:0; margin:6px 0;"></ul>
+
+    <div style="text-align:right;margin-top:10px">
+      <button class="btn" onclick="applyStyleModal(true)">Apply & Close</button>
+      <button class="btn" onclick="closeStyleModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="map-def/mapapp-obf.js"></script>
+<script src="map-def/maproute-obf.js"></script>
+
+</body>
+</html>
