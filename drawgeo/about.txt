@@ -1,0 +1,2 @@
+This application is a map maker. It allows drawing points, polylines and polygons and save as GeoJsons.
+  Application handles files in local disk only.
