@@ -61,7 +61,7 @@ body {
 
 .radius-label,
 .radius-value {
-  font-size: 11px;
+  font-size: 10px;
 }
 
 /* Lightbox */
@@ -114,7 +114,7 @@ body {
   </button>
 
   <span class="radius-label">Radius:</span>
-  <input type="range" id="radius" min="1" max="50" value="5">
+  <input type="range" id="radius" min="1" max="50" value="10">
   <span class="radius-value"><span id="radiusValue">10</span> km</span>
 </div>
 
@@ -232,7 +232,7 @@ function showResults(list) {
   res.innerHTML = "";
 
   if (!list.length) {
-    res.innerHTML = "<p>No images found.</p>";
+    res.innerHTML = "<p><style="font-size:10px;">No images found.</style></p>";
     return;
   }
 
@@ -362,6 +362,7 @@ function loadJsonFile(file) {
 
 </body>
 </html>
+
 
 
 
