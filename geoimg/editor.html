@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Imagelist JSON Editor</title>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css">
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<style>
+html, body { margin: 0; height: 100%; font-family: Arial, sans-serif; }
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+/* ---------- TOP (10%) ---------- */
+#toolbar {
+  height: 4%; background: #eaeaea; display: flex;
+  align-items: center; gap: 10px; padding: 10px;
+}
+.tool-btn { width:36px;height:36px;background:#a8a8a8;border:none;color:#fff;font-size:16px;cursor:pointer; }
+.tool-btn:hover { background:#8f8f8f; }
+
+/* ---------- MIDDLE (55%) ---------- */
+#preview {
+  height: 55%; display: grid; grid-template-columns:1.75fr 1.25fr 300px;
+  gap:5px; padding:5px; background:#eaeaea;
+}
+.preview-box {
+  background:#fff;border:1px solid #ccc;display:flex;
+  align-items:center;justify-content:center;overflow:hidden;
+}
+.preview-box img { width:100%;height:100%;object-fit:cover; }
+.thumb-box { width:300px;height:200px; }
+#map { width:100%;height:100%; }
+
+/* ---------- BOTTOM (32%) ---------- */
+#table-container { height:32%; overflow:auto; }
+table { width:100%; border-collapse:collapse; }
+th, td { border:1px solid #ccc; padding:6px; font-size:12px; }
+th { background:#f0f0f0; }
+tr.selected { background:#cce5ff; }
+td[contenteditable="true"] { background:#fffbe6; }
+</style>
+</head>
+
+<body>
+<div id="app">
+  <!-- Toolbar -->
+  <div id="toolbar">
+    <button class="tool-btn" onclick="newJson()" title="New">
+      <i class="fa-solid fa-file-circle-plus"></i>
+    </button>
+    <button class="tool-btn" onclick="openJson()" title="Open">
+      <i class="fa-solid fa-folder-open"></i>
+    </button>
+    <button class="tool-btn" onclick="saveJson()" title="Save">
+      <i class="fa-solid fa-floppy-disk"></i>
+    </button>
+    <button class="tool-btn" onclick="addRow()" title="Add Row">
+      <i class="fa-solid fa-plus"></i>
+    </button>
+    <button class="tool-btn" onclick="deleteRow()" title="Delete Row">
+      <i class="fa-solid fa-trash"></i>
+    </button>
+    <button class="tool-btn" onclick="replaceMainImage()" title="Replace Image">
+      <i class="fa-solid fa-image"></i>
+    </button>
+    <button class="tool-btn" onclick="replaceThumbImage()" title="Replace Thumbnail">
+      <i class="fa-solid fa-images"></i>
+    </button>
+    <button class="tool-btn" onclick="closeJson()" title="Close">
+      <i class="fa-solid fa-xmark"></i>
+    </button>
+    <input type="file" id="fileInput" accept=".json" hidden>
+  </div>
+
+  <!-- Preview -->
+  <div id="preview">
+    <div class="preview-box"><div id="map"></div></div>
+    <div class="preview-box image-box" id="imagePreview">Image</div>
+    <div class="preview-box thumb-box" id="thumbPreview">Thumbnail</div>
+  </div>
+
+  <!-- Table -->
+  <div id="table-container"></div>
+</div>
+
+<script>
+let jsonData = [];
+let selectedIndex = null;
+let dirty = false;
+let fileHandle = null;
+let directoryHandle = null;
+
+/* ---------- Leaflet Setup ---------- */
+
+const fallbackCenter = [26.155526910129712, 91.77990552317003];
+const osm = L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  { maxZoom: 19, attribution: "© OpenStreetMap" }
+);
+const satellite = L.tileLayer(
+  "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+  { maxZoom: 19, attribution: "© Esri" }
+);
+const map = L.map("map", {
+  center: fallbackCenter,
+  zoom: 16,
+  layers: [osm],
+  zoomControl: false
+});
+// Move zoom control
+L.control.zoom({ position: "bottomright" }).addTo(map);
+
+const marker = L.marker(fallbackCenter).addTo(map);
+
+// Layer switcher
+L.control.layers(
+  {
+    "Street Map": osm,
+    "Satellite": satellite
+  },
+  null,
+  { position: "topright" }
+).addTo(map);
+
+/* ---------- Nominatim Search ---------- */
+
+const geocoder = L.Control.geocoder({
+  geocoder: L.Control.Geocoder.nominatim(),
+  defaultMarkGeocode: false,
+  position: "topleft",
+  placeholder: "Search location…"
+})
+.on("markgeocode", e => {
+  const latlng = e.geocode.center;
+  map.setView(latlng, 16);
+  marker.setLatLng(latlng);
+  if (selectedIndex !== null) {
+    jsonData[selectedIndex].lat = latlng.lat.toFixed(6);
+    jsonData[selectedIndex].lng = latlng.lng.toFixed(6);
+    dirty = true;
+    renderTable();
+  }
+})
+.addTo(map);
+
+/* ---------- Geolocation ---------- */
+function centerOnUser() {
+  if (!navigator.geolocation) {
+    map.setView(fallbackCenter, 16);
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      map.setView([lat, lng], 16);
+    },
+    () => {
+      // Permission denied / offline
+      map.setView(fallbackCenter, 16);
+    },
+    { enableHighAccuracy: true, timeout: 5000 }
+  );
+}
+// Center once on load
+centerOnUser();
+
+/* ---------- Leaflet Locate Control (standard icon) ---------- */
+
+const locateControl = L.control({ position: "topleft" });
+locateControl.onAdd = function () {
+  const div = L.DomUtil.create("div", "leaflet-bar leaflet-control");
+  const a = L.DomUtil.create("a", "", div);
+  a.href = "#";
+  a.title = "Locate me";
+  a.innerHTML = "◎";
+  L.DomEvent.on(a, "click", L.DomEvent.stop)
+             .on(a, "click", () => centerOnUser());
+  return div;
+};
+locateControl.addTo(map);
+
+map.on("click", e => {
+  if(selectedIndex===null) return;
+  jsonData[selectedIndex].lat = e.latlng.lat.toFixed(6);
+  jsonData[selectedIndex].lng = e.latlng.lng.toFixed(6);
+  dirty = true;
+  renderTable();
+  updateMap(selectedIndex);
+});
+
+/* ---------- File Handling ---------- */
+const fileInput = document.getElementById("fileInput");
+
+async function newJson() {
+  if (dirty && !confirm("Unsaved changes will be lost. Continue?")) return;
+  
+  alert("Please select a folder to create this JSON file");
+  directoryHandle = await window.showDirectoryPicker({
+    startIn: "documents"
+  });
+
+  fileHandle = await directoryHandle.getFileHandle("data.json", { create: true });
+
+  jsonData = [blankRow()];
+  await saveJson();
+  dirty = false;
+  selectedIndex = null;
+  renderTable();
+  clearPreview();
+}
+
+async function openJson() {
+  if (dirty && !confirm("Unsaved changes will be lost. Continue?")) return;
+
+  const [handle] = await window.showOpenFilePicker({
+    types: [{ description: "JSON Files", accept: { "application/json": [".json"] } }],
+    startIn: "documents"
+  });
+
+  fileHandle = handle;
+
+  const file = await handle.getFile();
+  jsonData = JSON.parse(await file.text());
+
+  directoryHandle = await window.showDirectoryPicker({
+    startIn: "documents"
+  });
+
+  dirty = false;
+  selectedIndex = null;
+  renderTable();
+  clearPreview();
+}
+
+async function saveJson(){
+  if (!fileHandle) {
+    alert("No JSON file loaded");
+    return;
+  }
+
+  let saved = false;
+
+  try {
+    const writable = await fileHandle.createWritable();
+    await writable.write(JSON.stringify(jsonData, null, 2));
+    await writable.close();
+    saved = true;
+    dirty = false;
+  } catch (err) {
+    console.error("Save error:", err);
+  }
+
+  // UI feedback must NOT affect save result
+  if (saved) {
+    flashToolbar("Saved ✓");
+  } else {
+    alert("Save failed");
+  }
+}
+
+function closeJson(){
+  if(dirty && !confirm("Unsaved changes will be lost. Continue?")) return;
+  location.reload();
+}
+
+/* ---------- Table ---------- */
+function blankRow(){ return {id:"",name:"",image:"",thumb:"",lat:"",lng:"",description:""} }
+
+function renderTable(){
+  if(!jsonData.length){
+    document.getElementById("table-container").innerHTML="";
+    return;
+  }
+
+  const keys = Object.keys(jsonData[0]);
+  let html = "<table><thead><tr>";
+  keys.forEach(k => html += `<th>${k}</th>`);
+  html += "</tr></thead><tbody>";
+
+  jsonData.forEach((row, i) => {
+    html += `<tr onclick="selectRow(${i})" class="${i===selectedIndex?'selected':''}">`;
+    keys.forEach(k => {
+      html += `<td contenteditable="true"
+        oninput="updateCell(${i},'${k}',this.innerText)">
+        ${row[k] ?? ""}
+      </td>`;
+    });
+    html += "</tr>";
+  });
+
+  html += "</tbody></table>";
+  document.getElementById("table-container").innerHTML = html;
+}
+
+function updateCell(row,key,value){ jsonData[row][key]=value; dirty=true; if(row===selectedIndex) updatePreview(row); }
+
+/* ---------- Row Ops ---------- */
+function addRow(){ jsonData.push(blankRow()); dirty=true; renderTable(); }
+function deleteRow(){ if(selectedIndex===null) return; if(!confirm("Delete selected row?")) return; jsonData.splice(selectedIndex,1); selectedIndex=null; dirty=true; renderTable(); clearPreview(); }
+
+/* ---------- Selection & Preview ---------- */
+function selectRow(index){
+  selectedIndex=index;
+  document.querySelectorAll("tbody tr").forEach((tr,i)=>{tr.classList.toggle("selected",i===index);});
+  updatePreview(index);
+}
+
+function updatePreview(index){
+  const row=jsonData[index];
+  document.getElementById("thumbPreview").innerHTML = row.thumb?`<img src="${row.thumb}">`:"No thumbnail";
+  document.getElementById("imagePreview").innerHTML = row.image?`<img src="${row.image}">`:"No image";
+  updateMap(index);
+}
+
+function updateMap(index){
+  const row=jsonData[index]; if(!row.lat||!row.lng) return;
+  const lat=parseFloat(row.lat), lng=parseFloat(row.lng);
+  marker.setLatLng([lat,lng]); map.setView([lat,lng],16);
+}
+
+function clearPreview(){
+  document.getElementById("thumbPreview").innerText="Thumbnail";
+  document.getElementById("imagePreview").innerText="Image";
+  map.setView([20,0],16);
+}
+
+/* ---------- Warn on exit ---------- */
+window.addEventListener("beforeunload",e=>{ if(dirty){ e.preventDefault(); e.returnValue=""; } });
+
+/* ---------- Replace Images ---------- */
+async function replaceMainImage(){ await replaceImageFile("image","images"); }
+async function replaceThumbImage(){ await replaceImageFile("thumb","thumbs"); }
+
+async function replaceImageFile(field, folderName){
+  if(selectedIndex===null){ alert("Select a row first"); return; }
+  if(!directoryHandle){ alert("Save or open a JSON file first"); return; }
+
+  const [imgHandle] = await window.showOpenFilePicker({
+    types:[{description:"Images",accept:{"image/*":[".jpg",".jpeg",".png",".webp"]}}]
+  });
+  const imgFile = await imgHandle.getFile();
+
+  const dir = await directoryHandle.getDirectoryHandle(folderName,{create:true});
+  const dest = await dir.getFileHandle(imgFile.name,{create:true});
+  const writable = await dest.createWritable();
+  await writable.write(await imgFile.arrayBuffer());
+  await writable.close();
+
+  jsonData[selectedIndex][field] = `${folderName}/${imgFile.name}`;
+  dirty = true;
+
+  renderTable();
+  selectRow(selectedIndex);
+}
+
+function flashToolbar(text){
+  const bar = document.getElementById("toolbar");
+
+  const msg = document.createElement("span");
+  msg.textContent = text;
+  msg.style.marginLeft = "10px";
+  msg.style.color = "#2e7d32";
+  msg.style.fontWeight = "bold";
+
+  bar.appendChild(msg);
+
+  setTimeout(() => {
+    msg.remove();
+  }, 1200);
+}
+
+</script>
+</body>
+</html>
