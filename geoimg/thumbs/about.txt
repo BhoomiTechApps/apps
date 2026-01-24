@@ -1,1 +1,4 @@
-
+About 'thumbs' directory
+This location stores the thumbnail sized images of the images stored in the 'images' directory.
+The images should be of the same name and format as the images stored in the 'images' directory.
+Thumbnail image size should be of 300 px by 200 px
