@@ -1,0 +1,4 @@
+About 'images' directory
+This location stores the full sized images in any browser friendly format.
+The name of the image files need to be unique and without spaces between letters.
+Names must match the names of the thumbnails saved in the 'thumbs' diretory.
