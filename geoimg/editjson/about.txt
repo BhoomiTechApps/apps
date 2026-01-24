@@ -1,0 +1,2 @@
+The editjson [Edit Json] application allows to edit an existing json file in tabular interface.
+The edited file is required to be saved to disk and later upload and replace the old file in the server to activate changes. 
