@@ -1,0 +1,9 @@
+Map Viewer is a simple GIS viewer which provides
+- Multilayer map view
+- Layer styling
+- Pop-Up Manager
+- Navigation and Routing
+- Search Data & Geocode Database
+- Route Speed Control
+- Heat Map, Clustering and more...
+You can load multiple layers of GeoJson or KMZ datasets. Application handles local files stored to local disk only.
