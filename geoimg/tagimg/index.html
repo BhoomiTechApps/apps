@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Image Geotagging Tool</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Plugins -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css"/>
+<script src="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css"/>
+<script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<style>
+/* GLOBAL */
+* {
+  box-sizing: border-box; /* CRITICAL for overflow fix */
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: sans-serif;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 75% 25%;
+  height: 100vh;
+}
+
+/* MAP */
+#map {
+  height: 100%;
+  width: 100%;
+}
+
+/* SIDE PANEL */
+.panel {
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #ccc;
+  padding: 8px;
+  background: #f7f7f7;
+  min-width: 0; /* prevents flex overflow */
+}
+
+/* CONTROLS */
+.controls {
+  display: flex;
+  gap: 6px;
+}
+
+.controls input[type="file"] {
+  flex: 1;
+  min-width: 0;
+}
+
+/* GRID IMAGE LIST */
+#imageList {
+  list-style: none;
+  padding: 6px;
+  margin: 8px 0;
+  height: 300px;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 6px;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+
+#imageList li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  border-radius: 4px;
+  background: #fafafa;
+}
+
+#imageList li.active {
+  border-color: #3399ff;
+  background: #e6f2ff;
+}
+
+.grid-thumb {
+  width: 100%;
+  height: 65px;
+  object-fit: cover;
+  border: 1px solid #ccc;
+}
+
+.grid-title {
+  margin-top: 3px;
+  font-size: 11px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* SINGLE PREVIEW */
+#thumb {
+  width: auto;
+  height: 175px;
+  max-height: 175px;
+  object-fit: contain;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  background: #fff;
+  margin-bottom: 15px;
+}
+
+/* COORDINATES (FIXED OVERFLOW) */
+.coords {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.coords input {
+  flex: 1;
+  min-width: 0;        /* IMPORTANT */
+  width: 100%;
+  padding: 6px;
+}
+
+/* ACTION BAR */
+.action-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #ccc;
+  background: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  background: #e6f2ff;
+  border-color: #3399ff;
+}
+
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: #333;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.desc-box {
+  margin-top: 6px;
+}
+
+#desc {
+  width: 100%;
+  padding: 6px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: 60% 40%;
+  }
+  .panel {
+    border-left: none;
+    border-top: 1px solid #ccc;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+  <!-- MAP -->
+  <div id="map"></div>
+
+  <!-- SIDE PANEL -->
+  <div class="panel">
+
+    <!-- TOP ACTION BAR -->
+  <div class="action-bar">
+
+    <button class="icon-btn" title="Create New Json" id="btnNewJson">
+      <!-- New File icon -->
+      <svg viewBox="0 0 24 24">
+        <path d="M6 2h9l5 5v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/>
+        <path d="M14 2v6h6"/>
+      </svg>
+    </button>
+
+    <button class="icon-btn" title="Load Images" id="btnLoadImages">
+      <!-- Open Folder icon -->
+      <svg viewBox="0 0 24 24">
+        <path d="M3 6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v2H3z"/>
+        <path d="M3 10h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      </svg>
+    </button>
+
+    <button class="icon-btn" title="Load Json" id="btnLoadJson">
+      <!-- Upload icon -->
+      <svg viewBox="0 0 24 24">
+        <path d="M12 3v12"/>
+        <path d="M7 8l5-5 5 5"/>
+        <path d="M5 21h14"/>
+      </svg>
+    </button>
+
+    <button class="icon-btn" title="Save Json" id="btnSaveJson">
+      <!-- Save icon -->
+      <svg viewBox="0 0 24 24">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+        <path d="M17 21v-8H7v8"/>
+        <path d="M7 3v5h8"/>
+      </svg>
+    </button>
+	
+	<button class="icon-btn" title="Close Json" id="btnCloseJson">
+      <!-- Close / Unload icon -->
+      <svg viewBox="0 0 24 24">
+        <path d="M18 6L6 18"/>
+        <path d="M6 6l12 12"/>
+      </svg>
+    </button>
+	
+	<button class="icon-btn" title="Delete Image" id="btnDeleteImage">
+      <!-- Trash icon -->
+      <svg viewBox="0 0 24 24">
+        <path d="M3 6h18"/>
+        <path d="M8 6V4h8v2"/>
+        <path d="M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/>
+      </svg>
+    </button>
+
+  </div>
+
+  <!-- Hidden file input for JSON -->
+  <input type="file" id="jsonLoader" accept=".json" hidden>
+
+    <ul id="imageList"></ul>
+
+    <img id="thumb" alt="Thumbnail (click to open full image)">
+
+    <div class="coords">
+      <input id="lat" placeholder="Latitude" readonly>
+      <input id="lng" placeholder="Longitude" readonly>
+    </div>
+	
+	<div class="desc-box">
+      <input id="desc" placeholder="Description">
+    </div>
+  
+  <input type="file" id="imageLoader" accept="image/*" hidden>
+  </div>
+</div>
+
+<script>
+/* ---------------- BASEMAPS ---------------- */
+
+const osm = L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+  { attribution: "© OpenStreetMap" }
+);
+
+const satellite = L.tileLayer(
+  "https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}",
+  { attribution: "© Google Hybrid" }
+);
+
+const topo = L.tileLayer(
+  "https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}",
+  { attribution: "© Google Street" }
+);
+
+/* ---------------- MAP ---------------- */
+
+const map = L.map("map", {
+  center: [20, 78],
+  zoom: 5,
+  layers: [osm]
+});
+
+L.control.layers(
+  { "OSM": osm, "GM Hybrid": satellite, "GM Street": topo },
+  null
+).addTo(map);
+
+L.control.fullscreen().addTo(map);
+L.control.locate({ flyTo: true }).addTo(map);
+L.Control.geocoder().addTo(map);
+
+/* ---------------- STATE ---------------- */
+
+let imageData = [];
+let selectedImage = null;
+let marker = null;
+let jsonFileHandle = null;
+const desc = document.getElementById("desc");
+
+desc.addEventListener("input", () => {
+  if (!selectedImage) return;
+  selectedImage.description = desc.value;
+});
+
+/* ---------------- LOAD JSON ---------------- */
+
+jsonLoader.addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    imageData = JSON.parse(reader.result);
+    renderImageList();
+  };
+  reader.readAsText(file);
+});
+
+/* ---------------- LOAD IMAGE ---------------- */
+imageLoader.addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    // Generate next image ID safely
+    let maxId = 0;
+    for (const img of imageData) {
+      const m = img.id?.match(/IMG_(\d+)/);
+      if (m) maxId = Math.max(maxId, parseInt(m[1], 10));
+    }
+
+    const nextIndex = maxId + 1;
+    const id = `IMG_${String(nextIndex).padStart(3, "0")}`;
+
+    const filename = file.name;
+
+    // Create new image entry with logical paths
+    const newImage = {
+      id,
+      name: filename,
+      image: `/images/${filename}`,
+      thumb: `/thumbs/${filename}`,
+      lat: null,
+      lng: null,
+	  description: ""
+    };
+    
+	if (imageData.some(img => img.name === filename)) {
+      alert("This image already exists in the JSON.");
+      return;
+    }
+	
+    imageData.push(newImage);
+
+    renderImageList();
+
+    const lastItem = imageList.lastElementChild;
+    if (lastItem) selectImage(newImage, lastItem);
+
+    alert(`Image "${filename}" added successfully.`);
+  } catch (err) {
+    console.error(err);
+    alert("Failed to add image.");
+  }
+});
+
+/* ---------------- IMAGE GRID ---------------- */
+
+function renderImageList() {
+  imageList.innerHTML = "";
+
+  imageData.forEach((img, i) => {
+    const li = document.createElement("li");
+
+    const t = document.createElement("img");
+    t.src = img.thumb || "";
+    t.className = "grid-thumb";
+
+    const title = document.createElement("div");
+    title.className = "grid-title";
+    title.textContent = img.id || `Image ${i + 1}`;
+
+    li.append(t, title);
+    li.onclick = () => selectImage(img, li);
+
+    imageList.appendChild(li);
+  });
+}
+
+function selectImage(img, li) {
+  document.querySelectorAll("#imageList li")
+    .forEach(el => el.classList.remove("active"));
+  li.classList.add("active");
+
+  selectedImage = img;
+  thumb.src = img.thumb || "";
+  lat.value = img.lat ?? "";
+  lng.value = img.lng ?? "";
+  desc.value = img.description ?? "";
+
+  if (img.lat != null && img.lng != null) {
+    if (marker) marker.remove();
+    marker = L.marker([img.lat, img.lng]).addTo(map);
+    map.setView([img.lat, img.lng], 14);
+  }
+}
+
+/* ---------------- MAP CLICK ---------------- */
+
+map.on("click", e => {
+  if (!selectedImage) return;
+
+  const la = +e.latlng.lat.toFixed(6);
+  const ln = +e.latlng.lng.toFixed(6);
+
+  selectedImage.lat = la;
+  selectedImage.lng = ln;
+
+  lat.value = la;
+  lng.value = ln;
+
+  if (marker) marker.remove();
+  marker = L.marker([la, ln]).addTo(map);
+});
+
+/* ---------------- SAVE JSON (OVERWRITE) ---------------- */
+
+async function saveJSON() {
+  if (!window.showSaveFilePicker) {
+    alert("Use Chrome or Edge for overwrite support.");
+    return;
+  }
+
+  try {
+    if (!jsonFileHandle) {
+      jsonFileHandle = await window.showSaveFilePicker({
+        suggestedName: "images.json",
+        types: [{
+          description: "JSON Files",
+          accept: { "application/json": [".json"] }
+        }]
+      });
+    }
+
+    const writable = await jsonFileHandle.createWritable();
+    await writable.write(JSON.stringify(imageData, null, 2));
+    await writable.close();
+	alert("JSON saved successfully");
+  } catch (err) {
+    if (err.name !== "AbortError") {
+      alert("Save failed.");
+      console.error(err);
+    }
+  }
+}
+
+btnSaveJson.onclick = saveJSON;
+btnLoadJson.onclick = () => jsonLoader.click();
+
+/* Placeholders – actions will be defined next */
+btnNewJson.onclick = () => {};
+btnLoadImages.onclick = () => {};
+
+btnCloseJson.onclick = () => {
+  if (!imageData || imageData.length === 0) return;
+
+  const confirmUnload = confirm(
+    "Unsaved data will be lost.\n\nDo you want to close the loaded JSON?"
+  );
+
+  if (!confirmUnload) return;
+
+  // Reload page to fully reset state
+  location.reload();
+};
+
+btnNewJson.onclick = async () => {
+  if (!window.showSaveFilePicker) {
+    alert("Use Chrome or Edge to create new files.");
+    return;
+  }
+
+  try {
+    jsonFileHandle = await window.showSaveFilePicker({
+      suggestedName: "images.json",
+      types: [{
+        description: "JSON Files",
+        accept: { "application/json": [".json"] }
+      }]
+    });
+
+    // Initialize with a single placeholder image
+    imageData = [{
+      id: "IMG_001",
+      name: "",
+      image: "",
+      thumb: "",
+      lat: null,
+      lng: null,
+	  description: ""
+    }];
+
+    const writable = await jsonFileHandle.createWritable();
+    await writable.write(JSON.stringify(imageData, null, 2));
+    await writable.close();
+
+    // Render UI
+    renderImageList();
+
+    // Auto-select first placeholder
+    const firstItem = imageList.querySelector("li");
+    if (firstItem) {
+      selectImage(imageData[0], firstItem);
+    }
+
+  } catch (err) {
+    if (err.name !== "AbortError") {
+      console.error(err);
+      alert("Failed to create new JSON file.");
+    }
+  }
+};
+
+btnLoadImages.onclick = () => {
+  if (!Array.isArray(imageData) || imageData.length === 0) {
+    alert("Please create or load a JSON file first.");
+    return;
+  }
+
+  imageLoader.value = ""; // reset
+  imageLoader.click();
+};
+
+btnDeleteImage.onclick = () => {
+  if (!selectedImage) {
+    alert("Please select an image to delete.");
+    return;
+  }
+
+  const confirmDelete = confirm(
+    `Are you sure you want to delete ${selectedImage.id}?\n\nThis action cannot be undone.`
+  );
+
+  if (!confirmDelete) return;
+
+  // Remove from imageData
+  imageData = imageData.filter(img => img !== selectedImage);
+
+  // Clear UI state
+  selectedImage = null;
+  thumb.src = "";
+  lat.value = "";
+  lng.value = "";
+
+  if (marker) {
+    marker.remove();
+    marker = null;
+  }
+
+  // Re-render list
+  renderImageList();
+
+  alert("Image entry deleted successfully.");
+};
+
+</script>
+</body>
+</html>
