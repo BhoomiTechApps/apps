@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Feature Mapper</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Leaflet Draw -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+
+<!-- Geocoder -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="map"></div>
+<div id="statusBar"></div>
+
+<!-- Help panel (hidden by default) -->
+<div id="helpPanel" aria-hidden="true">
+  <button id="helpClose" aria-label="Close help">&times;</button>
+  <h2>Instructions & Guide</h2>
+  <p>Use the Leaflet Draw toolbar (top-left) to create:</p>
+  <ul>
+    <li><b>Polyline</b> — click to add vertices, double-click or click the finish icon to end</li>
+    <li><b>Polygon</b> — draw closed areas</li>
+    <li><b>Marker</b> — small circular points</li>
+  </ul>
+  <p>Use the project control (under draw toolbar) for:</p>
+  <ul>
+    <li>New Project / Load Project / Save Project / Export GeoJSON</li>
+    <li>Resume last polyline, Stop (finish) current editing, Zoom to Data</li>
+  </ul>
+</div>
+
+<!-- Export GeoJSON Modal -->
+<div id="exportModal" class="modal">
+  <div class="modal-content">
+    <h3>Select Layers to Export</h3>
+
+    <div class="modal-options">
+      <label><input type="checkbox" id="chkLines" checked> Lines</label>
+      <label><input type="checkbox" id="chkPolygons" checked> Polygons</label>
+      <label><input type="checkbox" id="chkPoints" checked> Points</label>
+    </div>
+
+    <div class="modal-actions">
+      <button id="exportConfirmBtn">Export</button>
+      <button id="exportCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE: All buttons for project/save are created by JS and inserted into map as a Leaflet control.
+     Keeping an empty div allows graceful fallback or CSS targeting if needed. -->
+<div id="topright-buttons"></div>
+
+<script src="main.js"></script>
+</body>
+</html>
