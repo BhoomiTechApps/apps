@@ -1,0 +1,4 @@
+The tagimg [Tag Image] application allows you to create or update existing json database of geo-tagged images
+This app requires the full sized and thumbnails of the images stored to your local device.
+The json file too is created or updated to your local disk.
+You need to upload images and the json uploaded to a live website or hosted to a local drive hosted by a local server.
