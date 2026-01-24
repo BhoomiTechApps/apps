@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Geo Image Viewer</title>
+
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Marker Cluster -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
+<script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+<!-- Plugins -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css"/>
+<script src="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.css"/>
+<script src="https://unpkg.com/leaflet.locatecontrol/dist/L.Control.Locate.min.js"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css"/>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<style>
+body {
+  margin: 0;
+  display: flex;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.desc {
+  font-size: 11px;
+  font-style: italic;
+  color: #555;
+  margin-top: 4px;
+}
+
+#map { width: 80%; }
+#gallery {
+  width: 20%;
+  border-left: 1px solid #ccc;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.thumb {
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.thumb img {
+  width: 100%;
+  border-radius: 6px;
+}
+
+#controls {
+  margin-bottom: 10px;
+}
+
+/* Lightbox */
+#lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+#lightbox img {
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 6px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.6);
+}
+</style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<div id="gallery">
+  <h3>Images</h3>
+
+  <div id="controls">
+    Radius:
+    <input type="range" id="radius" min="1" max="50" value="5">
+    <span id="radiusValue">5</span> km
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script>
+let images = [];
+let markers = L.markerClusterGroup();
+let highlightLayer = L.layerGroup();
+let radiusCircle = null;
+let currentCenter = null;
+
+// --- BASEMAPS ---
+const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
+const street = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}");
+const satellite = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}");
+
+// --- MAP ---
+const map = L.map("map", {
+  center: [25, 93],
+  zoom: 7,
+  layers: [osm]
+});
+
+L.control.layers({
+  "OpenStreetMap": osm,
+  "GoogleStreet": street,
+  "GoogleHybrid": satellite
+}).addTo(map);
+
+map.addLayer(markers);
+highlightLayer.addTo(map);
+
+// --- CONTROLS ---
+L.control.fullscreen({ position: "topleft" }).addTo(map);
+
+L.control.locate({
+  position: "topleft",
+  showPopup: false,
+  locateOptions: { enableHighAccuracy: true }
+}).addTo(map);
+
+L.Control.geocoder({
+  position: "topleft",
+  defaultMarkGeocode: false
+})
+.on("markgeocode", e => {
+  const c = e.geocode.center;
+  map.setView(c, 13);
+  runSearch(c.lat, c.lng);
+})
+.addTo(map);
+
+// --- LOAD DATA ---
+fetch("jsons/imglist.json")
+  .then(r => r.json())
+  .then(data => images = data);
+
+// --- HAVERSINE ---
+function haversine(a,b,c,d){
+  const R=6371;
+  const dLat=(c-a)*Math.PI/180;
+  const dLon=(d-b)*Math.PI/180;
+  return 2*R*Math.asin(Math.sqrt(
+    Math.sin(dLat/2)**2 +
+    Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*
+    Math.sin(dLon/2)**2
+  ));
+}
+
+// --- MAP CLICK ---
+map.on("click", e => {
+  runSearch(e.latlng.lat, e.latlng.lng);
+});
+
+// --- SEARCH ---
+function runSearch(lat, lng) {
+  currentCenter = [lat, lng];
+  const r = +document.getElementById("radius").value;
+
+  markers.clearLayers();
+  highlightLayer.clearLayers();
+  if (radiusCircle) map.removeLayer(radiusCircle);
+
+  radiusCircle = L.circle(currentCenter, {
+    radius: r * 1000,
+    color: "blue",
+    fillOpacity: 0.1
+  }).addTo(map);
+
+  const nearby = images.filter(i =>
+    haversine(lat, lng, i.lat, i.lng) <= r
+  );
+
+  nearby.forEach(i => {
+    const popupImg =
+      `<img src="${i.thumb}" width="150" style="cursor:pointer"
+        onclick="openLightbox('${i.image}')">`;
+
+    const m = L.marker([i.lat, i.lng]).bindPopup(popupImg);
+    m.imageData = i;
+    markers.addLayer(m);
+  });
+
+  showResults(nearby);
+}
+
+// --- GALLERY ---
+function showResults(list) {
+  const res = document.getElementById("results");
+  res.innerHTML = "";
+
+  if (!list.length) {
+    res.innerHTML = "<p>No images found.</p>";
+    return;
+  }
+
+  list.forEach(i => {
+    const d = document.createElement("div");
+    d.className = "thumb";
+    d.innerHTML = `
+      <img src="${i.thumb}" loading="lazy">
+      <div class="desc">${i.description || ""}</div>
+    `;
+
+    // CLICK instead of mouseover
+    d.onclick = () => {
+      highlightLayer.clearLayers();
+
+      L.circleMarker([i.lat, i.lng], {
+        radius: 8,
+        color: "red",
+        fillOpacity: 0.8
+      }).addTo(highlightLayer);
+
+      // Center map on image location at zoom 16
+      map.setView([i.lat, i.lng], 16);
+    };
+
+    res.appendChild(d);
+  });
+}
+
+// --- LIGHTBOX ---
+function openLightbox(url) {
+  const lb = document.getElementById("lightbox");
+  const img = document.getElementById("lightboxImg");
+  img.src = url;
+  lb.style.display = "flex";
+}
+
+// --- RADIUS SLIDER ---
+const slider = document.getElementById("radius");
+slider.oninput = () => {
+  document.getElementById("radiusValue").innerText = slider.value;
+  if (currentCenter)
+    runSearch(currentCenter[0], currentCenter[1]);
+};
+</script>
+
+<!-- Lightbox -->
+<div id="lightbox" onclick="this.style.display='none'">
+  <img id="lightboxImg" src="">
+</div>
+
+</body>
+</html>
+
