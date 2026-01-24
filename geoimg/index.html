@@ -59,6 +59,11 @@ body {
   margin-bottom: 10px;
 }
 
+.radius-label,
+.radius-value {
+  font-size: 10px;
+}
+
 /* Lightbox */
 #lightbox {
   position: fixed;
@@ -108,9 +113,9 @@ body {
     </svg>
   </button>
 
-  <span>Radius:</span>
+  <span class="radius-label">Radius:</span>
   <input type="range" id="radius" min="1" max="50" value="5">
-  <span id="radiusValue">5</span> km
+  <span class="radius-value"><span id="radiusValue">10</span> km</span>
 </div>
 
 
@@ -357,3 +362,4 @@ function loadJsonFile(file) {
 
 </body>
 </html>
+
