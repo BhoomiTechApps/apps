@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GeoJSON Attribute Column Manager</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<h2>GeoJSON Table Manager</h2>
+
+<input type="file" id="fileInput" accept=".geojson,.json"><br>
+
+<!-- Add Column row -->
+<div class="flex-box">
+  <label>Add Column:</label>
+  <input type="text" id="newColumn" placeholder="Column Name">
+  <input type="text" id="defaultValue" placeholder="Default Value">
+  <button onclick="addColumn()">Add</button>
+</div>
+
+<!-- IMPORTANT: use flex-box-main -->
+<div class="flex-box-main">
+  <div id="ecol">
+    <h3>Existing Columns</h3>
+    <ul id="columnList"></ul>
+  </div>
+
+  <div id="mcol">
+    <h3>Modified GeoJSON</h3>
+    <div id="ccol">
+      <textarea id="output" readonly></textarea><br>
+    </div>
+    <button style="margin-top: 20px;" onclick="downloadFile()">Download Updated GeoJSON</button>
+  </div>
+</div>
+
+<script src="script_obf.js"></script>
+</body>
+</html>
