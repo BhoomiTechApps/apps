@@ -1,0 +1,216 @@
+/* GLOBAL RESET */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial;
+  margin: 20px;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Inputs + buttons */
+input, button {
+  margin: 6px 0;
+}
+
+/* Modern Input Styling */
+input[type="text"] {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  transition: 0.2s;
+}
+
+input[type="text"]:focus {
+  border-color: #0078ff;
+  box-shadow: 0 0 3px rgba(0, 120, 255, 0.45);
+}
+
+/* Textarea */
+textarea {
+  width: 100% !important;
+  min-height: 300px;
+  resize: vertical;
+  max-width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+/* List items */
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+/* Card-style list items */
+li {
+  padding: 10px;
+  margin: 6px 0;
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+li span:first-child {
+  font-weight: bold;
+}
+
+li .controls {
+  display: flex;
+  gap: 6px;
+}
+
+/* MAIN LAYOUT FLEX */
+.flex-box-main {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+/* Column containers */
+#ecol,
+#mcol {
+  flex: 1;
+  min-width: 280px;
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Existing columns = scroll */
+#ecol {
+  max-height: 430px;
+  overflow-y: auto;
+}
+
+/* Modified JSON */
+#mcol {
+  overflow: visible;
+}
+
+#ccol {
+  height: auto;
+  width: 100%;
+}
+
+#output {
+  height: auto;
+  width: 100%;
+}
+
+/* -------------------------------------- */
+/* ADD COLUMN ROW                         */
+/* -------------------------------------- */
+.flex-box {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px;
+  background: #f3f8ff;
+  border: 1px solid #d5e6ff;
+  border-radius: 8px;
+}
+
+.flex-box label {
+  font-weight: bold;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+/* Desktop max width */
+.flex-box input {
+  max-width: 180px;
+}
+
+/* -------------------------------------- */
+/* BUTTON STYLING                         */
+/* -------------------------------------- */
+
+/* General button styling */
+button {
+  background: #0078ff;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 0.2s ease;
+}
+
+button:hover {
+  background: #005fcc;
+}
+
+button:active {
+  transform: scale(0.96);
+}
+
+/* Icon-only or small utility buttons inside list items */
+li .controls button {
+  padding: 6px 10px;
+  background: #eaeaea;
+  color: #333;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+li .controls button:hover {
+  background: #d6d6d6;
+}
+
+/* -------------------------------------- */
+/* RESPONSIVE BREAKPOINTS                 */
+/* -------------------------------------- */
+
+@media (max-width: 900px) {
+  .flex-box-main {
+    flex-direction: column;
+  }
+
+  textarea {
+    min-height: 250px;
+  }
+}
+
+@media (max-width: 600px) {
+  body {
+    margin: 10px;
+  }
+
+  h2, h3 {
+    text-align: center;
+  }
+
+  textarea {
+    min-height: 200px;
+  }
+
+  li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .flex-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .flex-box input,
+  .flex-box button,
+  .flex-box label {
+    width: 100%;
+    max-width: 100%;
+  }
+}
