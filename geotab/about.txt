@@ -1,0 +1,4 @@
+Application to manage attribute table of GeoJson file
+- Add/Remove Columns
+- Rename Column
+- Reposition Columns
