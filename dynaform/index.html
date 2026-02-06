@@ -40,7 +40,7 @@
             <input id="maxDate" type="date" placeholder="Maximum Date">
         </div>
         <textarea id="options" style="display:none;"
-          placeholder="Options (one per line) â€“ only for MCQ/Checkbox"></textarea>
+          placeholder="Options (one per line) – only for MCQ/Checkbox"></textarea>
         <div class="inline-row">
             <label class="required-inline">
                 <input type="checkbox" id="isRequired"> Required Field
@@ -77,7 +77,6 @@ questionTypeSelect.addEventListener("change", function() {
     let type = this.value;
     document.getElementById("numberRange").style.display = (type === "number") ? "block" : "none";
     document.getElementById("dateRange").style.display = (type === "date") ? "block" : "none";
-    // Show options box only for dropdown, radio, checkbox
     document.getElementById("options").style.display =
         (type === "radio" || type === "checkbox" || type === "dropdown") ? "block" : "none";
 });
