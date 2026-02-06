@@ -24,6 +24,7 @@ body, input, select, textarea, button {
 }
 .builder {
     width: 40%;
+    max-width: 95%;
 }
 .preview {
     width: 60%;
@@ -245,6 +246,7 @@ form small,
         border: none;
     }
 }
+
 
 
 
