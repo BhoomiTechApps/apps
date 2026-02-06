@@ -227,6 +227,7 @@ form small,
     .actions {
         flex-direction: column;
         width: 100%;
+        gap: 10px;
     }
     .actions button {
         width: 100%;
@@ -258,6 +259,7 @@ form small,
         border: none;
     }
 }
+
 
 
 
