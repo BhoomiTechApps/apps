@@ -73,7 +73,7 @@ button:hover {
 }
 .preview form {
     width: 100%;
-    max-width: 100%;
+    max-width: 90%;
     margin: auto;
     background: #ffffff;
     padding: 10px;
@@ -245,6 +245,7 @@ form small,
         border: none;
     }
 }
+
 
 
 
