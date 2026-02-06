@@ -167,12 +167,11 @@ function generatePreview() {
         </div>`;
         html += `</div>`;
     });
-    html += `<div style="display:flex; gap:10px; margin-top:15px; align-items:center;">
-    <button type="submit" style="flex:none; padding:8px 13px; font-size:13px; border-radius:6px; border:none; background:#2d7ff9; color:#fff; cursor:pointer; line-height:1;">
-        Submit Survey
-    </button>
-    <button type="button" onclick="exportCSV()" style="flex:none; padding:8px 13px; font-size:13px; border-radius:6px; border:none; background:#2d7ff9; color:#fff; cursor:pointer; line-height:1;">
-        Export CSV</button></div>`;
+    html += `
+      <div class="form-actions">
+        <button type="submit">Submit Survey</button>
+        <button type="button" onclick="exportCSV()">Export CSV</button>
+      </div>`;
     html += `</form>`;
     document.getElementById("previewArea").innerHTML = html;
     const previewCheckbox = document.getElementById("previewEditMode");
@@ -552,3 +551,4 @@ function captureGPS(index) {
         }
     );
 }
+
