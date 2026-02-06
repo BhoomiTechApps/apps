@@ -216,6 +216,13 @@ function validateForm() {
                 isValid = false;
             }
         }
+		if (q.type === "image" && q.required) {
+            let el = document.getElementById(`image${index}`);
+            if (!el || el.files.length === 0) {
+                alert("Please upload required image: " + q.text);
+                isValid = false;
+            }
+        }
     });
     if (!isValid) alert("Please correct errors before submitting");
     return isValid;
@@ -289,6 +296,14 @@ async function downloadHTML() {
           formData[questionText] = answer;
           return;
         }
+    
+	// check for image field first
+    const fileInput = block.querySelector("input[type='file']");
+    if (fileInput) {
+      answer = fileInput.files.length > 0 ? fileInput.files[0].name : "No image uploaded";
+      formData[questionText] = answer;
+      return;
+    }
     const input = block.querySelector("input, textarea, select");
     if (!input) return;
             if (["text","date","number","email"].includes(input.type) || ["textarea","select"].includes(input.tagName.toLowerCase())) {
@@ -390,48 +405,26 @@ function loadSurveyJSON(event) {
 }
 let responses = [];
 
-function submitResponses(event) {
+async function submitResponses(event) {
     event.preventDefault();
     if (!validateForm()) return false;
     let formData = {};
     let googleData = new FormData();
-    survey.questions.forEach((q, index) => {
-        if (q.type === "pagebreak") return;
+    let fileReadPromises = [];
+    for (let index = 0; index < survey.questions.length; index++) {
+        let q = survey.questions[index];
+        if (q.type === "pagebreak") continue;
         let value = "";
         switch(q.type) {
             case "text":
-                {
-                    let el = document.getElementById(`text${index}`);
-                    value = el ? el.value.trim() : "Not answered";
-                }
-                break;
             case "textarea":
-                {
-                    let el = document.getElementById(`textarea${index}`);
-                    value = el ? el.value.trim() : "Not answered";
-                }
-                break;
             case "number":
-                {
-                    let el = document.getElementById(`number${index}`);
-                    value = el ? el.value : "Not answered";
-                }
-                break;
             case "date":
-                {
-                    let el = document.getElementById(`date${index}`);
-                    value = el ? el.value : "Not answered";
-                }
-                break;
             case "email":
-                {
-                    let el = document.getElementById(`email${index}`);
-                    value = el ? el.value.trim() : "Not answered";
-                }
-                break;
             case "phone":
+            case "dropdown":
                 {
-                    let el = document.getElementById(`phone${index}`);
+                    let el = document.querySelector(`#surveyForm [id$="${index}"]`);
                     value = el ? el.value.trim() : "Not answered";
                 }
                 break;
@@ -451,18 +444,13 @@ function submitResponses(event) {
                     value = selected.length ? selected.join(" | ") : "Not answered";
                 }
                 break;
-            case "dropdown":
-                {
-                    let el = document.getElementById(`dropdown${index}`);
-                    value = el ? (el.value || "Not answered") : "Not answered";
-                }
-                break;
             case "gps":
                 {
                     let lat = document.getElementById(`gpslat${index}`);
                     let lng = document.getElementById(`gpslng${index}`);
                     let acc = document.getElementById(`gpsacc${index}`);
-                    value = (lat && lng) ? 
+
+                    value = (lat && lng) ?
                         lat.value + ", " + lng.value + " (Accuracy: " + (acc ? acc.value : "") + "m)"
                         : "Not answered";
                 }
@@ -473,14 +461,17 @@ function submitResponses(event) {
                     if (el && el.files.length > 0) {
                         let file = el.files[0];
                         value = file.name;
-                        let reader = new FileReader();
-                        reader.onload = function () {
-                            let base64 = reader.result.split(",")[1];
-                            googleData.append("image_" + index, base64);
-                            googleData.append("filename_" + index, file.name);
-                            sendToGoogle(googleData);
-                        };
-                        reader.readAsDataURL(file);
+                        let promise = new Promise((resolve) => {
+                            let reader = new FileReader();
+                            reader.onload = function () {
+                                let base64 = reader.result.split(",")[1];
+                                googleData.append("image_" + index, base64);
+                                googleData.append("filename_" + index, file.name);
+                                resolve();
+                            };
+                            reader.readAsDataURL(file);
+                        });
+                        fileReadPromises.push(promise);
                     } else {
                         value = "No image uploaded";
                     }
@@ -491,18 +482,19 @@ function submitResponses(event) {
         }
         formData[q.text] = value;
         googleData.append(q.text, value);
-    });
+    }
     googleData.append("Timestamp", new Date().toLocaleString());
     responses.push(formData);
-    let text = "Survey Title: " + survey.title + "\nSubmitted At: " + new Date().toLocaleString() + "\n\n";
+	let text = "Survey Title: " + survey.title + "\nSubmitted At: " + new Date().toLocaleString() + "\n\n";
     for (let key in formData) {
         text += key + " : " + formData[key] + "\n";
     }
     let blob = new Blob([text], { type: "text/plain" });
     let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "survey-response-" + Date.now() + ".txt";
-    a.click();
+        a.href = URL.createObjectURL(blob);
+        a.download = "survey-response-" + Date.now() + ".txt";
+        a.click();	
+    await Promise.all(fileReadPromises);
     sendToGoogle(googleData);
     alert("Response saved and sent successfully!");
     document.getElementById("surveyForm").reset();
@@ -510,7 +502,7 @@ function submitResponses(event) {
 }
 
 function sendToGoogle(formData) {
-    return fetch("https://script.google.com/macros/s/AKfycbyoYnwE1VLSVwa2tjUIY0_7hjlkT2zGfYnBqOhRQJODj7V_fZeN1dTfX6pyG0L-3puJRA/exec", {
+    return fetch("https://script.google.com/macros/s/AKfycbxbpP3pq_urYIIXngxbUHFdfYKEDHjmdnNC3aCs7YYOIP8R-1i4DFqyayASkFHyUchu/exec", {
         method: "POST",
         mode: "no-cors",
         body: formData
@@ -531,7 +523,7 @@ function exportCSV() {
     let blob = new Blob([csv], { type: "text/csv" });
     let a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
-    a.download = "survey_responses.csv";
+    a.download = document.title.replace(/\s+/g, "_") + "_responses.csv";
     a.click();
 }
 
@@ -551,4 +543,3 @@ function captureGPS(index) {
         }
     );
 }
-
