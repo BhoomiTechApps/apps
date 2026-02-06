@@ -191,7 +191,7 @@ form small,
     }
     .container {
         flex-direction: column;
-        max-width: 100%,
+        max-width: 100%;
         gap: 5px;
     }
     .builder,
@@ -224,6 +224,14 @@ form small,
     button {
         width: 100%;
     }
+    .actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .actions button {
+        width: 100%;
+        margin-bottom: 5px;
+    }
 }
 @media print {
     body {
@@ -250,6 +258,7 @@ form small,
         border: none;
     }
 }
+
 
 
 
