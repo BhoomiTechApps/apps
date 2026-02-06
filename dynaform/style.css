@@ -1,6 +1,9 @@
 html {
     -webkit-text-size-adjust: 100%;
 }
+* {
+    box-sizing: border-box;
+}
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     margin: 13px;
@@ -72,9 +75,10 @@ button:hover {
     background: #1b64d1;
 }
 .preview form {
-    width: 90%;
-    max-width: 90%;
-    margin: auto;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0;
     background: #ffffff;
     padding: 10px;
     border-radius: 10px;
@@ -187,7 +191,7 @@ form small,
     }
     .container {
         flex-direction: column;
-        max-width: 100%
+        max-width: 100%,
         gap: 5px;
     }
     .builder,
@@ -246,6 +250,7 @@ form small,
         border: none;
     }
 }
+
 
 
 
