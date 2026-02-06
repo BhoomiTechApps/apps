@@ -27,6 +27,7 @@ body, input, select, textarea, button {
 }
 .preview {
     width: 60%;
+    overflow-x: hidden;
 }
 .builder input,
 .builder select,
@@ -72,7 +73,7 @@ button:hover {
 }
 .preview form {
     width: 100%;
-    max-width: 900px;
+    max-width: 100%;
     margin: auto;
     background: #ffffff;
     padding: 10px;
@@ -92,7 +93,7 @@ button:hover {
 }
 .question-block label {
     flex: 1;
-    min-width: 180px;
+    min-width: auto;
     font-weight: bold;
 }
 .question-block input[type="text"],
@@ -101,6 +102,8 @@ button:hover {
 .question-block input[type="date"],
 .question-block select,
 .question-block textarea {
+    max-width: 100%;
+    box-sizing: border-box;
     flex: 2;
     width: 100%;
     min-width: 120px;
@@ -242,4 +245,5 @@ form small,
         border: none;
     }
 }
+
 
