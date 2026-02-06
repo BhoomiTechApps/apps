@@ -1,10 +1,10 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Form Builder</title>
+
     <link rel="stylesheet" href="style.css">
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 
@@ -35,6 +35,8 @@
             <option value="radio">Multiple Choice</option>
             <option value="checkbox">Checkbox</option>
 			<option value="dropdown">Dropdown (Single Select)</option>
+			<option value="gps">GPS Location</option>
+            <option value="image">Image Upload</option>
             <option value="pagebreak">---- Page Break ----</option>
         </select>
 
@@ -54,7 +56,7 @@
 
         <!-- Options textarea -->
         <textarea id="options" style="display:none;"
-          placeholder="Options (one per line) – only for MCQ/Checkbox"></textarea>
+          placeholder="Options (one per line) â€“ only for MCQ/Checkbox"></textarea>
 
         <!-- INLINE GROUP 1: Required + Add Question -->
         <div class="inline-row">
@@ -127,4 +129,3 @@ questionTypeSelect.dispatchEvent(new Event('change'));
 
 </body>
 </html>
-
