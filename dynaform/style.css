@@ -1,3 +1,6 @@
+html {
+    -webkit-text-size-adjust: 100%;
+}
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     margin: 13px;
@@ -8,6 +11,8 @@ body, input, select, textarea, button {
 }
 .container {
     display: flex;
+    max-width: 1200px;
+    margin: auto;
     gap: 10px;
 }
 .builder, .preview {
@@ -66,7 +71,8 @@ button:hover {
     background: #1b64d1;
 }
 .preview form {
-    width: 75%;
+    width: 100%;
+    max-width: 900px;
     margin: auto;
     background: #ffffff;
     padding: 10px;
@@ -173,11 +179,41 @@ form small,
     border-top: 2px dashed #aaa;
 }
 @media screen and (max-width: 768px) {
+    body {
+        margin: 5px;
+    }
     .container {
         flex-direction: column;
+        gap: 5px;
     }
     .builder,
     .preview {
+        width: 100% !important;
+        padding: 8px;
+    }
+    .preview form {
+        width: 100% !important;
+        padding: 8px;
+    }
+    .question-block {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .question-block label,
+    .question-block input,
+    .question-block select,
+    .question-block textarea {
+        width: 100%;
+        min-width: auto;
+    }
+    .two-column {
+        column-count: 1;
+    }
+    .inline-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    button {
         width: 100%;
     }
 }
@@ -206,3 +242,4 @@ form small,
         border: none;
     }
 }
+
