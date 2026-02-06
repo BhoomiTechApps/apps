@@ -235,10 +235,10 @@ form small,
     .form-actions {
         flex-direction: column;
         width: 100%;
-        gap: 10px;
     }
     .form-actions button {
         width: 100%;
+        margin-bottom: 10px;
     }
 }
 @media print {
@@ -266,6 +266,7 @@ form small,
         border: none;
     }
 }
+
 
 
 
