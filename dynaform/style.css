@@ -11,7 +11,7 @@ body, input, select, textarea, button {
 }
 .container {
     display: flex;
-    max-width: 95%;
+    max-width: 100%;
     margin: auto;
     gap: 10px;
 }
@@ -187,6 +187,7 @@ form small,
     }
     .container {
         flex-direction: column;
+        max-width: 95%
         gap: 5px;
     }
     .builder,
@@ -245,6 +246,7 @@ form small,
         border: none;
     }
 }
+
 
 
 
