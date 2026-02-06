@@ -33,6 +33,8 @@ function addQuestion() {
         question.minDate = minDate || null;
         question.maxDate = maxDate || null;
     }
+    if (type === "gps" || type === "image") {   
+    }
     survey.questions.push(question);
     resetFields();
     generatePreview();
@@ -107,7 +109,7 @@ function generatePreview() {
             html += `<input type="number" id="number${index}" ${minAttr} ${maxAttr} ${req}>
                      <span class="error" id="error${index}"></span>`;
             if (q.min || q.max) {
-                html += `<small>Range: ${q.min ?? "-∞"} to ${q.max ?? "∞"}</small>`;
+                html += `<small>Range: ${q.min ?? "-âˆž"} to ${q.max ?? "âˆž"}</small>`;
             }
         }
         if (q.type === "date") {
@@ -144,6 +146,19 @@ function generatePreview() {
               html += `<option value="${opt}">${opt}</option>`;
             });
             html += `</select>`;
+        }
+		if (q.type === "gps") {
+            html += `<div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+            <button type="button" onclick="captureGPS(${index})">Get Current Location</button>
+            <input type="text" id="gpslat${index}" placeholder="Latitude" readonly ${req} style="max-width:120px;">
+            <input type="text" id="gpslng${index}" placeholder="Longitude" readonly ${req} style="max-width:120px;">
+            <input type="text" id="gpsacc${index}" placeholder="Accuracy (m)" readonly style="max-width:120px;">
+            </div>`;
+        }
+        if (q.type === "image") {
+            html += `<div>
+                <input type="file" id="image${index}" accept="image/*" ${req}>
+            </div>`;
         }
         html += `
         <div class="actions">
@@ -210,6 +225,10 @@ function validateForm() {
 async function downloadHTML() {
     const preview = document.getElementById("previewArea");
     const clone = preview.cloneNode(true);
+    let formTag = clone.querySelector("form");
+    if (formTag) {
+        formTag.setAttribute("onsubmit", "return saveSubmission(event)");
+    }
     clone.querySelectorAll(".actions").forEach(a => a.remove());
     const content = clone.innerHTML;
     const minifiedCSS = `
@@ -236,17 +255,43 @@ async function downloadHTML() {
     const embeddedScript = `
     <script>
     let responses = [];
+    function captureGPS(index) {
+    if (!navigator.geolocation) {
+        alert("Geolocation not supported by this browser.");
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        function (pos) {
+            document.getElementById("gpslat" + index).value = pos.coords.latitude;
+            document.getElementById("gpslng" + index).value = pos.coords.longitude;
+            document.getElementById("gpsacc" + index).value = pos.coords.accuracy;
+        },
+        function (err) {
+            alert("Unable to get location: " + err.message);
+        }
+      );
+    }
     function saveSubmission(e) {
         e.preventDefault();
         const form = document.getElementById("surveyForm");
         const formData = {};
         const questions = form.querySelectorAll(".question-block");
         questions.forEach((block, index) => {
-            const label = block.querySelector("label");
-            const questionText = label ? label.innerText : "Question " + (index + 1);
-            let answer = "";
-            const input = block.querySelector("input, textarea, select");
-            if (!input) return;
+          const label = block.querySelector("label");
+          const questionText = label ? label.innerText : "Question " + (index + 1);
+          let answer = "";
+          let lat = block.querySelector("input[id^='gpslat']");
+          let lng = block.querySelector("input[id^='gpslng']");
+        if (lat && lng) {
+          let acc = block.querySelector("input[id^='gpsacc']");
+          answer = lat.value && lng.value
+            ? lat.value + ", " + lng.value + " (Accuracy: " + (acc ? acc.value : "") + "m)"
+            : "Not answered";
+          formData[questionText] = answer;
+          return;
+        }
+    const input = block.querySelector("input, textarea, select");
+    if (!input) return;
             if (["text","date","number","email"].includes(input.type) || ["textarea","select"].includes(input.tagName.toLowerCase())) {
                 answer = input.value || "Not answered";
             } else if (input.type === "radio") {
@@ -350,6 +395,7 @@ function submitResponses(event) {
     event.preventDefault();
     if (!validateForm()) return false;
     let formData = {};
+    let googleData = new FormData();
     survey.questions.forEach((q, index) => {
         if (q.type === "pagebreak") return;
         let value = "";
@@ -412,15 +458,64 @@ function submitResponses(event) {
                     value = el ? (el.value || "Not answered") : "Not answered";
                 }
                 break;
+            case "gps":
+                {
+                    let lat = document.getElementById(`gpslat${index}`);
+                    let lng = document.getElementById(`gpslng${index}`);
+                    let acc = document.getElementById(`gpsacc${index}`);
+                    value = (lat && lng) ? 
+                        lat.value + ", " + lng.value + " (Accuracy: " + (acc ? acc.value : "") + "m)"
+                        : "Not answered";
+                }
+                break;
+            case "image":
+                {
+                    let el = document.getElementById(`image${index}`);
+                    if (el && el.files.length > 0) {
+                        let file = el.files[0];
+                        value = file.name;
+                        let reader = new FileReader();
+                        reader.onload = function () {
+                            let base64 = reader.result.split(",")[1];
+                            googleData.append("image_" + index, base64);
+                            googleData.append("filename_" + index, file.name);
+                            sendToGoogle(googleData);
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        value = "No image uploaded";
+                    }
+                }
+                break;
             default:
                 value = "Not answered";
         }
         formData[q.text] = value;
+        googleData.append(q.text, value);
     });
+    googleData.append("Timestamp", new Date().toLocaleString());
     responses.push(formData);
-    alert("Response saved locally!");
+    let text = "Survey Title: " + survey.title + "\nSubmitted At: " + new Date().toLocaleString() + "\n\n";
+    for (let key in formData) {
+        text += key + " : " + formData[key] + "\n";
+    }
+    let blob = new Blob([text], { type: "text/plain" });
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "survey-response-" + Date.now() + ".txt";
+    a.click();
+    sendToGoogle(googleData);
+    alert("Response saved and sent successfully!");
     document.getElementById("surveyForm").reset();
     return false;
+}
+
+function sendToGoogle(formData) {
+    return fetch("https://script.google.com/macros/s/AKfycbyoYnwE1VLSVwa2tjUIY0_7hjlkT2zGfYnBqOhRQJODj7V_fZeN1dTfX6pyG0L-3puJRA/exec", {
+        method: "POST",
+        mode: "no-cors",
+        body: formData
+    });
 }
 
 function exportCSV() {
@@ -439,4 +534,21 @@ function exportCSV() {
     a.href = URL.createObjectURL(blob);
     a.download = "survey_responses.csv";
     a.click();
+}
+
+function captureGPS(index) {
+    if (!navigator.geolocation) {
+        alert("Geolocation not supported by this browser.");
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        function (pos) {
+            document.getElementById("gpslat" + index).value = pos.coords.latitude;
+            document.getElementById("gpslng" + index).value = pos.coords.longitude;
+            document.getElementById("gpsacc" + index).value = pos.coords.accuracy;
+        },
+        function (err) {
+            alert("Unable to get location: " + err.message);
+        }
+    );
 }
