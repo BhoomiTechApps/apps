@@ -94,6 +94,7 @@ button:hover {
     align-items: center;
     gap: 13px;
     flex-wrap: wrap;
+	transition: transform 0.2s ease;
 }
 .question-block label {
     flex: 1;
@@ -117,6 +118,7 @@ button:hover {
     margin-top: 5px;
     color: #666;
     font-size: 13px;
+	transition: transform 0.2s ease;
 }
 .question-block input[type="radio"],
 .question-block input[type="checkbox"] {
@@ -206,6 +208,7 @@ form small,
     .question-block {
         flex-direction: column;
         align-items: flex-start;
+		transition: transform 0.2s ease;
     }
     .question-block label,
     .question-block input,
@@ -265,4 +268,14 @@ form small,
     .pagebreak {
         border: none;
     }
+}
+.draggable-enabled {
+    cursor: move;
+    border: 2px dashed #2d7ff9;
+}
+.dragging {
+    opacity: 0.5;
+}
+.drag-over {
+    border: 2px solid green;
 }
