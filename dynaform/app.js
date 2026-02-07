@@ -79,7 +79,7 @@ function generatePreview() {
     html += `
         <div id="previewEditModeContainer">
             <label>
-                <input type="checkbox" id="previewEditMode"> Show Edit/Delete Buttons
+                <input type="checkbox" id="previewEditMode"> Edit Mode
             </label>
         </div>
     `;
@@ -89,7 +89,7 @@ function generatePreview() {
             html += `<div class="pagebreak"></div>`;
             return;
         }
-        html += `<div class="question-block">`;
+		html += `<div class="question-block" draggable="false" data-index="${index}">`;
         let requiredMark = q.required ? `<span style="color:red"> *</span>` : "";
             html += `<label>${index + 1}. ${q.text}${requiredMark}</label>`;
         let req = q.required ? "required" : "";
@@ -176,9 +176,60 @@ function generatePreview() {
     document.getElementById("previewArea").innerHTML = html;
     const previewCheckbox = document.getElementById("previewEditMode");
     previewCheckbox.addEventListener("change", () => {
-        const show = previewCheckbox.checked;
-        document.querySelectorAll("#previewArea .actions").forEach(a => {
-            a.style.display = show ? "flex" : "none";
+    const enabled = previewCheckbox.checked;
+    document.querySelectorAll("#previewArea .question-block").forEach(block => {
+        block.draggable = enabled;
+        if (enabled) {
+            block.classList.add("draggable-enabled");
+        } else {
+            block.classList.remove("draggable-enabled");
+        }
+      });
+    });
+	previewCheckbox.addEventListener("change", () => {
+    const show = previewCheckbox.checked;
+    document.querySelectorAll("#previewArea .actions").forEach(a => {
+        a.style.display = show ? "flex" : "none";
+      });
+    });
+enableDragAndDrop();
+}
+
+function enableDragAndDrop() {
+    let dragged = null;
+    document.querySelectorAll("#previewArea .question-block").forEach(block => {
+        block.addEventListener("dragstart", function (e) {
+            dragged = this;
+            this.classList.add("dragging");
+            e.dataTransfer.effectAllowed = "move";
+        });
+        block.addEventListener("dragend", function () {
+            this.classList.remove("dragging");
+        });
+        block.addEventListener("dragover", function (e) {
+            e.preventDefault();
+            this.classList.add("drag-over");
+        });
+        block.addEventListener("dragleave", function () {
+            this.classList.remove("drag-over");
+        });
+        block.addEventListener("drop", function (e) {
+            e.preventDefault();
+            this.classList.remove("drag-over");
+            if (dragged && dragged !== this) {
+                let container = document.querySelector("#previewArea form");
+                let blocks = Array.from(container.querySelectorAll(".question-block"));
+                let fromIndex = blocks.indexOf(dragged);
+                let toIndex = blocks.indexOf(this);
+                if (fromIndex < toIndex) {
+                    container.insertBefore(dragged, this.nextSibling);
+                } else {
+                    container.insertBefore(dragged, this);
+                }
+                let movedItem = survey.questions.splice(fromIndex, 1)[0];
+                survey.questions.splice(toIndex, 0, movedItem);
+                generatePreview();
+            }
         });
     });
 }
