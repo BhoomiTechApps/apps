@@ -11,9 +11,9 @@
 <div class="container">
     <div class="builder">
 	    <div class="inline-row">
-		    <button type="button" onclick="document.getElementById('jsonLoader').click()">Open JSON Form</button>
+		    <button type="button" onclick="document.getElementById('jsonLoader').click()">Open Form</button>
 			<input id="jsonLoader" type="file" accept=".json" onchange="loadSurveyJSON(event)" style="display:none;">
-			<button onclick="loadSubmission()">UpLoad Submissions</button>
+			<button onclick="loadSubmission()">Upload Submissions</button>
         </div><hr>
         <h3>Create Form</h3>
         <input id="surveyTitle" placeholder="Form Title" />
@@ -63,8 +63,10 @@
 		  <label>
             <input type="checkbox" id="twoColumn">
             Enable Two Column Layout (HTML Output)
-        </label>
-		<button onclick="generatePreview()">Apply Layout</button>
+          </label>
+		  <button onclick="generatePreview()">Apply Layout</button>
+		</div>
+		<div class="inline-row">
 		  <button onclick="downloadHTML()">Get HTML</button>
           <button onclick="downloadPDF()">Get PDF</button>
 		  <button onclick="saveSurveyJSON()">Save JSON</button>
@@ -87,4 +89,5 @@ questionTypeSelect.dispatchEvent(new Event('change'));
 </script>
 </body>
 </html>
+
 
