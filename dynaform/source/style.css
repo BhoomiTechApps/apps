@@ -221,7 +221,7 @@ form small,
         column-count: 1;
     }
     .inline-row {
-        flex-direction: column;
+        flex-direction: row;
         align-items: stretch;
     }
     button {
@@ -281,4 +281,5 @@ form small,
 .drag-over {
     border: 2px solid green;
 }
+
 
