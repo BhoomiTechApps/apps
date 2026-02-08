@@ -68,13 +68,13 @@
 		<hr>
 		<h3>Live Preview</h3>
         <div id="previewArea"></div>
+		<hr>
+		<div class="inline-row">
+          <button onclick="downloadHTML()">Get HTML</button>
+          <button onclick="downloadPDF()">Get PDF</button>
+          <button onclick="saveSurveyJSON()">Save JSON</button>
+        </div>
     </div>
-</div>
-<hr>
-<div class="inline-row">
-  <button onclick="downloadHTML()">Get HTML</button>
-  <button onclick="downloadPDF()">Get PDF</button>
-  <button onclick="saveSurveyJSON()">Save JSON</button>
 </div>
 <script src="app.js"></script>
 <script>
@@ -90,6 +90,7 @@ questionTypeSelect.dispatchEvent(new Event('change'));
 </script>
 </body>
 </html>
+
 
 
 
