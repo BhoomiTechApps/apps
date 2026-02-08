@@ -228,14 +228,14 @@ form small,
         width: 100%;
     }
     .actions {
-        flex-direction: column;
+        flex-direction: row;
         width: 100%;
     }
     .actions button {
         width: 100%;
     }
     .form-actions {
-        flex-direction: column;
+        flex-direction: row;
         width: 100%;
 		gap: 5px;
     }
@@ -281,3 +281,4 @@ form small,
 .drag-over {
     border: 2px solid green;
 }
+
