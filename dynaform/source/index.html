@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Form Builder</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style-mnf.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+<h2>BhoomiTech DynaForm</h2>
+<div class="container">
+    <div class="builder">
+	    <div class="inline-row">
+		    <button type="button" onclick="document.getElementById('jsonLoader').click()">Open JSON Form</button>
+			<input id="jsonLoader" type="file" accept=".json" onchange="loadSurveyJSON(event)" style="display:none;">
+			<button onclick="loadSubmission()">UpLoad Submissions</button>
+        </div><hr>
+        <h3>Create Form</h3>
+        <input id="surveyTitle" placeholder="Form Title" />
+        <hr>
+        <h4>Add Question</h4>
+        <input id="questionText" placeholder="Enter question" />
+        <h4>Select Answer Type</h4>
+		<select id="questionType">
+            <option value="text">Short Answer</option>
+            <option value="textarea">Paragraph</option>
+            <option value="date">Date</option>
+            <option value="email">Email</option>
+            <option value="number">Number</option>
+            <option value="phone">Phone Number</option>
+            <option value="radio">Multiple Choice</option>
+            <option value="checkbox">Checkbox</option>
+			<option value="dropdown">Dropdown (Single Select)</option>
+			<option value="gps">GPS Location</option>
+            <option value="image">Image Upload</option>
+            <option value="pagebreak">---- Page Break ----</option>
+        </select>
+        <div id="numberRange" style="display:none;">
+            <h5>Number Validation</h5>
+            <input id="minValue" placeholder="Minimum Value (optional)" type="number">
+            <input id="maxValue" placeholder="Maximum Value (optional)" type="number">
+        </div>
+        <div id="dateRange" style="display:none;">
+            <h5>Date Range Validation</h5>
+            <input id="minDate" type="date" placeholder="Minimum Date">
+            <input id="maxDate" type="date" placeholder="Maximum Date">
+        </div>
+        <textarea id="options" style="display:none;"
+          placeholder="Options (one per line) – only for MCQ/Checkbox"></textarea>
+        <h4>Whether Field is Mandatory</h4>
+		<div class="inline-row">
+            <label class="required-inline">
+                <input type="checkbox" id="isRequired"> Required Field
+            </label> 
+        </div>
+        <hr>
+        <button onclick="addQuestion()">Add Question</button>
+        <hr>
+    </div>
+    <div class="preview">
+		<div class="inline-row">
+		  <h3>Live Preview</h3>
+		  <label>
+            <input type="checkbox" id="twoColumn">
+            Enable Two Column Layout (HTML Output)
+        </label>
+		<button onclick="generatePreview()">Apply Layout</button>
+		  <button onclick="downloadHTML()">Get HTML</button>
+          <button onclick="downloadPDF()">Get PDF</button>
+		  <button onclick="saveSurveyJSON()">Save JSON</button>
+        </div>
+		<hr>
+        <div id="previewArea"></div>
+    </div>
+</div>
+<script src="app-obf.js"></script>
+<script>
+const questionTypeSelect = document.getElementById("questionType");
+questionTypeSelect.addEventListener("change", function() {
+    let type = this.value;
+    document.getElementById("numberRange").style.display = (type === "number") ? "block" : "none";
+    document.getElementById("dateRange").style.display = (type === "date") ? "block" : "none";
+    document.getElementById("options").style.display =
+        (type === "radio" || type === "checkbox" || type === "dropdown") ? "block" : "none";
+});
+questionTypeSelect.dispatchEvent(new Event('change'));
+</script>
+</body>
+</html>
