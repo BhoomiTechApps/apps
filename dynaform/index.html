@@ -3,7 +3,7 @@
 <head>
     <title>Form Builder</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="style-mnf.css">
+    <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
@@ -11,9 +11,9 @@
 <div class="container">
     <div class="builder">
 	    <div class="inline-row">
-		    <button type="button" onclick="document.getElementById('jsonLoader').click()">Open JSON Form</button>
+		    <button type="button" onclick="document.getElementById('jsonLoader').click()">Open Form</button>
 			<input id="jsonLoader" type="file" accept=".json" onchange="loadSurveyJSON(event)" style="display:none;">
-			<button onclick="loadSubmission()">UpLoad Submissions</button>
+			<button onclick="loadSubmission()">Upload Submissions</button>
         </div><hr>
         <h3>Create Form</h3>
         <input id="surveyTitle" placeholder="Form Title" />
@@ -59,21 +59,24 @@
     </div>
     <div class="preview">
 		<div class="inline-row">
-		  <h3>Live Preview</h3>
 		  <label>
             <input type="checkbox" id="twoColumn">
-            Enable Two Column Layout (HTML Output)
-        </label>
-		<button onclick="generatePreview()">Apply Layout</button>
-		  <button onclick="downloadHTML()">Get HTML</button>
-          <button onclick="downloadPDF()">Get PDF</button>
-		  <button onclick="saveSurveyJSON()">Save JSON</button>
-        </div>
+            Enable Two Column Layout
+          </label>
+		  <button onclick="generatePreview()">Apply Layout</button>
+		</div>
 		<hr>
+		<h3>Live Preview</h3>
         <div id="previewArea"></div>
+		<hr>
+		<div class="inline-row">
+          <button onclick="downloadHTML()">Get HTML</button>
+          <button onclick="downloadPDF()">Get PDF</button>
+          <button onclick="saveSurveyJSON()">Save JSON</button>
+        </div>
     </div>
 </div>
-<script src="app-obf.js"></script>
+<script src="app.js"></script>
 <script>
 const questionTypeSelect = document.getElementById("questionType");
 questionTypeSelect.addEventListener("change", function() {
