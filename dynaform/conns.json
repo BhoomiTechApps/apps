@@ -1,0 +1,17 @@
+{
+  "app": "FOGS",
+  "type": "connections",
+  "version": "1.0",
+  "profiles": [
+    {
+      "name": "Image - Bhoomitech",
+      "scriptType": "Image",
+      "url": "https://script.google.com/macros/s/AKfycbxbpP3pq_urYIIXngxbUHFdfYKEDHjmdnNC3aCs7YYOIP8R-1i4DFqyayASkFHyUchu/exec"
+    },
+    {
+      "name": "Data - BhoomiTech",
+      "scriptType": "Data",
+      "url": "https://script.google.com/macros/s/AKfycbx8UsKCFuViyT_Gdcv6OtpRUv4HFd6x2sgb1hLvhyPagT0iego7D6ZTIIi66jBe0_cc/exec"
+    }
+  ]
+}
