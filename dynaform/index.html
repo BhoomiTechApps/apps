@@ -13,7 +13,7 @@
 <div class="container">
     <div class="builder">
 	    <div class="inline-row">
-			<button onclick="loadSubmission()">Upload Submissions</button>
+			<button onclick="loadSubmission()">Upload Form Data</button>
 		    <button type="button" onclick="document.getElementById('jsonLoader').click()">Open Form</button>
 			<input id="jsonLoader" type="file" accept=".json" onchange="loadSurveyJSON(event)" style="display:none;">
 			<button onclick="addConnection()">Add Connection</button>
@@ -116,5 +116,6 @@ questionTypeSelect.dispatchEvent(new Event('change'));
 </script>
 </body>
 </html>
+
 
 
