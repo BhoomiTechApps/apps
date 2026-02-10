@@ -13,9 +13,11 @@
 <div class="container">
     <div class="builder">
 	    <div class="inline-row">
+			<button onclick="loadSubmission()">Upload Submissions</button>
 		    <button type="button" onclick="document.getElementById('jsonLoader').click()">Open Form</button>
 			<input id="jsonLoader" type="file" accept=".json" onchange="loadSurveyJSON(event)" style="display:none;">
-			<button onclick="loadSubmission()">Upload Submissions</button>
+			<button onclick="addConnection()">Add Connection</button>
+			<button onclick="deleteConnection()">Remove Connection</button>
         </div><hr>
 		<h3>Create New Form</h3>
 		<div class="inline-row">
@@ -73,10 +75,6 @@
 		  <select id="connSelect"></select>
 		  <button onclick="loadConnection()">Copy to Form</button>
 		</div>
-		<div class="inline-row">
-          <button onclick="addConnection()">Add New Script</button>
-          <button onclick="deleteConnection()">Delete Selected Script</button>
-        </div>
     </div>
     <div class="preview">
 		<h3>Live Preview</h3>
@@ -118,4 +116,5 @@ questionTypeSelect.dispatchEvent(new Event('change'));
 </script>
 </body>
 </html>
+
 
