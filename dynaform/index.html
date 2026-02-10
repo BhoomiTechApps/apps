@@ -65,7 +65,7 @@
         </div>
         <hr>
 		<h3>Manage Scripts & Connections</h3>
-		<div id="connSourceOptions" style="margin-bottom:10px;">
+		<div class="inline-row" id="connSourceOptions" style="margin-bottom:10px;">
           <label><input type="radio" name="connSource" value="server" checked>Connections at Server</label>
             &nbsp;&nbsp;
           <label><input type="radio" name="connSource" value="local">Connections in Device</label>
@@ -81,11 +81,11 @@
         <div id="previewArea"></div>
 		<hr>
 		<div class="inline-row">
-          <h4>Script URL for image upload:</h4>
+          <h4>Image Upload Script:</h4>
           <input id="imageScript" placeholder="Enter Google script url" />
 		</div>
 		<div class="inline-row">
-          <h4>Script URL for data upload:</h4>
+          <h4>Data Upload Script:</h4>
           <input id="dataScript" placeholder="Enter Google script url" />
 		</div>
 		<hr>
@@ -116,6 +116,3 @@ questionTypeSelect.dispatchEvent(new Event('change'));
 </script>
 </body>
 </html>
-
-
-
