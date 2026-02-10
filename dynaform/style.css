@@ -32,6 +32,28 @@ body, input, select, textarea, button {
     width: 60%;
     overflow-x: hidden;
 }
+button {
+    display: block;
+    white-space: no-wrap;
+    box-sizing: border-box;
+    padding: 8px 13px;
+    border-radius: 6px;
+    border: none;
+    background: #3c517a;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+}
+button:hover {
+    background: #1b64d1;
+}
+/* Buttons inside inline-row: expand horizontally but keep natural height */
+.inline-row button {
+    flex: 1 0 auto;           /* grow to fill row, height stays natural */
+    min-width: 0;             /* prevents overflow in flex containers */
+    display: inline-block;    /* keep height natural */
+    width: auto;              /* allow flex to control width */
+}
 .preview input,
 .preview select,
 .preview textarea {
@@ -61,7 +83,6 @@ select {
     margin-bottom: 10px;
 	white-space: nowrap;
 }
-
 input, select, textarea {
     padding: 8px;
     border: 1px solid #ccc;
@@ -75,18 +96,6 @@ input[type="radio"],
 input[type="checkbox"] {
     width: auto;
     margin-right: 5px;
-}
-button {
-    padding: 8px 13px;
-    border-radius: 6px;
-    border: none;
-    background: #2d7ff9;
-    color: white;
-    cursor: pointer;
-    font-size: 13px;
-}
-button:hover {
-    background: #1b64d1;
 }
 .preview form {
     width: 100%;
