@@ -48,12 +48,11 @@ button {
 button:hover {
     background: #1b64d1;
 }
-/* Buttons inside inline-row: expand horizontally but keep natural height */
 .inline-row button {
-    flex: 1 0 auto;           /* grow to fill row, height stays natural */
-    min-width: 0;             /* prevents overflow in flex containers */
-    display: inline-block;    /* keep height natural */
-    width: auto;              /* allow flex to control width */
+    flex: 1 0 auto;
+    min-width: 0;
+    display: inline-block;
+    width: auto;
 }
 .preview input,
 .preview select,
@@ -251,9 +250,27 @@ form small,
         flex-direction: row;
         align-items: stretch;
     }
-    button {
-        width: 100%;
-    }
+button {
+    display: block;
+    white-space: no-wrap;
+    box-sizing: border-box;
+    padding: 8px 13px;
+    border-radius: 6px;
+    border: none;
+    background: #3c517a;
+    color: white;
+    cursor: pointer;
+    font-size: 12px;
+}
+button:hover {
+    background: #1b64d1;
+}
+.inline-row button {
+    flex: 1 0 auto;
+    min-width: 0;
+    display: inline-block;
+    width: auto;
+}
     .actions {
         flex-direction: row;
         width: 100%;
@@ -308,5 +325,6 @@ form small,
 .drag-over {
     border: 2px solid green;
 }
+
 
 
