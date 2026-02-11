@@ -35,7 +35,7 @@ body, input, select, textarea, button {
 }
 button {
     display: block;
-    white-space: no-wrap;
+    white-space: nowrap;
     box-sizing: border-box;
     padding: 8px 13px;
     border-radius: 6px;
@@ -252,18 +252,8 @@ form small,
     }
 button {
     display: block;
-    white-space: no-wrap;
+    white-space: normal;
     box-sizing: border-box;
-    padding: 8px 13px;
-    border-radius: 6px;
-    border: none;
-    background: #3c517a;
-    color: white;
-    cursor: pointer;
-    font-size: 12px;
-}
-button:hover {
-    background: #1b64d1;
 }
 .inline-row button {
     flex: 1 0 auto;
@@ -325,6 +315,7 @@ button:hover {
 .drag-over {
     border: 2px solid green;
 }
+
 
 
 
