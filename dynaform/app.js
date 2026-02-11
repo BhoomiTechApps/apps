@@ -304,7 +304,6 @@ async function downloadHTML() {
     }
     clone.querySelectorAll(".actions").forEach(a => a.remove());
     const content = clone.innerHTML;
-    /* ---------- CSS ---------- */
     let cssText = `
 body, input, select, textarea, button {
     font-size:13px;
@@ -332,10 +331,8 @@ form {
         const response = await fetch("style.css");
         if (response.ok) cssText = await response.text();
     } catch {}
-/* ---------- EMBEDDED SCRIPT (MODIFIED TO READ HIDDEN FIELDS) ---------- */
 const embeddedScript = `
 let responses = [];
-/* READ SCRIPT URLs FROM HIDDEN FIELDS */
 const DATA_SCRIPT_URL =
     document.getElementById("dataScriptURL").value;
 const IMAGE_SCRIPT_URL =
@@ -485,7 +482,6 @@ function loadSubmission() {
     input.accept = ".txt";
     input.multiple = true;
     input.onchange = () => {
-        // SAFELY capture files BEFORE any async operations
         const files = [...input.files];
         const totalFiles = files.length;
         loadedSubmissions = [];
@@ -503,7 +499,6 @@ function loadSubmission() {
     };
     input.click();
 }
-/* ----------- EMBEDDED SHOW SUBMISSIONS TABLE FUNCTION ----------- */
 function showSubmissionsTable() {
     let popup = window.open("", "Submissions", "width=900,height=600");
     let html = \`
@@ -590,7 +585,6 @@ function showSubmissionsTable() {
     \`;
     popup.document.write(html);
 }
-
 `;
 const doc = document.implementation.createHTMLDocument("");
 doc.documentElement.innerHTML = `
@@ -799,6 +793,7 @@ function captureGPS(index) {
         }
     );
 }
+
 function parseSubmissionText(text) {
     let lines = text.split(/\r?\n/);
     let result = {
@@ -839,6 +834,7 @@ function parseSubmissionText(text) {
     }
     return result;
 }
+
 function loadSubmission() {
     let input = document.createElement("input");
     input.type = "file";
@@ -884,7 +880,6 @@ function showSubmissionsTable() {
         <h3>Parsed Submissions</h3>
         <input type="hidden" id="dataScript" 
                value="${document.getElementById('dataScript').value}">
-
         <table>
             <tr>
                 <th>Survey Title</th>
