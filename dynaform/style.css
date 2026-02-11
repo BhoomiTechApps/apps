@@ -27,6 +27,7 @@ body, input, select, textarea, button {
 }
 .builder {
     width: 40%;
+	overflow-x: hidden;
 }
 .preview {
     width: 60%;
@@ -307,4 +308,5 @@ form small,
 .drag-over {
     border: 2px solid green;
 }
+
 
