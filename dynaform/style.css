@@ -222,41 +222,43 @@ form small,
         max-width: 100%;
         gap: 5px;
     }
-    .builder,
-    .preview {
-        width: 100% !important;
-        padding: 8px;
-    }
-    .preview form {
-        width: 100% !important;
-        padding: 8px;
-    }
-    .question-block {
-        flex-direction: column;
-        align-items: flex-start;
-		transition: transform 0.2s ease;
-    }
-    .question-block label,
-    .question-block input,
-    .question-block select,
-    .question-block textarea {
-        width: 100%;
-        min-width: auto;
-    }
-    .two-column {
-        column-count: 1;
-    }
-    .inline-row {
-        flex-direction: row;
-        align-items: stretch;
-    }
+.builder,
+.preview {
+    width: 100% !important;
+    padding: 8px;
+}
+.preview form {
+    width: 100% !important;
+    padding: 8px;
+}
+.question-block {
+    flex-direction: column;
+    align-items: flex-start;
+	transition: transform 0.2s ease;
+}
+.question-block label,
+.question-block input,
+.question-block select,
+.question-block textarea {
+    width: 100%;
+    min-width: auto;
+}
+.two-column {
+    column-count: 1;
+}
+.inline-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+}
 button {
     display: block;
     white-space: normal;
     box-sizing: border-box;
 }
 .inline-row button {
-    flex: 1 0 auto;
+	flex: 1 1 150px;
     min-width: 0;
     display: inline-block;
     width: auto;
@@ -315,6 +317,7 @@ button {
 .drag-over {
     border: 2px solid green;
 }
+
 
 
 
