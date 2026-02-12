@@ -1,2 +1,0 @@
-This application provides a friendly interface to edit and save attributes of a GeoJson file.
-The application handles files in local disk only.
