@@ -70,9 +70,8 @@ li .controls {
 /* MAIN LAYOUT FLEX */
 .flex-box-main {
   display: flex;
-  gap: 6px;
+  gap: 10px;
   align-items: flex-start;
-  padding: 3px 6px;
   width: 100%;
   flex-wrap: wrap;
 }
@@ -214,6 +213,7 @@ li .controls button:hover {
     max-width: 100%;
   }
 }
+
 
 
 
