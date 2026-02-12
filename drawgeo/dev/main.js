@@ -5,6 +5,34 @@ let drawControl;
 let currentPolyline = null;
 let activeDrawHandler = null;
 const STORAGE_KEY = "poly_project_v1";
+let featureCounter = 1;
+
+function generateFeatureId() {
+  return "FC" + String(featureCounter++).padStart(6, "0");
+}
+
+function isNameUnique(name) {
+  let exists = false;
+  editGroup.eachLayer(layer => {
+    const n = layer.feature?.properties?.name;
+    if (n && n.toLowerCase() === name.toLowerCase()) {
+      exists = true;
+    }
+  });
+  return !exists;
+}
+
+function syncFeatureCounter() {
+  let max = 0;
+  editGroup.eachLayer(layer => {
+    const id = layer.feature?.properties?.id;
+    if (id && id.startsWith("FC")) {
+      const n = parseInt(id.slice(2), 10);
+      if (!isNaN(n)) max = Math.max(max, n);
+    }
+  });
+  featureCounter = max + 1;
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   initMap();
@@ -93,6 +121,23 @@ function initDrawControl() {
    map.on(L.Draw.Event.CREATED, e => {
     const layer = e.layer;
     const type = e.layerType;
+    let name = prompt("Enter a UNIQUE name for this feature:");
+    if (!name || !name.trim()) {
+      updateStatus("Feature discarded.");
+      return;
+    }
+    name = name.trim();
+    if (!isNameUnique(name)) {
+      alert("That name already exists.\nFeature discarded.");
+      updateStatus("Duplicate name rejected.");
+      return;
+    }
+    layer.feature = layer.feature || {
+      type: "Feature",
+      properties: {}
+    };
+    layer.feature.properties.id = generateFeatureId();
+    layer.feature.properties.name = name;
     if (type === "polyline") {
       layer.setStyle({ color: "#8B0000" });
       lineLayer.addLayer(layer);
@@ -198,6 +243,7 @@ function loadProject() {
           const marker = L.marker(latlng, {
             icon: L.divIcon({ className: "small-point", iconSize: [8, 8], iconAnchor: [4, 4] })
           });
+		  marker.feature = feature;
           pointLayer.addLayer(marker);
           editGroup.addLayer(marker);
           return marker;
@@ -206,6 +252,7 @@ function loadProject() {
     }
     const lines = lineLayer.getLayers();
     currentPolyline = lines.length ? lines[lines.length - 1] : null;
+	syncFeatureCounter();
     zoomToData();
     updateStatus("Project loaded.");
   } catch (err) {
@@ -370,4 +417,3 @@ document.getElementById("exportConfirmBtn").onclick = async function () {
   URL.revokeObjectURL(url);
   updateStatus("GeoJSON exported."); // ← Status here
 };
-
