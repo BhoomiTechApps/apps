@@ -118,7 +118,7 @@ li .controls {
   padding: 12px;
   background: #f3f8ff;
   border: 1px solid #d5e6ff;
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
 .flex-box label {
@@ -213,5 +213,6 @@ li .controls button:hover {
     max-width: 100%;
   }
 }
+
 
 
