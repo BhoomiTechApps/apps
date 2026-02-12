@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GeoJSON Attribute Editor</title>
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<link rel="stylesheet" href="leaflet/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="res/testyle.css"/>
+<script src="cdn/xlsx.full.min.js"></script>
+</head>
+<body>
+<div class="inline-row" id="controls">
+  <input type="file" id="fileInput" accept=".geojson,.json" />
+  <div>
+    <select id="fontSizeSelect">
+	  <option value="" selected><- Select Font Size -></option>
+      <option value="12px">Small</option>
+      <option value="14px">Normal</option>
+      <option value="16px">Large</option>
+      <option value="18px">XL</option>
+    </select>
+  </div>
+  <input type="text" id="searchInput" placeholder="Search..." />
+  <div id="columnToggle">
+    <button id="toggleColumnsBtn">Show/Hide Columns</button>
+    <div id="columnList"></div>
+  </div>
+  <button id="toggleMapBtn"> Show/Hide Map</button>
+</div>
+<div id="mapPanel" class="expanded"><div id="map"></div></div>
+<div id="tableWrapper"><div id="tableContainer"></div></div>
+<hr>
+<div class="inline-row" id="controls1">
+  <button id="exportExcelBtn" style="display:none;">Export Excel</button>
+  <button id="saveBtn" style="display:none;">Save GeoJSON</button>
+</div>
+<script src="leaflet/leaflet.js"></script>
+<script src="res/tescript.js"></script>
+<script src="res/fltr.js"></script>
+</body>
+</html>
