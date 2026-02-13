@@ -632,11 +632,13 @@ function downloadPDF() {
     const usableHeight = pageHeight - marginTop - marginBottom;
     let y = marginTop;
     let pageNumber = 1;
-    pdf.setFont("helvetica", "bold");
+	pdf.addFileToVFS("NotoSansBengali-Regular.ttf", NotoSansBengaliRegular);
+    pdf.addFont("NotoSansBengali-Regular.ttf", "NotoSansBengali", "normal");
+    pdf.setFont("NotoSansBengali", "bold");
     pdf.setFontSize(16);
     pdf.text(survey.title, pageWidth / 2, y, { align: "center" });
     y += 12;
-    pdf.setFont("helvetica", "normal");
+    pdf.setFont("NotoSansBengali", "normal");
     pdf.setFontSize(11);
     let qNo = 1;
     survey.questions.forEach(q => {
@@ -1093,6 +1095,7 @@ function flushImageScriptMemory() {
         dataInput.disabled = false;
     }
 }
+
 
 
 
