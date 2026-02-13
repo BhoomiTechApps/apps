@@ -620,15 +620,138 @@ ${embeddedScript}
 }
 
 function downloadPDF() {
-    let element = document.getElementById("previewArea");
-    let oldClass = element.className;
-    element.className = "one-column";
+    const surveyTitle = survey.title || "Survey";
+    let html = `
+        <div class="pdf-container">
+            <h1 class="pdf-title">${surveyTitle}</h1>
+    `;
+    let questionNumber = 1;
+    survey.questions.forEach(q => {
+        if (q.type === "pagebreak") {
+            html += `<div class="pdf-pagebreak"></div>`;
+            return;
+        }
+        html += `<div class="pdf-question">`;
+        html += `<div class="pdf-question-text">
+                    ${questionNumber}. ${q.text} 
+                    ${q.required ? '<span class="req">*</span>' : ''}
+                 </div>`;
+        // TEXT INPUT
+        if (["text","email","phone","number","date"].includes(q.type)) {
+            html += `<div class="pdf-line"></div>`;
+        }
+        // TEXTAREA
+        if (q.type === "textarea") {
+            html += `
+                <div class="pdf-multiline"></div>
+                <div class="pdf-multiline"></div>
+                <div class="pdf-multiline"></div>
+            `;
+        }
+        // RADIO
+        if (q.type === "radio") {
+            html += `<div class="pdf-options">`;
+            q.options.forEach(opt => {
+                html += `
+                    <div class="pdf-option">
+                        <span class="circle"></span> ${opt}
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+        // CHECKBOX
+        if (q.type === "checkbox") {
+            html += `<div class="pdf-options">`;
+            q.options.forEach(opt => {
+                html += `
+                    <div class="pdf-option">
+                        <span class="box"></span> ${opt}
+                    </div>
+                `;
+            });
+            html += `</div>`;
+        }
+        // DROPDOWN
+        if (q.type === "dropdown") {
+            html += `<div class="pdf-line"></div>`;
+        }
+        html += `</div>`;
+        questionNumber++;
+    });
+    html += `</div>`;
+    const printCSS = `
+        .pdf-container {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            padding: 40px;
+            font-size: 13px;
+        }
+        .pdf-title {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+        .pdf-question {
+            margin-bottom: 18px;
+            page-break-inside: avoid;
+        }
+        .pdf-question-text {
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .req {
+            color: red;
+        }
+        .pdf-line {
+            border-bottom: 1px solid #000;
+            height: 18px;
+            margin-bottom: 6px;
+        }
+        .pdf-multiline {
+            border-bottom: 1px solid #000;
+            height: 18px;
+            margin-bottom: 6px;
+        }
+        .pdf-options {
+            margin-left: 10px;
+        }
+        .pdf-option {
+            margin-bottom: 5px;
+        }
+        .circle {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 1px solid #000;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        .box {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 1px solid #000;
+            margin-right: 6px;
+        }
+        .pdf-pagebreak {
+            page-break-after: always;
+        }
+    `;
+    const element = document.createElement("div");
+    element.innerHTML = html;
+    const style = document.createElement("style");
+    style.innerHTML = printCSS;
+    element.appendChild(style);
     html2pdf()
+        .set({
+            margin: 10,
+            filename: surveyTitle.replace(/\s+/g, "_") + ".pdf",
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+        })
         .from(element)
-        .save("survey.pdf")
-        .then(() => {
-            element.className = oldClass;
-        });
+        .save();
 }
 
 function saveSurveyJSON() {
@@ -1017,3 +1140,4 @@ function flushImageScriptMemory() {
         dataInput.disabled = false;
     }
 }
+
