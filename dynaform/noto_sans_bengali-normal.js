@@ -3,4 +3,5 @@ var font = 'AAEAAAAQAQAABAAAR0RFRjWbN1QAAkDsAAABHEdQT1NWEo/eAAJCCAAAIu5HU1VCnYRD
   this.addFileToVFS("NotoSansBengali-Regular.ttf", font);
   this.addFont("NotoSansBengali-Regular.ttf", "NotoSansBengali", "normal");
 };
-jsPDF.API.events.push(["addFonts", callAddFont]);
+window.jspdf.jsPDF.API.events.push(["addFonts", callAddFont]);
+
