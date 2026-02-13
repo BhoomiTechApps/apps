@@ -707,6 +707,23 @@ function downloadPDF() {
     pdf.save(survey.title.replace(/\s+/g,"_") + ".pdf");
 }
 
+function saveSurveyJSON() {
+    const exportSurvey = {
+        title: survey.title,
+        questions: survey.questions
+    };
+    if (savedImageScript) {
+        exportSurvey.imageScript = savedImageScript;
+    }
+    let blob = new Blob([JSON.stringify(exportSurvey, null, 2)], {
+        type: "application/json"
+    });
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "survey.json";
+    a.click();
+}
+
 function loadSurveyJSON(event) {
     let file = event.target.files[0];
     if (!file) return;
@@ -1076,6 +1093,7 @@ function flushImageScriptMemory() {
         dataInput.disabled = false;
     }
 }
+
 
 
 
