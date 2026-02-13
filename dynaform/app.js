@@ -632,9 +632,7 @@ function downloadPDF() {
     const usableHeight = pageHeight - marginTop - marginBottom;
     let y = marginTop;
     let pageNumber = 1;
-	pdf.addFileToVFS("NotoSansBengali-Regular.ttf", NotoSansBengaliRegular);
-    pdf.addFont("NotoSansBengali-Regular.ttf", "NotoSansBengali", "normal");
-    pdf.setFont("NotoSansBengali", "bold");
+    pdf.setFont("NotoSansBengali", "normal");
     pdf.setFontSize(16);
     pdf.text(survey.title, pageWidth / 2, y, { align: "center" });
     y += 12;
@@ -1095,6 +1093,7 @@ function flushImageScriptMemory() {
         dataInput.disabled = false;
     }
 }
+
 
 
 
