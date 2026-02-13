@@ -620,137 +620,114 @@ ${embeddedScript}
 }
 
 function downloadPDF() {
-    const surveyTitle = survey.title || "Survey";
-    let html = `
-        <div class="pdf-container">
-            <h1 class="pdf-title">${surveyTitle}</h1>
-    `;
-    let questionNumber = 1;
-    survey.questions.forEach(q => {
-        if (q.type === "pagebreak") {
-            html += `<div class="pdf-pagebreak"></div>`;
-            return;
+    const original = document.getElementById("previewArea");
+    const clone = original.cloneNode(true);
+    // 1️⃣ Remove builder UI
+    clone.querySelectorAll(".actions").forEach(el => el.remove());
+    clone.querySelectorAll("#previewEditModeContainer").forEach(el => el.remove());
+    clone.querySelectorAll(".form-actions").forEach(el => el.remove());
+    // Remove Submit button
+    clone.querySelectorAll("button").forEach(btn => {
+        if (btn.innerText.toLowerCase().includes("submit")) {
+            btn.remove();
         }
-        html += `<div class="pdf-question">`;
-        html += `<div class="pdf-question-text">
-                    ${questionNumber}. ${q.text} 
-                    ${q.required ? '<span class="req">*</span>' : ''}
-                 </div>`;
-        // TEXT INPUT
-        if (["text","email","phone","number","date"].includes(q.type)) {
-            html += `<div class="pdf-line"></div>`;
-        }
-        // TEXTAREA
-        if (q.type === "textarea") {
-            html += `
-                <div class="pdf-multiline"></div>
-                <div class="pdf-multiline"></div>
-                <div class="pdf-multiline"></div>
-            `;
-        }
-        // RADIO
-        if (q.type === "radio") {
-            html += `<div class="pdf-options">`;
-            q.options.forEach(opt => {
-                html += `
-                    <div class="pdf-option">
-                        <span class="circle"></span> ${opt}
-                    </div>
-                `;
-            });
-            html += `</div>`;
-        }
-        // CHECKBOX
-        if (q.type === "checkbox") {
-            html += `<div class="pdf-options">`;
-            q.options.forEach(opt => {
-                html += `
-                    <div class="pdf-option">
-                        <span class="box"></span> ${opt}
-                    </div>
-                `;
-            });
-            html += `</div>`;
-        }
-        // DROPDOWN
-        if (q.type === "dropdown") {
-            html += `<div class="pdf-line"></div>`;
-        }
-        html += `</div>`;
-        questionNumber++;
     });
-    html += `</div>`;
-    const printCSS = `
-        .pdf-container {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            padding: 40px;
+    // 2️⃣ Remove form wrapper (prevents margin cut issue)
+    const form = clone.querySelector("form");
+    let content;
+    if (form) {
+        content = form.innerHTML;
+    } else {
+        content = clone.innerHTML;
+    }
+    const container = document.createElement("div");
+    container.className = "pdf-wrapper";
+    container.innerHTML = content;
+    // 3️⃣ Remove placeholders
+    container.querySelectorAll("input, textarea").forEach(el => {
+        el.removeAttribute("placeholder");
+    });
+    // 4️⃣ Force one-column
+    container.querySelectorAll(".two-column").forEach(el => {
+        el.classList.remove("two-column");
+    });
+    // 5️⃣ Respect page breaks
+    container.querySelectorAll(".pagebreak").forEach(pb => {
+        pb.style.pageBreakAfter = "always";
+        pb.style.breakAfter = "page";
+    });
+    // 6️⃣ Apply clean print CSS
+    const style = document.createElement("style");
+    style.innerHTML = `
+        .pdf-wrapper {
+            font-family: Arial, sans-serif;
+            padding: 25px;
             font-size: 13px;
         }
-        .pdf-title {
+        h2 {
             text-align: center;
-            margin-bottom: 30px;
-            font-size: 18px;
-            font-weight: 600;
+            margin-bottom: 25px;
         }
-        .pdf-question {
-            margin-bottom: 18px;
+        .question-block {
+            margin-bottom: 15px;
             page-break-inside: avoid;
         }
-        .pdf-question-text {
+        label {
             font-weight: 500;
-            margin-bottom: 6px;
-        }
-        .req {
-            color: red;
-        }
-        .pdf-line {
-            border-bottom: 1px solid #000;
-            height: 18px;
-            margin-bottom: 6px;
-        }
-        .pdf-multiline {
-            border-bottom: 1px solid #000;
-            height: 18px;
-            margin-bottom: 6px;
-        }
-        .pdf-options {
-            margin-left: 10px;
-        }
-        .pdf-option {
+            display: block;
             margin-bottom: 5px;
         }
-        .circle {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 1px solid #000;
-            border-radius: 50%;
-            margin-right: 6px;
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            border: none;
+            border-bottom: 1px solid #000;
+            margin-bottom: 8px;
+            padding: 4px 0;
+            background: transparent;
         }
-        .box {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 1px solid #000;
-            margin-right: 6px;
+        textarea {
+            height: 50px;
         }
-        .pdf-pagebreak {
-            page-break-after: always;
+        .radio-group label,
+        .checkbox-group label {
+            display: block;
+            margin-bottom: 4px;
+        }
+        button {
+            display: none !important;
+        }
+        .error {
+            display: none !important;
+        }
+        form {
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
         }
     `;
-    const element = document.createElement("div");
-    element.innerHTML = html;
-    const style = document.createElement("style");
-    style.innerHTML = printCSS;
-    element.appendChild(style);
+    container.appendChild(style);
     html2pdf()
         .set({
             margin: 10,
-            filename: surveyTitle.replace(/\s+/g, "_") + ".pdf",
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+            filename: (survey.title || "survey") + ".pdf",
+            html2canvas: {
+                scale: 2,
+                useCORS: true
+            },
+            jsPDF: {
+                unit: "mm",
+                format: "a4",
+                orientation: "portrait"
+            },
+            pagebreak: { mode: ['css', 'legacy'] }
         })
-        .from(element)
+        .from(container)
         .save();
 }
 
@@ -1140,4 +1117,5 @@ function flushImageScriptMemory() {
         dataInput.disabled = false;
     }
 }
+
 
