@@ -620,46 +620,62 @@ ${embeddedScript}
 }
 
 function downloadPDF() {
-    const original = document.getElementById("previewArea");
-    const clone = original.cloneNode(true);
-    // 1️⃣ Remove builder UI
-    clone.querySelectorAll(".actions").forEach(el => el.remove());
-    clone.querySelectorAll("#previewEditModeContainer").forEach(el => el.remove());
-    clone.querySelectorAll(".form-actions").forEach(el => el.remove());
-    // Remove Submit button
-    clone.querySelectorAll("button").forEach(btn => {
-        if (btn.innerText.toLowerCase().includes("submit")) {
-            btn.remove();
+    let printHTML = `
+        <div class="pdf-container">
+            <h2>${survey.title}</h2>
+    `;
+    let qNo = 1;
+    survey.questions.forEach(q => {
+        if (q.type === "pagebreak") {
+            printHTML += `<div class="page-break"></div>`;
+            return;
         }
+        printHTML += `<div class="question">`;
+        printHTML += `<div class="q-text">
+                        ${qNo}. ${q.text}
+                        ${q.required ? '<span class="req">*</span>' : ''}
+                      </div>`;
+        // TEXT INPUT TYPES
+        if (["text","email","number","phone","date","dropdown"].includes(q.type)) {
+            printHTML += `<div class="line"></div>`;
+        }
+        // TEXTAREA
+        if (q.type === "textarea") {
+            printHTML += `
+                <div class="line"></div>
+                <div class="line"></div>
+                <div class="line"></div>
+            `;
+        }
+        // RADIO
+        if (q.type === "radio") {
+            q.options.forEach(opt => {
+                printHTML += `
+                    <div class="option">
+                        <span class="circle"></span> ${opt}
+                    </div>
+                `;
+            });
+        }
+        // CHECKBOX
+        if (q.type === "checkbox") {
+            q.options.forEach(opt => {
+                printHTML += `
+                    <div class="option">
+                        <span class="box"></span> ${opt}
+                    </div>
+                `;
+            });
+        }
+        printHTML += `</div>`;
+        qNo++;
     });
-    // 2️⃣ Remove form wrapper (prevents margin cut issue)
-    const form = clone.querySelector("form");
-    let content;
-    if (form) {
-        content = form.innerHTML;
-    } else {
-        content = clone.innerHTML;
-    }
+    printHTML += `</div>`;
     const container = document.createElement("div");
-    container.className = "pdf-wrapper";
-    container.innerHTML = content;
-    // 3️⃣ Remove placeholders
-    container.querySelectorAll("input, textarea").forEach(el => {
-        el.removeAttribute("placeholder");
-    });
-    // 4️⃣ Force one-column
-    container.querySelectorAll(".two-column").forEach(el => {
-        el.classList.remove("two-column");
-    });
-    // 5️⃣ Respect page breaks
-    container.querySelectorAll(".pagebreak").forEach(pb => {
-        pb.style.pageBreakAfter = "always";
-        pb.style.breakAfter = "page";
-    });
-    // 6️⃣ Apply clean print CSS
+    container.innerHTML = printHTML;
     const style = document.createElement("style");
     style.innerHTML = `
-        .pdf-wrapper {
+        .pdf-container {
             font-family: Arial, sans-serif;
             padding: 25px;
             font-size: 13px;
@@ -668,84 +684,54 @@ function downloadPDF() {
             text-align: center;
             margin-bottom: 25px;
         }
-        .question-block {
-            margin-bottom: 15px;
+        .question {
+            margin-bottom: 16px;
             page-break-inside: avoid;
         }
-        label {
-            font-weight: 500;
-            display: block;
-            margin-bottom: 5px;
+        .q-text {
+            font-weight: 600;
+            margin-bottom: 6px;
         }
-        input[type="text"],
-        input[type="email"],
-        input[type="number"],
-        input[type="date"],
-        select,
-        textarea {
-            width: 100%;
-            border: none;
+        .req {
+            color: red;
+        }
+        .line {
             border-bottom: 1px solid #000;
-            margin-bottom: 8px;
-            padding: 4px 0;
-            background: transparent;
+            height: 18px;
+            margin-bottom: 6px;
         }
-        textarea {
-            height: 50px;
-        }
-        .radio-group label,
-        .checkbox-group label {
-            display: block;
+        .option {
             margin-bottom: 4px;
         }
-        button {
-            display: none !important;
+        .circle {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 1px solid #000;
+            border-radius: 50%;
+            margin-right: 6px;
         }
-        .error {
-            display: none !important;
+        .box {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 1px solid #000;
+            margin-right: 6px;
         }
-        form {
-            width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            box-shadow: none !important;
+        .page-break {
+            page-break-after: always;
         }
     `;
     container.appendChild(style);
     html2pdf()
         .set({
             margin: 10,
-            filename: (survey.title || "survey") + ".pdf",
-            html2canvas: {
-                scale: 2,
-                useCORS: true
-            },
-            jsPDF: {
-                unit: "mm",
-                format: "a4",
-                orientation: "portrait"
-            },
-            pagebreak: { mode: ['css', 'legacy'] }
+            filename: survey.title.replace(/\s+/g,"_") + ".pdf",
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
         })
         .from(container)
         .save();
-}
-
-function saveSurveyJSON() {
-    const exportSurvey = {
-        title: survey.title,
-        questions: survey.questions
-    };
-    if (savedImageScript) {
-        exportSurvey.imageScript = savedImageScript;
-    }
-    let blob = new Blob([JSON.stringify(exportSurvey, null, 2)], {
-        type: "application/json"
-    });
-    let a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = "survey.json";
-    a.click();
 }
 
 function loadSurveyJSON(event) {
@@ -1117,5 +1103,6 @@ function flushImageScriptMemory() {
         dataInput.disabled = false;
     }
 }
+
 
 
