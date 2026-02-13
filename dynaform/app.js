@@ -620,118 +620,91 @@ ${embeddedScript}
 }
 
 function downloadPDF() {
-    let printHTML = `
-        <div class="pdf-container">
-            <h2>${survey.title}</h2>
-    `;
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF("p", "mm", "a4");
+    const pageWidth = 210;
+    const pageHeight = 297;
+    const marginLeft = 15;
+    const marginRight = 15;
+    const marginTop = 20;
+    const marginBottom = 20;
+    const usableWidth = pageWidth - marginLeft - marginRight;
+    const usableHeight = pageHeight - marginTop - marginBottom;
+    let y = marginTop;
+    let pageNumber = 1;
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(16);
+    pdf.text(survey.title, pageWidth / 2, y, { align: "center" });
+    y += 12;
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(11);
     let qNo = 1;
     survey.questions.forEach(q => {
         if (q.type === "pagebreak") {
-            printHTML += `<div class="page-break"></div>`;
+            pdf.addPage();
+            pageNumber++;
+            y = marginTop;
             return;
         }
-        printHTML += `<div class="question">`;
-        printHTML += `<div class="q-text">
-                        ${qNo}. ${q.text}
-                        ${q.required ? '<span class="req">*</span>' : ''}
-                      </div>`;
-        // TEXT INPUT TYPES
+        let questionText = `${qNo}. ${q.text}${q.required ? " *" : ""}`;
+        let splitText = pdf.splitTextToSize(questionText, usableWidth);
+        let requiredHeight = splitText.length * 6 + 6;
+        if (y + requiredHeight > pageHeight - marginBottom) {
+            pdf.addPage();
+            pageNumber++;
+            y = marginTop;
+        }
+        pdf.text(splitText, marginLeft, y);
+        y += splitText.length * 6 + 4;
         if (["text","email","number","phone","date","dropdown"].includes(q.type)) {
-            printHTML += `<div class="line"></div>`;
+            pdf.line(marginLeft, y, pageWidth - marginRight, y);
+            y += 8;
         }
-        // TEXTAREA
         if (q.type === "textarea") {
-            printHTML += `
-                <div class="line"></div>
-                <div class="line"></div>
-                <div class="line"></div>
-            `;
+            for (let i = 0; i < 3; i++) {
+                pdf.line(marginLeft, y, pageWidth - marginRight, y);
+                y += 8;
+            }
         }
-        // RADIO
         if (q.type === "radio") {
             q.options.forEach(opt => {
-                printHTML += `
-                    <div class="option">
-                        <span class="circle"></span> ${opt}
-                    </div>
-                `;
+                if (y + 8 > pageHeight - marginBottom) {
+                    pdf.addPage();
+                    pageNumber++;
+                    y = marginTop;
+                }
+                pdf.circle(marginLeft + 2, y - 2, 2);
+                pdf.text(opt, marginLeft + 8, y);
+                y += 7;
             });
         }
-        // CHECKBOX
         if (q.type === "checkbox") {
             q.options.forEach(opt => {
-                printHTML += `
-                    <div class="option">
-                        <span class="box"></span> ${opt}
-                    </div>
-                `;
+                if (y + 8 > pageHeight - marginBottom) {
+                    pdf.addPage();
+                    pageNumber++;
+                    y = marginTop;
+                }
+                pdf.rect(marginLeft, y - 4, 4, 4);
+                pdf.text(opt, marginLeft + 8, y);
+                y += 7;
             });
         }
-        printHTML += `</div>`;
+        y += 4;
         qNo++;
     });
-    printHTML += `</div>`;
-    const container = document.createElement("div");
-    container.innerHTML = printHTML;
-    const style = document.createElement("style");
-    style.innerHTML = `
-        .pdf-container {
-            font-family: Arial, sans-serif;
-            padding: 25px;
-            font-size: 13px;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        .question {
-            margin-bottom: 16px;
-            page-break-inside: avoid;
-        }
-        .q-text {
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-        .req {
-            color: red;
-        }
-        .line {
-            border-bottom: 1px solid #000;
-            height: 18px;
-            margin-bottom: 6px;
-        }
-        .option {
-            margin-bottom: 4px;
-        }
-        .circle {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 1px solid #000;
-            border-radius: 50%;
-            margin-right: 6px;
-        }
-        .box {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 1px solid #000;
-            margin-right: 6px;
-        }
-        .page-break {
-            page-break-after: always;
-        }
-    `;
-    container.appendChild(style);
-    html2pdf()
-        .set({
-            margin: 10,
-            filename: survey.title.replace(/\s+/g,"_") + ".pdf",
-            html2canvas: { scale: 2 },
-            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-        })
-        .from(container)
-        .save();
+    const totalPages = pdf.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(9);
+        pdf.text(
+            `Page ${i} of ${totalPages}`,
+            pageWidth / 2,
+            pageHeight - 10,
+            { align: "center" }
+        );
+    }
+    pdf.save(survey.title.replace(/\s+/g,"_") + ".pdf");
 }
 
 function loadSurveyJSON(event) {
@@ -1103,6 +1076,7 @@ function flushImageScriptMemory() {
         dataInput.disabled = false;
     }
 }
+
 
 
 
