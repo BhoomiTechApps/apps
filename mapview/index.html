@@ -42,14 +42,14 @@
     <div style="display: flex; gap: 6px; width: 100%;">
       <input type="text" id="searchText" placeholder="Search...">
       <select id="searchSource">
-        <option value="nominatim">Nominatim</option>
+        <option value="locationiq">LocationIQ</option>
         <option value="google">Google</option>
         <option value="layers">Loaded Layers</option>
       </select>
 	</div>  
     <div style="display: flex; gap: 6px; width: 100%;">
 	  <button onclick="clearSearch()">Clear</button>
-	  <button onclick="doSearch()">Search</button>
+	  <button id="searchBtn" onclick="doSearch()">Search</button>
 	</div>
   </div>
   <div id="searchResults" style="max-height:100px;overflow-y:auto;font-size:12px;"></div>
@@ -130,8 +130,3 @@ function togglePanel() {
 </script>
 </body>
 </html>
-
-
-
-
-
