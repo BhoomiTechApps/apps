@@ -745,11 +745,51 @@ async function doSearch() {
   const source = document.getElementById('searchSource')?.value || 'layers';
 
   // --- Nominatim Search via proxy ---
-  if (source === 'nominatim') {
-    try {
-      const res = await fetch(`nominatim_proxy.php?q=${encodeURIComponent(query)}`);
-      const data = await res.json();
+  // --- LocationIQ Search ---
+if (source === 'nominatim') {
+  try {
+    const apiKey = "pk.cbce72b2fb7e176114114fca2cb8fb96"; // <-- put your token here
 
+    const res = await fetch(
+      `https://us1.locationiq.com/v1/search?key=${apiKey}&q=${encodeURIComponent(query)}&format=json&limit=10`
+    );
+
+    if (!res.ok) {
+      throw new Error("LocationIQ request failed");
+    }
+
+    const data = await res.json();
+
+    if (!data || !data.length) {
+      resultsDiv.innerHTML = 'No matches found.';
+      return;
+    }
+
+    data.forEach(item => {
+      const div = document.createElement('div');
+      div.textContent = item.display_name;
+      div.style.cursor = 'pointer';
+
+      div.onclick = () => {
+        const lat = parseFloat(item.lat);
+        const lon = parseFloat(item.lon);
+
+        const marker = L.marker([lat, lon]).addTo(map)
+          .bindPopup(item.display_name)
+          .openPopup();
+
+        activeSearchMarkers.push(marker);
+        map.setView([lat, lon], 15);
+      };
+
+      resultsDiv.appendChild(div);
+    });
+
+  } catch (e) {
+    resultsDiv.innerHTML = 'Error: ' + e.message;
+  }
+}
+//---------------------------------------------------
       if (!data.length) {
         resultsDiv.innerHTML = 'No matches found.';
         return;
@@ -1064,3 +1104,4 @@ async function loadProject(file) {
     alert("Failed to load project file. Check the console for details.");
   }
 }
+
