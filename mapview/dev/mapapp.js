@@ -736,7 +736,11 @@ let activeSearchMarkers = [];
 async function doSearch() {
   const query = document.getElementById('searchText').value.trim();
   const resultsDiv = document.getElementById('searchResults');
-  resultsDiv.innerHTML = '';
+  const btn = document.getElementById('searchBtn');
+  if (!query) return;
+    btn.disabled = true;
+    btn.textContent = "Searching...";
+    resultsDiv.innerHTML = '';
   if (!query) return;
 
   // Clear previous highlights and markers
@@ -744,27 +748,22 @@ async function doSearch() {
 
   const source = document.getElementById('searchSource')?.value || 'layers';
 
-  // --- Nominatim Search via proxy ---
   // --- LocationIQ Search ---
-if (source === 'nominatim') {
+if (source === 'locationiq') {
   try {
     const apiKey = "pk.cbce72b2fb7e176114114fca2cb8fb96"; // <-- put your token here
 
     const res = await fetch(
       `https://us1.locationiq.com/v1/search?key=${apiKey}&q=${encodeURIComponent(query)}&format=json&limit=10`
     );
-
     if (!res.ok) {
       throw new Error("LocationIQ request failed");
     }
-
     const data = await res.json();
-
     if (!data || !data.length) {
       resultsDiv.innerHTML = 'No matches found.';
       return;
     }
-
     data.forEach(item => {
       const div = document.createElement('div');
       div.textContent = item.display_name;
@@ -788,36 +787,9 @@ if (source === 'nominatim') {
   } catch (e) {
     resultsDiv.innerHTML = 'Error: ' + e.message;
   }
+  btn.disabled = false;
+  btn.textContent = "Search";
 }
-//---------------------------------------------------
-      if (!data.length) {
-        resultsDiv.innerHTML = 'No matches found.';
-        return;
-      }
-
-      data.slice(0, 10).forEach(item => {
-        const div = document.createElement('div');
-        div.textContent = item.display_name; // show full display name
-        div.style.cursor = 'pointer';
-        div.onclick = () => {
-          const lat = parseFloat(item.lat);
-          const lon = parseFloat(item.lon);
-
-          // Add marker
-          const marker = L.marker([lat, lon]).addTo(map)
-            .bindPopup(item.display_name)
-            .openPopup();
-          activeSearchMarkers.push(marker);
-
-          // Zoom to result
-          map.setView([lat, lon], 15);
-        };
-        resultsDiv.appendChild(div);
-      });
-    } catch (e) {
-      resultsDiv.innerHTML = 'Error: ' + e.message;
-    }
-  }
 
   // --- Google Geocoding Search ---
   else if (source === 'google') {
@@ -846,6 +818,8 @@ if (source === 'nominatim') {
         resultsDiv.innerHTML = 'No results found or error: ' + status;
       }
     });
+	btn.disabled = false;
+    btn.textContent = "Search";
   }
 
   // --- Search in Loaded Layers ---
@@ -875,6 +849,8 @@ if (source === 'nominatim') {
 
     if (found.length === 0) {
       resultsDiv.innerHTML = 'No matches found in loaded layers.';
+	  btn.disabled = false;
+      btn.textContent = "Search";
       return;
     }
 
@@ -901,6 +877,8 @@ if (source === 'nominatim') {
       };
       resultsDiv.appendChild(div);
     });
+	btn.disabled = false;
+    btn.textContent = "Search";
   }
 }
 
@@ -1104,4 +1082,3 @@ async function loadProject(file) {
     alert("Failed to load project file. Check the console for details.");
   }
 }
-
