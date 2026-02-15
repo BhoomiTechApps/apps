@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BhoomiTech Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+
+  <style>
+    body { margin:0; font-family: Arial; }
+    #map { height:50vh; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { border:1px solid #ccc; padding:8px; }
+    input { width:100%; padding:10px; margin:10px 0; }
+  </style>
+</head>
+<body>
+<button onclick="logout()" style="
+  position:absolute;
+  top:15px;
+  right:20px;
+  padding:8px 14px;
+  background:#c62828;
+  color:white;
+  border:none;
+  border-radius:4px;
+  cursor:pointer;">
+  Logout
+</button>
+
+<h3>BhoomiTech Admin Dashboard</h3>
+
+<input type="text" id="search" placeholder="Search name or phone">
+
+<div id="map"></div>
+
+<button onclick="exportCSV()">Export CSV</button>
+
+<table id="dataTable">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Phone</th>
+      <th>Description</th>
+      <th>Date</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script type="module">
+  import { signOut } 
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { db, auth } from "./firebase.js";
+  import { collection, query, orderBy, onSnapshot }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  let submissions = [];
+
+  // 🌍 Initialize Map
+  const map = L.map('map').setView([20.5937, 78.9629], 5);
+
+  L.tileLayer(
+    'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+    { maxZoom: 20 }
+  ).addTo(map);
+
+  const markers = L.markerClusterGroup();
+  map.addLayer(markers);
+
+  // 🔐 Auth Protection
+  onAuthStateChanged(auth, user => {
+    if (!user) {
+      window.location.href = "login.html";
+    } else {
+      loadDataRealtime();
+    }
+  });
+
+  // 🔥 REAL-TIME DATA LOADER
+  function loadDataRealtime() {
+
+    const q = query(
+      collection(db, "submissions"),
+      orderBy("timestamp", "desc")
+    );
+
+    onSnapshot(q, (snapshot) => {
+
+      submissions = []; // Reset memory
+      markers.clearLayers(); // Clear markers
+
+      const tbody = document.querySelector("#dataTable tbody");
+      tbody.innerHTML = ""; // Clear table
+
+      snapshot.forEach(doc => {
+
+        const data = doc.data();
+        submissions.push(data);
+
+        // 📍 Add Marker
+        if (data.lat && data.lng) {
+          const marker = L.marker([data.lat, data.lng])
+            .bindPopup(`
+              <b>${data.name}</b><br>
+              ${data.phone}<br>
+              ${data.description || ""}
+            `);
+
+          markers.addLayer(marker);
+        }
+
+        // 📋 Add Table Row
+        const row = `
+          <tr>
+            <td>${data.name}</td>
+            <td>${data.phone}</td>
+            <td>${data.description || ""}</td>
+            <td>${data.timestamp?.toDate().toLocaleString() || ""}</td>
+          </tr>
+        `;
+
+        tbody.innerHTML += row;
+      });
+
+      updateSubmissionCount();
+    });
+  }
+
+  // 🔎 SEARCH (Live Filter)
+  document.getElementById("search").addEventListener("input", function () {
+    const term = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#dataTable tbody tr");
+
+    rows.forEach(row => {
+      row.style.display =
+        row.textContent.toLowerCase().includes(term)
+        ? ""
+        : "none";
+    });
+  });
+
+  // 📊 CSV EXPORT
+  window.exportCSV = function () {
+
+    if (submissions.length === 0) {
+      alert("No data to export.");
+      return;
+    }
+
+    let csv = "Name,Phone,Description,Date\n";
+
+    submissions.forEach(s => {
+      const date = s.timestamp?.toDate().toLocaleString() || "";
+      csv += `"${s.name}","${s.phone}","${s.description || ""}","${date}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "bhoomitech-submissions.csv";
+    a.click();
+
+    URL.revokeObjectURL(url);
+  };
+
+  // 📈 Optional: Submission Counter
+  function updateSubmissionCount() {
+    const countEl = document.getElementById("submissionCount");
+    if (countEl) {
+      countEl.innerText = `Total Submissions: ${submissions.length}`;
+    }
+  }
+
+// 📈 Logout
+window.logout = async function () {
+  try {
+    await signOut(auth);
+    alert("Logged out successfully.");
+    window.location.href = "login.html";
+  } catch (error) {
+    alert("Error logging out.");
+    console.error(error);
+  }
+};
+</script>
+
+</body>
+</html>
