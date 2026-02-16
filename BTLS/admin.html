@@ -3,13 +3,10 @@
 <head>
   <title>BhoomiTech Admin Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
   <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
-
   <style>
   body {
     margin: 0;
@@ -63,7 +60,6 @@
     font-size: 16px;
     border-radius: 5px;
   }
-
   button.export-btn {
     padding: 8px 14px;
     margin-bottom: 10px;
@@ -92,11 +88,9 @@
     cursor: pointer;
     font-size: 14px;
   }
-
-.delete-btn:hover {
-  background: #b71c1c; /* slightly darker on hover */
-}
-
+  .delete-btn:hover {
+    background: #b71c1c; /* slightly darker on hover */
+  }
   @media (max-width: 768px) {
     .header-container h3 {
       font-size: 16px;
@@ -107,16 +101,12 @@
     }
   }
 </style>
-
 </head>
-
-
 <body>
 <div class="header-container">
   <h3>BhoomiTech Admin Dashboard</h3>
   <button onclick="logout()">Logout</button>
 </div>
-
 <div class="content">
   <input type="text" id="search" placeholder="Search name or phone">
   <div id="map"></div>
@@ -144,21 +134,14 @@
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-
   let submissions = [];
-
-  // 🌍 Initialize Map
   const map = L.map('map').setView([20.5937, 78.9629], 5);
-
   L.tileLayer(
     'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
     { maxZoom: 20 }
   ).addTo(map);
-
   const markers = L.markerClusterGroup();
   map.addLayer(markers);
-
-  // 🔐 Auth Protection
   onAuthStateChanged(auth, user => {
     if (!user) {
       window.location.href = "login.html";
@@ -167,27 +150,20 @@
     }
   });
 
-  // 🔥 REAL-TIME DATA LOADER
 async function loadDataRealtime() {
   const q = query(
     collection(db, "submissions"),
     orderBy("timestamp", "desc")
   );
-
   onSnapshot(q, (snapshot) => {
-
-    submissions = []; // Reset memory
-    markers.clearLayers(); // Clear markers
-
+    submissions = [];
+    markers.clearLayers();
     const tbody = document.querySelector("#dataTable tbody");
-    tbody.innerHTML = ""; // Clear table
-
+    tbody.innerHTML = "";
     snapshot.forEach(doc => {
       const data = doc.data();
-      const id = doc.id; // Firestore document ID
-      submissions.push({ ...data, id }); // store id for deletion
-
-      // 📍 Add Marker
+      const id = doc.id;
+      submissions.push({ ...data, id });
       if (data.lat && data.lng) {
         const marker = L.marker([data.lat, data.lng])
           .bindPopup(`
@@ -197,8 +173,6 @@ async function loadDataRealtime() {
           `);
         markers.addLayer(marker);
       }
-
-      // 📋 Add Table Row with Delete button
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${data.name}</td>
@@ -210,7 +184,6 @@ async function loadDataRealtime() {
       tbody.appendChild(row);
     });
 
-    // Add click listeners for Delete buttons
 document.querySelectorAll(".delete-btn").forEach(btn => {
   btn.addEventListener("click", async function () {
     const docId = this.dataset.id;
@@ -218,17 +191,13 @@ document.querySelectorAll(".delete-btn").forEach(btn => {
 
     try {
       const record = submissions.find(s => s.id === docId);
-
-      // 1️⃣ Delete image from Firebase Storage if exists
       if (record?.imageUrl) {
-        // Convert full URL to Storage path
         const getStoragePathFromUrl = (url) => {
           const decoded = decodeURIComponent(url);
           const pathStart = decoded.indexOf("/o/") + 3;
           const pathEnd = decoded.indexOf("?");
           return decoded.substring(pathStart, pathEnd);
         };
-
         const storagePath = getStoragePathFromUrl(record.imageUrl);
         if (storagePath) {
           const { getStorage, ref, deleteObject } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js");
@@ -237,26 +206,19 @@ document.querySelectorAll(".delete-btn").forEach(btn => {
           await deleteObject(storageRef).catch(e => console.log("Image already deleted or not found", e));
         }
       }
-
-      // 2️⃣ Delete document from Firestore
         const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
         await deleteDoc(doc(db, "submissions", docId));
-
         alert("Record and image deleted successfully.");
-        // Map and table refresh automatically via onSnapshot
       } catch (error) {
         console.error(error);
         alert("Error deleting record: " + error.message);
       }
     });
   });
-
   updateSubmissionCount();
-
   });
 }
 
-  // 🔎 SEARCH (Live Filter)
   document.getElementById("search").addEventListener("input", function () {
     const term = this.value.toLowerCase();
     const rows = document.querySelectorAll("#dataTable tbody tr");
@@ -269,33 +231,25 @@ document.querySelectorAll(".delete-btn").forEach(btn => {
     });
   });
 
-  // 📊 CSV EXPORT
-  window.exportCSV = function () {
+window.exportCSV = function () {
+  if (submissions.length === 0) {
+    alert("No data to export.");
+    return;
+  }
+  let csv = "Name,Phone,Description,Date,Image URL,Latitude,Longitude\n";
+  submissions.forEach(s => {
+    const date = s.timestamp?.toDate().toLocaleString() || "";
+    csv += `"${s.name}","${s.phone}","${s.description || ""}","${date}","${s.imageUrl || ""}","${s.lat || ""}","${s.lng || ""}"\n`;
+  });
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "bhoomitech-submissions.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+};
 
-    if (submissions.length === 0) {
-      alert("No data to export.");
-      return;
-    }
-
-    let csv = "Name,Phone,Description,Date\n";
-
-    submissions.forEach(s => {
-      const date = s.timestamp?.toDate().toLocaleString() || "";
-      csv += `"${s.name}","${s.phone}","${s.description || ""}","${date}"\n`;
-    });
-
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "bhoomitech-submissions.csv";
-    a.click();
-
-    URL.revokeObjectURL(url);
-  };
-
-  // 📈 Optional: Submission Counter
   function updateSubmissionCount() {
     const countEl = document.getElementById("submissionCount");
     if (countEl) {
@@ -303,7 +257,6 @@ document.querySelectorAll(".delete-btn").forEach(btn => {
     }
   }
 
-// 📈 Logout
 window.logout = async function () {
   try {
     await signOut(auth);
@@ -315,6 +268,5 @@ window.logout = async function () {
   }
 };
 </script>
-
 </body>
 </html>
