@@ -168,9 +168,7 @@ async function loadDataRealtime() {
         const marker = L.marker([data.lat, data.lng])
           .bindPopup(`
             ${data.imageUrl ? `<img src="${data.imageUrl}" alt="${data.name}" style="width:100px; height:auto; margin-top:5px; border-radius:8px;" />` : ""}<br>
-			<b>${data.name}</b><br>
-            ${data.phone}<br>
-            ${data.description || ""}<br>
+			<b>${data.name}</b>
           `);
         markers.addLayer(marker);
       }
@@ -270,3 +268,4 @@ window.logout = async function () {
 </script>
 </body>
 </html>
+
