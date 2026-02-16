@@ -89,8 +89,41 @@
     font-size: 14px;
   }
   .delete-btn:hover {
-    background: #b71c1c; /* slightly darker on hover */
+    background: #b71c1c;
   }
+.custom-cluster {
+  background: rgba(0, 105, 92, 0.85);
+  border-radius: 50%;
+  border: 3px solid white;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.custom-cluster div {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.custom-cluster span {
+  font-size: 16px;
+}
+.custom-cluster-small {
+  width: 40px;
+  height: 40px;
+}
+.custom-cluster-medium {
+  width: 50px;
+  height: 50px;
+}
+.custom-cluster-large {
+  width: 60px;
+  height: 60px;
+}	  
   @media (max-width: 768px) {
     .header-container h3 {
       font-size: 16px;
@@ -140,7 +173,19 @@
     'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
     { maxZoom: 20 }
   ).addTo(map);
-  const markers = L.markerClusterGroup();
+  const markers = L.markerClusterGroup({
+  iconCreateFunction: function (cluster) {
+    const count = cluster.getChildCount();
+    let size = "small";
+    if (count >= 10 && count < 50) size = "medium";
+    if (count >= 50) size = "large";
+    return L.divIcon({
+      html: `<div><span>${count}</span></div>`,
+      className: `custom-cluster custom-cluster-${size}`,
+      iconSize: L.point(50, 50)
+    });
+  }
+});
   map.addLayer(markers);
   onAuthStateChanged(auth, user => {
     if (!user) {
@@ -268,4 +313,5 @@ window.logout = async function () {
 </script>
 </body>
 </html>
+
 
