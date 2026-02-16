@@ -68,7 +68,6 @@
 	background: #00695c;
     font-size: 14px;
 	border-radius: 5px;
-	cursor: pointer;
   }
   table {
     width: 100%;
@@ -168,9 +167,10 @@ async function loadDataRealtime() {
       if (data.lat && data.lng) {
         const marker = L.marker([data.lat, data.lng])
           .bindPopup(`
-            <b>${data.name}</b><br>
+            ${data.imageUrl ? `<img src="${data.imageUrl}" alt="${data.name}" style="width:100px; height:auto; margin-top:5px; border-radius:8px;" />` : ""}<br>
+			<b>${data.name}</b><br>
             ${data.phone}<br>
-            ${data.description || ""}
+            ${data.description || ""}<br>
           `);
         markers.addLayer(marker);
       }
@@ -223,7 +223,6 @@ document.querySelectorAll(".delete-btn").forEach(btn => {
   document.getElementById("search").addEventListener("input", function () {
     const term = this.value.toLowerCase();
     const rows = document.querySelectorAll("#dataTable tbody tr");
-
     rows.forEach(row => {
       row.style.display =
         row.textContent.toLowerCase().includes(term)
@@ -271,4 +270,3 @@ window.logout = async function () {
 </script>
 </body>
 </html>
-
