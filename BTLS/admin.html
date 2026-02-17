@@ -73,11 +73,15 @@
     width: 100%;
     border-collapse: collapse;
     font-size: 13px;
+	table-layout: fixed;
   }
   th, td {
     border: 1px solid #ccc;
     padding: 6px 8px;
     text-align: left;
+	word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
   }
   .delete-btn {
     padding: 6px 10px;
@@ -131,6 +135,12 @@
     .header-container button {
       padding: 6px 10px;
       font-size: 12px;
+    }
+	table {
+      font-size: 12px;
+    }
+	th, td {
+      padding: 5px;
     }
   }
 </style>
