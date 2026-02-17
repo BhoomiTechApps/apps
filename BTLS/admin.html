@@ -155,9 +155,8 @@
   <button onclick="logout()">Logout</button>
 </div>
 <div class="content">
-  <input type="text" id="search" placeholder="Search name or phone">
   <div id="map"></div>
-  <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+  <input type="text" id="search" placeholder="Search name or phone">	
   <table id="dataTable">
     <thead>
       <tr>
@@ -170,6 +169,7 @@
     </thead>
     <tbody></tbody>
   </table>
+  <button class="export-btn" onclick="exportCSV()">Export CSV</button>	
 </div>
 </body>
 
@@ -327,6 +327,7 @@ window.logout = async function () {
 </script>
 </body>
 </html>
+
 
 
 
