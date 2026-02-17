@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>BhoomiTech Admin Dashboard</title>
+  <title>Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
@@ -11,7 +11,7 @@
   body {
     margin: 0;
     font-family: Arial, sans-serif;
-    font-size: 14px; /* smaller text for all content */
+    font-size: 14px;
   }
   .header-container {
     display: flex;
@@ -61,13 +61,7 @@
     border-radius: 5px;
   }
   button.export-btn {
-    padding: 8px 14px;
-    margin-bottom: 10px;
-	color: white;
-	border: none;
 	background: #00695c;
-    font-size: 14px;
-	border-radius: 5px;
   }
   table {
     width: 100%;
@@ -152,6 +146,7 @@
 <body>
 <div class="header-container">
   <h3>BhoomiTech Admin Dashboard</h3>
+  <button class="export-btn" onclick="exportCSV()">Export CSV</button>	
   <button onclick="logout()">Logout</button>
 </div>
 <div class="content">
@@ -169,7 +164,6 @@
     </thead>
     <tbody></tbody>
   </table>
-  <button class="export-btn" onclick="exportCSV()">Export CSV</button>	
 </div>
 </body>
 
@@ -327,6 +321,7 @@ window.logout = async function () {
 </script>
 </body>
 </html>
+
 
 
 
