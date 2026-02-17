@@ -2,16 +2,20 @@
   "name": "BhoomiTech Location Submission",
   "short_name": "BhoomiTech",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#004d40",
   "theme_color": "#004d40",
   "icons": [
     {
       "src": "icon-192.png",
-      "sizes": "32x32",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
       "type": "image/png"
     }
   ]
 }
-
-
