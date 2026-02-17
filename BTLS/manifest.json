@@ -1,7 +1,7 @@
 {
   "name": "BhoomiTech Location Submission",
   "short_name": "BhoomiTech",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#004d40",
   "theme_color": "#004d40",
@@ -13,4 +13,5 @@
     }
   ]
 }
+
 
