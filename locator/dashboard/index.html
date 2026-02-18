@@ -167,7 +167,7 @@
 <script type="module">
   import { signOut } 
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  import { db, auth } from "./firebase.js";
+  import { db, auth } from "firebase.js";
   import { collection, query, orderBy, onSnapshot }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { onAuthStateChanged }
@@ -318,6 +318,7 @@ window.logout = async function () {
 </script>
 </body>
 </html>
+
 
 
 
