@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>BhoomiTech Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+  <style>
+  body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+  }
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background: #f5f5f5;
+    box-sizing: border-box;
+	gap: 10px;
+  }
+  .header-container h3 {
+    margin: 0;
+    text-align: center;
+    flex: 1;
+    font-size: 18px;
+  }
+  .header-container button {
+    padding: 8px 14px;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  input[type="text"],
+  #map,
+  table {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+  }
+  #map {
+    width: 100%;
+    height: 50vh;
+    margin-bottom: 10px;
+	border-radius: 5px;
+  }
+  #search {
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+	table-layout: fixed;
+  }
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px 8px;
+    text-align: left;
+	word-wrap: break-word;
+    word-break: break-word;
+    white-space: normal;
+  }
+  .delete-btn {
+    padding: 6px 10px;
+    background: #c62828;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  .delete-btn:hover {
+    background: #b71c1c;
+  }
+.custom-cluster {
+  background: rgba(0, 105, 92, 0.85);
+  border-radius: 50%;
+  border: 3px solid white;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.custom-cluster div {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.custom-cluster span {
+  font-size: 16px;
+}
+.custom-cluster-small {
+  width: 40px;
+  height: 40px;
+}
+.custom-cluster-medium {
+  width: 50px;
+  height: 50px;
+}
+.custom-cluster-large {
+  width: 60px;
+  height: 60px;
+}	  
+  @media (max-width: 768px) {
+    .header-container h3 {
+      font-size: 16px;
+    }
+    .header-container button {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+	table {
+      font-size: 12px;
+    }
+	th, td {
+      padding: 5px;
+    }
+	.delete-btn {
+    padding: 6px;
+    font-size: 12px;
+  }
+  }
+</style>
+</head>
+<body>
+<div class="header-container">
+  <h3>Admin Dashboard</h3>
+  <button style="background: #00695C;" onclick="exportCSV()">Export CSV</button>	
+  <button style="background: #c62828;" onclick="logout()">Logout</button>
+</div>
+<div class="content">
+  <div id="map"></div>
+  <input type="text" id="search" placeholder="Search name or phone">	
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Description</th>
+        <th>Date</th>
+		<th>Action</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+</body>
+
+<script type="module">
+  import { signOut } 
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { db, auth } from "./firebase.js";
+  import { collection, query, orderBy, onSnapshot }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  let submissions = [];
+  const map = L.map('map').setView([20.5937, 78.9629], 5);
+  L.tileLayer(
+    'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+    { maxZoom: 20 }
+  ).addTo(map);
+  const markers = L.markerClusterGroup({
+  iconCreateFunction: function (cluster) {
+    const count = cluster.getChildCount();
+    let size = "small";
+    if (count >= 10 && count < 50) size = "medium";
+    if (count >= 50) size = "large";
+    return L.divIcon({
+      html: `<div><span>${count}</span></div>`,
+      className: `custom-cluster custom-cluster-${size}`,
+      iconSize: L.point(50, 50)
+    });
+  }
+});
+  map.addLayer(markers);
+  onAuthStateChanged(auth, user => {
+    if (!user) {
+      window.location.href = "login.html";
+    } else {
+      loadDataRealtime();
+    }
+  });
+
+async function loadDataRealtime() {
+  const q = query(
+    collection(db, "submissions"),
+    orderBy("timestamp", "desc")
+  );
+  onSnapshot(q, (snapshot) => {
+    submissions = [];
+    markers.clearLayers();
+    const tbody = document.querySelector("#dataTable tbody");
+    tbody.innerHTML = "";
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const id = doc.id;
+      submissions.push({ ...data, id });
+      if (data.lat && data.lng) {
+        const marker = L.marker([data.lat, data.lng])
+          .bindPopup(`
+            ${data.imageUrl ? `<img src="${data.imageUrl}" alt="${data.name}" style="width:100px; height:auto; margin-top:5px; border-radius:8px;" />` : ""}<br>
+			<b>${data.name}</b>
+          `);
+        markers.addLayer(marker);
+      }
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${data.name}</td>
+        <td>${data.phone}</td>
+        <td>${data.description || ""}</td>
+        <td>${data.timestamp?.toDate().toLocaleString() || ""}</td>
+        <td><button class="delete-btn" data-id="${id}">Delete</button></td>
+      `;
+      tbody.appendChild(row);
+    });
+
+document.querySelectorAll(".delete-btn").forEach(btn => {
+  btn.addEventListener("click", async function () {
+    const docId = this.dataset.id;
+    if (!confirm("Are you sure you want to delete this record?")) return;
+
+    try {
+      const record = submissions.find(s => s.id === docId);
+      if (record?.imageUrl) {
+        const getStoragePathFromUrl = (url) => {
+          const decoded = decodeURIComponent(url);
+          const pathStart = decoded.indexOf("/o/") + 3;
+          const pathEnd = decoded.indexOf("?");
+          return decoded.substring(pathStart, pathEnd);
+        };
+        const storagePath = getStoragePathFromUrl(record.imageUrl);
+        if (storagePath) {
+          const { getStorage, ref, deleteObject } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js");
+          const storage = getStorage();
+          const storageRef = ref(storage, storagePath);
+          await deleteObject(storageRef).catch(e => console.log("Image already deleted or not found", e));
+        }
+      }
+        const { doc, deleteDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+        await deleteDoc(doc(db, "submissions", docId));
+        alert("Record and image deleted successfully.");
+      } catch (error) {
+        console.error(error);
+        alert("Error deleting record: " + error.message);
+      }
+    });
+  });
+  updateSubmissionCount();
+  });
+}
+
+  document.getElementById("search").addEventListener("input", function () {
+    const term = this.value.toLowerCase();
+    const rows = document.querySelectorAll("#dataTable tbody tr");
+    rows.forEach(row => {
+      row.style.display =
+        row.textContent.toLowerCase().includes(term)
+        ? ""
+        : "none";
+    });
+  });
+
+window.exportCSV = function () {
+  if (submissions.length === 0) {
+    alert("No data to export.");
+    return;
+  }
+  let csv = "Name,Phone,Description,Date,Image URL,Latitude,Longitude\n";
+  submissions.forEach(s => {
+    const date = s.timestamp?.toDate().toLocaleString() || "";
+    csv += `"${s.name}","${s.phone}","${s.description || ""}","${date}","${s.imageUrl || ""}","${s.lat || ""}","${s.lng || ""}"\n`;
+  });
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "bhoomitech-submissions.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+  function updateSubmissionCount() {
+    const countEl = document.getElementById("submissionCount");
+    if (countEl) {
+      countEl.innerText = `Total Submissions: ${submissions.length}`;
+    }
+  }
+
+window.logout = async function () {
+  try {
+    await signOut(auth);
+    alert("Logged out successfully.");
+    window.location.href = "login.html";
+  } catch (error) {
+    alert("Error logging out.");
+    console.error(error);
+  }
+};
+</script>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
