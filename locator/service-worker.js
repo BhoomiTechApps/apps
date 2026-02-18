@@ -1,7 +1,12 @@
 const CACHE_NAME = 'locator-cache-v1';
 const urlsToCache = [
   './',
-  './index.html'
+  './index.html',
+  './assets/favicon-BPfJLI-x.ico',
+  './assets/icon-192.png',
+  './assets/index-C81D2Fy4.js',
+  './assets/index-Dke6wNcH.css',
+  './assets/manifest-D_VhgHti.json'
 ];
 
 self.addEventListener('install', (event) => {
@@ -17,4 +22,5 @@ self.addEventListener('fetch', (event) => {
       .then(response => response || fetch(event.request))
   );
 });
+
 
