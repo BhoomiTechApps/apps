@@ -1,13 +1,7 @@
 const CACHE_NAME = 'locator-cache-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/src/main.js',
-  '/src/locator.js',
-  '/src/db.js',
-  '/src/styles.css',
-  '/src/leaflet.js',
-  '/src/leaflet.css'
+  './',
+  './index.html'
 ];
 
 self.addEventListener('install', (event) => {
@@ -23,3 +17,4 @@ self.addEventListener('fetch', (event) => {
       .then(response => response || fetch(event.request))
   );
 });
+
