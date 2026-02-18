@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>BhoomiTech Locator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- PWA -->
+  <link rel="manifest" href="/apps/locator/assets/manifest-D_VhgHti.json">
+  <link rel="icon" href="/apps/locator/assets/favicon-BPfJLI-x.ico" type="image/x-icon">
+  <script type="module" crossorigin src="/apps/locator/assets/index-X9yWTFNS.js"></script>
+  <link rel="stylesheet" crossorigin href="/apps/locator/assets/index-Dke6wNcH.css">
+</head>
+
+<body>
+  <header>
+    BhoomiTech Heritage & Development Foundation
+  </header>
+
+  <div id="map"></div>
+
+  <div class="container">
+    <button onclick="useLocation()">Get Current Location</button>
+
+    <div class="coord-row">
+      <input type="text" id="lat" placeholder="Latitude">
+      <input type="text" id="lng" placeholder="Longitude">
+    </div>
+
+    <input type="text" id="name" placeholder="Your Name">
+    <input type="text" id="phone" placeholder="WhatsApp Number">
+    <textarea id="description" placeholder="Description"></textarea>
+    <input type="file" id="photo" accept="image/*" capture="environment">
+
+    <div style="display:flex; gap:10px;">
+      <button onclick="manualSync()" style="background:#1976d2;">
+        Sync Now
+      </button>
+      <button id="submitBtn" onclick="submitData()" disabled>
+        Submit
+      </button>
+    </div>
+  </div>
+
+  <hr>
+  <div id="status" style="text-align:center;padding:8px;"></div>
+
+  <!-- Vite Entry -->
+</body>
+</html>
