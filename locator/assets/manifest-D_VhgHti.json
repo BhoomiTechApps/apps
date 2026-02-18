@@ -1,8 +1,8 @@
 {
   "name": "BhoomiTech Locator",
   "short_name": "Locator",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "/apps/locator/",
+  "scope": "/apps/locator/",
   "display": "standalone",
   "background_color": "#004d40",
   "theme_color": "#004d40",
@@ -18,4 +18,5 @@
       "type": "image/png"
     }
   ]
+
 }
