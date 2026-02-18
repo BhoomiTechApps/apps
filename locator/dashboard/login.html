@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>BhoomiTech Admin Login</title>
+  <title>Locator Admin Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
@@ -65,7 +65,7 @@
 </head>
 <body>
 <div class="login-container">
-  <h2>BhoomiTech Admin Login</h2>
+  <h2>Locator Dashboard Login</h2>
   <div class="input-row">
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
@@ -73,7 +73,7 @@
   <button onclick="login()">Login</button>
 </div>
 <script type="module">
-import { auth } from "./firebase.js";
+import { auth } from "firebase.js";
 import { signInWithEmailAndPassword } 
 from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 window.login = async function() {
@@ -86,7 +86,7 @@ window.login = async function() {
   try {
     await signInWithEmailAndPassword(auth, email, password);
     alert("Login successful!");
-    window.location.href = "admin.html";
+    window.location.href = "index.html";
   } catch (error) {
     alert(error.message);
   }
@@ -94,3 +94,4 @@ window.login = async function() {
 </script>
 </body>
 </html>
+
