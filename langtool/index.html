@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LangTool - Bishnupriya Manipuri</title>
-
+  <link rel="icon" href="./favicon.ico" type="image/x-icon">
   <link rel="manifest" href="manifest.json" />
   <meta name="theme-color" content="#2c3e50" />
 
@@ -46,64 +46,77 @@
     }
   </script>
   
-  <script type="module">
-  import db from "./services/db.js";
-  import { startRecording, stopRecording } from "./modules/corpus/record.js";
+<script type="module">
+import db from "./services/db.js";
+import { initMicrophone, startRecording, stopRecording } from "./modules/corpus/record.js";
 
-  const recordBtn = document.getElementById("recordBtn");
-  const saveBtn = document.getElementById("saveBtn");
-  const textarea = document.querySelector("textarea");
+const recordBtn = document.getElementById("recordBtn");
+const saveBtn = document.getElementById("saveBtn");
+const textarea = document.querySelector("textarea");
 
-  let audioBlob = null;
-  let isRecording = false;
+let audioBlob = null;
+let isRecording = false;
+let micReady = false;
 
-  async function init() {
-    await db.init();
-    console.log("LangTool DB initialized");
+async function init() {
+  await db.init();
+  console.log("LangTool DB initialized");
+}
+
+init();
+
+recordBtn.addEventListener("click", async () => {
+
+  if (!micReady) {
+    try {
+      await initMicrophone();
+      micReady = true;
+    } catch (err) {
+      alert("Microphone permission required.");
+      return;
+    }
   }
 
-  init();
+  if (!isRecording) {
+    startRecording();
+    recordBtn.textContent = "Stop";
+    isRecording = true;
+  } else {
+    audioBlob = await stopRecording();
+    recordBtn.textContent = "Record";
+    isRecording = false;
+  }
+});
 
-  recordBtn.addEventListener("click", async () => {
-    if (!isRecording) {
-      await startRecording();
-      recordBtn.textContent = "Stop";
-      isRecording = true;
-    } else {
-      audioBlob = await stopRecording();
-      recordBtn.textContent = "Record";
-      isRecording = false;
-    }
-  });
+saveBtn.addEventListener("click", async () => {
 
-  saveBtn.addEventListener("click", async () => {
-    if (!audioBlob) {
-      alert("Please record audio first.");
-      return;
-    }
+  if (!audioBlob) {
+    alert("Please record audio first.");
+    return;
+  }
 
-    const text = textarea.value.trim();
+  const text = textarea.value.trim();
 
-    if (!text) {
-      alert("Please enter text.");
-      return;
-    }
+  if (!text) {
+    alert("Please enter text.");
+    return;
+  }
 
-    const record = {
-      id: crypto.randomUUID(),
-      text: text,
-      audioBlob: audioBlob,
-      createdAt: Date.now(),
-      synced: false
-    };
+  const record = {
+    id: crypto.randomUUID(),
+    text: text,
+    audioBlob: audioBlob,
+    createdAt: Date.now(),
+    synced: false
+  };
 
-    await db.addRecord(record);
+  await db.addRecord(record);
 
-    alert("Record saved!");
+  alert("Record saved!");
 
-    textarea.value = "";
-    audioBlob = null;
-  });
+  textarea.value = "";
+  audioBlob = null;
+});
 </script>
 
 </body>
