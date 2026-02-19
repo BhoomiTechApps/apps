@@ -1,5 +1,6 @@
 // services/db.js
 
+console.log("db.js loaded");
 const DB_NAME = "langtoolDB";
 const DB_VERSION = 1;
 const STORE_NAME = "records";
@@ -10,6 +11,7 @@ class LangToolDB {
   }
 
   async init() {
+	console.log("Initializing DB...");  
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
 
@@ -27,6 +29,7 @@ class LangToolDB {
       };
 
       request.onsuccess = (event) => {
+		console.log("DB opened successfully");  
         this.db = event.target.result;
         resolve();
       };
