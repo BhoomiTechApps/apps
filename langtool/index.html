@@ -45,6 +45,15 @@
         .catch(err => console.error("SW Error:", err));
     }
   </script>
+  <script type="module">
+    import db from "./services/db.js";
+
+    async function initDB() {
+      await db.init();
+      console.log("LangTool DB initialized");
+    }
+    initDB();
+  </script>
 
 </body>
 </html>
