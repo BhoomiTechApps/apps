@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LangTool - Bishnupriya Manipuri</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2c3e50" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      text-align: center;
+    }
+    textarea {
+      width: 90%;
+      height: 120px;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>LangTool</h2>
+  <p>Bishnupriya Manipuri (Assamese Script)</p>
+
+  <textarea placeholder="Enter text here..."></textarea>
+  <br />
+  <button>Record</button>
+  <button>Save</button>
+
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/apps/langtool/sw.js')
+        .then(() => console.log("Service Worker Registered"))
+        .catch(err => console.error("SW Error:", err));
+    }
+  </script>
+
+</body>
+</html>
