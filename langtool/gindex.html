@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LangTool - Bishnupriya Manipuri</title>
+  <link rel="icon" href="./favicon.ico" type="image/x-icon">
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#2c3e50" />
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      text-align: center;
+    }
+    textarea {
+      width: 90%;
+      height: 120px;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>LangTool</h2>
+  <p>Bishnupriya Manipuri (Assamese Script)</p>
+
+  <textarea placeholder="Enter text here..."></textarea>
+  <br />
+  <button id="recordBtn">Record</button>
+  <button id="saveBtn">Save</button>
+  
+  <hr>
+  <h3>Saved Records</h3>
+  <div id="recordsList"></div>
+
+<script>
+  // Register Service Worker
+  //if ('serviceWorker' in navigator) {
+    //navigator.serviceWorker.register('./sw.js')
+      //.then(() => console.log("Service Worker Registered"))
+      //.catch(err => console.error("SW Error:", err));
+  //}
+</script>
+
+<script type="module">
+import db from "./services/db.js";
+import { initMicrophone, startRecording, stopRecording } from "./modules/corpus/record.js";
+
+const recordBtn = document.getElementById("recordBtn");
+const saveBtn = document.getElementById("saveBtn");
+const textarea = document.querySelector("textarea");
+const recordsList = document.getElementById("records-list");
+
+let audioBlob = null;
+let isRecording = false;
+let micReady = false;
+
+async function renderRecords() {
+  const records = await db.getAllRecords();
+
+  recordsList.innerHTML = "";
+
+  if (records.length === 0) {
+    recordsList.innerHTML = "<p>No records yet.</p>";
+    return;
+  }
+
+  records.sort((a, b) => b.createdAt - a.createdAt);
+
+  records.forEach(record => {
+    const container = document.createElement("div");
+    container.style.border = "1px solid #ccc";
+    container.style.padding = "10px";
+    container.style.marginBottom = "10px";
+
+    const text = document.createElement("p");
+    text.textContent = record.text;
+
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.src = URL.createObjectURL(record.audioBlob);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delete";
+
+    deleteBtn.addEventListener("click", async () => {
+      await db.deleteRecord(record.id);
+      await renderRecords();
+    });
+
+    container.appendChild(text);
+    container.appendChild(audio);
+    container.appendChild(deleteBtn);
+
+    recordsList.appendChild(container);
+  });
+}
+
+async function init() {
+  await db.init();
+  console.log("LangTool DB initialized");
+  await renderRecords();
+}
+
+init();
+
+recordBtn.addEventListener("click", async () => {
+
+  if (!micReady) {
+    try {
+      await initMicrophone();
+      micReady = true;
+    } catch (err) {
+      alert("Microphone permission required.");
+      return;
+    }
+  }
+
+  if (!isRecording) {
+    startRecording();
+    recordBtn.textContent = "Stop";
+    isRecording = true;
+  } else {
+    audioBlob = await stopRecording();
+    recordBtn.textContent = "Record";
+    isRecording = false;
+  }
+});
+
+saveBtn.addEventListener("click", async () => {
+
+  if (!audioBlob) {
+    alert("Please record audio first.");
+    return;
+  }
+
+  const text = textarea.value.trim();
+
+  if (!text) {
+    alert("Please enter text.");
+    return;
+  }
+
+  const record = {
+    id: crypto.randomUUID(),
+    text: text,
+    audioBlob: audioBlob,
+    createdAt: Date.now(),
+    synced: false
+  };
+
+  await db.addRecord(record);
+
+  textarea.value = "";
+  audioBlob = null;
+
+  await renderRecords();
+
+  alert("Record saved!");
+});
+</script>
+
+</body>
+</html>

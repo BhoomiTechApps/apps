@@ -1,0 +1,15 @@
+<!-- modules/corpus/corpus.html -->
+<div class="record-card" data-id="{{id}}">
+  <p class="record-text">{{text}}</p>
+  <audio controls src="{{audioUrl}}"></audio>
+  <div class="record-actions">
+    <button class="re-record-btn">Re-record</button>
+    <button class="delete-btn">Delete</button>
+	<button class="sync-btn">Sync</button>
+	<button class="export-btn">Export</button>
+  </div>
+  <div class="meta">
+    <span>{{createdAt}}</span>
+    <span>{{syncStatus}}</span>
+  </div>
+</div>
