@@ -32,6 +32,15 @@
   <h3>Saved Records</h3>
   <div id="records-list"></div>
 <div id="pagination-controls" style="margin-top:10px;"></div>
+  
+  <script>
+  // Register Service Worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log("Service Worker Registered"))
+      .catch(err => console.error("SW Error:", err));
+  }
+</script>
 
   <script type="module">
     import { initCorpusModule, startRecording, stopRecording, initMicrophone, addNewRecord } from "./modules/corpus/record.js";
