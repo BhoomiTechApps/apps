@@ -41,13 +41,13 @@
   <h3>Saved Records</h3>
   <div id="recordsList"></div>
 
-<script>  //--------------- Temporaily off
+<script>
   // Register Service Worker
-  //if ('serviceWorker' in navigator) { //--------------- Temporaily off
-    //navigator.serviceWorker.register('./sw.js') //--------------- Temporaily off
-      //.then(() => console.log("Service Worker Registered"))  //--------------- Temporaily off
-      //.catch(err => console.error("SW Error:", err));  //--------------- Temporaily off
-  //}  //--------------- Temporaily off
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log("Service Worker Registered"))
+      .catch(err => console.error("SW Error:", err));
+  }
 </script>
 
 <script type="module">
