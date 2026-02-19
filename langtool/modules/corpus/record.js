@@ -35,8 +35,15 @@ export function startRecording() {
 export function stopRecording() {
   return new Promise((resolve) => {
     mediaRecorder.onstop = () => {
-      const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+
+      const audioBlob = new Blob(audioChunks, {
+        type: mediaRecorder.mimeType
+      });
+
       console.log("Recording stopped");
+      console.log("Blob type:", audioBlob.type);
+      console.log("Blob size:", audioBlob.size);
+
       resolve(audioBlob);
     };
 

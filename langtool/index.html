@@ -36,16 +36,20 @@
   <br />
   <button id="recordBtn">Record</button>
   <button id="saveBtn">Save</button>
-
-  <script>
-    // Register Service Worker
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/apps/langtool/sw.js')
-        .then(() => console.log("Service Worker Registered"))
-        .catch(err => console.error("SW Error:", err));
-    }
-  </script>
   
+  <hr>
+  <h3>Saved Records</h3>
+  <div id="recordsList"></div>
+
+<script>  //--------------- Temporaily off
+  // Register Service Worker
+  //if ('serviceWorker' in navigator) { //--------------- Temporaily off
+    //navigator.serviceWorker.register('./sw.js') //--------------- Temporaily off
+      //.then(() => console.log("Service Worker Registered"))  //--------------- Temporaily off
+      //.catch(err => console.error("SW Error:", err));  //--------------- Temporaily off
+  //}  //--------------- Temporaily off
+</script>
+
 <script type="module">
 import db from "./services/db.js";
 import { initMicrophone, startRecording, stopRecording } from "./modules/corpus/record.js";
@@ -53,14 +57,57 @@ import { initMicrophone, startRecording, stopRecording } from "./modules/corpus/
 const recordBtn = document.getElementById("recordBtn");
 const saveBtn = document.getElementById("saveBtn");
 const textarea = document.querySelector("textarea");
+const recordsList = document.getElementById("recordsList");
 
 let audioBlob = null;
 let isRecording = false;
 let micReady = false;
 
+async function renderRecords() {
+  const records = await db.getAllRecords();
+
+  recordsList.innerHTML = "";
+
+  if (records.length === 0) {
+    recordsList.innerHTML = "<p>No records yet.</p>";
+    return;
+  }
+
+  records.sort((a, b) => b.createdAt - a.createdAt);
+
+  records.forEach(record => {
+    const container = document.createElement("div");
+    container.style.border = "1px solid #ccc";
+    container.style.padding = "10px";
+    container.style.marginBottom = "10px";
+
+    const text = document.createElement("p");
+    text.textContent = record.text;
+
+    const audio = document.createElement("audio");
+    audio.controls = true;
+    audio.src = URL.createObjectURL(record.audioBlob);
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.textContent = "Delete";
+
+    deleteBtn.addEventListener("click", async () => {
+      await db.deleteRecord(record.id);
+      await renderRecords();
+    });
+
+    container.appendChild(text);
+    container.appendChild(audio);
+    container.appendChild(deleteBtn);
+
+    recordsList.appendChild(container);
+  });
+}
+
 async function init() {
   await db.init();
   console.log("LangTool DB initialized");
+  await renderRecords();
 }
 
 init();
@@ -112,10 +159,12 @@ saveBtn.addEventListener("click", async () => {
 
   await db.addRecord(record);
 
-  alert("Record saved!");
-
   textarea.value = "";
   audioBlob = null;
+
+  await renderRecords();
+
+  alert("Record saved!");
 });
 </script>
 
