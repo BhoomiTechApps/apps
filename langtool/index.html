@@ -34,8 +34,8 @@
 
   <textarea placeholder="Enter text here..."></textarea>
   <br />
-  <button>Record</button>
-  <button>Save</button>
+  <button id="recordBtn">Record</button>
+  <button id="saveBtn">Save</button>
 
   <script>
     // Register Service Worker
@@ -45,15 +45,66 @@
         .catch(err => console.error("SW Error:", err));
     }
   </script>
+  
   <script type="module">
-    import db from "./services/db.js";
+  import db from "./services/db.js";
+  import { startRecording, stopRecording } from "./modules/corpus/record.js";
 
-    async function initDB() {
-      await db.init();
-      console.log("LangTool DB initialized");
+  const recordBtn = document.getElementById("recordBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const textarea = document.querySelector("textarea");
+
+  let audioBlob = null;
+  let isRecording = false;
+
+  async function init() {
+    await db.init();
+    console.log("LangTool DB initialized");
+  }
+
+  init();
+
+  recordBtn.addEventListener("click", async () => {
+    if (!isRecording) {
+      await startRecording();
+      recordBtn.textContent = "Stop";
+      isRecording = true;
+    } else {
+      audioBlob = await stopRecording();
+      recordBtn.textContent = "Record";
+      isRecording = false;
     }
-    initDB();
-  </script>
+  });
+
+  saveBtn.addEventListener("click", async () => {
+    if (!audioBlob) {
+      alert("Please record audio first.");
+      return;
+    }
+
+    const text = textarea.value.trim();
+
+    if (!text) {
+      alert("Please enter text.");
+      return;
+    }
+
+    const record = {
+      id: crypto.randomUUID(),
+      text: text,
+      audioBlob: audioBlob,
+      createdAt: Date.now(),
+      synced: false
+    };
+
+    await db.addRecord(record);
+
+    alert("Record saved!");
+
+    textarea.value = "";
+    audioBlob = null;
+  });
+</script>
 
 </body>
 </html>
