@@ -1,13 +1,27 @@
 // modules/corpus/record.js
 
-let mediaRecorder;
+let mediaRecorder = null;
 let audioChunks = [];
+let stream = null;
 
-export async function startRecording() {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+export async function initMicrophone() {
+  if (stream) return; // already initialized
+
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    console.log("Microphone initialized");
+  } catch (err) {
+    console.error("Microphone permission denied", err);
+    throw new Error("Microphone access denied");
+  }
+}
+
+export function startRecording() {
+  if (!stream) {
+    throw new Error("Microphone not initialized");
+  }
 
   mediaRecorder = new MediaRecorder(stream);
-
   audioChunks = [];
 
   mediaRecorder.ondataavailable = (event) => {
