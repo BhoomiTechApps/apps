@@ -1,8 +1,8 @@
 {
   "name": "Bishnupriya Manipuri IME",
   "short_name": "Bishnupriya IME",
-  "start_url": "/apps/langtool/index.html",
-  "scope": "/apps/langtool/",
+  "start_url": "/apps/bmlt/index.html",
+  "scope": "/apps/bmlt/",
   "display": "standalone",
   "background_color": "#f9f9f9",
   "theme_color": "#007acc",
