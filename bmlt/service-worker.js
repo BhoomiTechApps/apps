@@ -1,4 +1,4 @@
-const CACHE_NAME = 'bmlt-cache-v2';
+const CACHE_NAME = 'bmlt-cache-v1';
 const FILES_TO_CACHE = [
   '/apps/bmlt/index.html',
   '/apps/bmlt/manifest.json',
@@ -35,4 +35,5 @@ self.addEventListener('fetch', (evt) => {
     caches.match(evt.request).then(resp => resp || fetch(evt.request))
   );
 });
+
 
