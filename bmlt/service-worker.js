@@ -9,7 +9,7 @@ const FILES_TO_CACHE = [
   '/apps/bmlt/modules/ime/ime.js',
   '/apps/bmlt/favicon.ico',
   '/apps/bmlt/icon-192.png',
-  '/apps/bmlt/icon-512.png'
+  '/apps/bmlt/icon-512.png',
 ];
 
 self.addEventListener('install', (evt) => {
@@ -35,6 +35,7 @@ self.addEventListener('fetch', (evt) => {
     caches.match(evt.request).then(resp => resp || fetch(evt.request))
   );
 });
+
 
 
 
