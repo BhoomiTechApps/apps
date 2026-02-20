@@ -1,0 +1,13 @@
+{
+  "name": "Bishnupriya Manipuri IME",
+  "short_name": "Bishnupriya IME",
+  "start_url": "/apps/langtool/index.html",
+  "scope": "/apps/langtool/",
+  "display": "standalone",
+  "background_color": "#f9f9f9",
+  "theme_color": "#007acc",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
