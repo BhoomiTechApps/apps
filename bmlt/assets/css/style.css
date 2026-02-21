@@ -72,7 +72,7 @@ button:hover {
   background: #005f99;
 }
 
-/* MOBILE --------------------
+/* MOBILE --------------------*/
 @media(max-width: 480px) {
   .container {
     width: 100%;
