@@ -5,39 +5,44 @@ const saveBtn = document.getElementById('saveBtn');
 const exportBtn = document.getElementById('exportBtn');
 const clearBtn = document.getElementById('clearBtn');
 
-inputArea.addEventListener('input', () => {
+inputArea.addEventListener('input', (e) => {
   const cursorPos = inputArea.selectionStart;
   const text = inputArea.value;
-
   const lastChar = text[cursorPos - 1];
-  if (lastChar === ' ' || /[.,!?;:]/.test(lastChar)) {
 
+  const isWhitespace = /\s/.test(lastChar);
+  const isPunctuation = /[.,!?;:]/.test(lastChar);
+
+  if (isWhitespace || isPunctuation) {
     const regex = /(\S+|\s+|[.,!?;:])/g;
-    let match;
-    const tokens = [];
-    let tokenEnd = 0;
+    const tokens = text.match(regex) || [];
 
-    while ((match = regex.exec(text)) !== null) {
-      tokens.push(match[0]);
-      tokenEnd = regex.lastIndex;
+    let lastWordIndex = -1;
+    let currentPos = 0;
+
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      const isWord = !/^\s*$/.test(token) && !/^[.,!?;:]$/.test(token);
+      
+      if (currentPos + token.length <= cursorPos) {
+        if (isWord) lastWordIndex = i;
+      }
+      currentPos += token.length;
     }
 
-    let lastWordIndex = tokens.length - 2;
-    while (lastWordIndex >= 0 && /^\s*$/.test(tokens[lastWordIndex] || '') || /^[.,!?;:]$/.test(tokens[lastWordIndex] || '')) {
-      lastWordIndex--;
-    }
-
-    if (lastWordIndex >= 0) {
+    if (lastWordIndex !== -1) {
       const lastWord = tokens[lastWordIndex];
       const transliterated = transliterate(lastWord);
-      tokens[lastWordIndex] = transliterated;
+      
+      if (transliterated !== lastWord) {
+        tokens[lastWordIndex] = transliterated;
+        const newText = tokens.join('');
+        inputArea.value = newText;
 
-      const newText = tokens.join('');
-      inputArea.value = newText;
-
-      const charsUpToCursor = text.slice(0, cursorPos);
-      let newCursor = transliterateCursorPosition(lastWordIndex, tokens, charsUpToCursor);
-      inputArea.selectionStart = inputArea.selectionEnd = newCursor;
+        const charsUpToCursor = text.slice(0, cursorPos);
+        let newCursor = transliterateCursorPosition(lastWordIndex, tokens, charsUpToCursor);
+        inputArea.selectionStart = inputArea.selectionEnd = newCursor;
+      }
     }
   }
 });
