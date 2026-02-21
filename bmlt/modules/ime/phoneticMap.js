@@ -112,4 +112,3 @@ export const numberRules = [
   ["9", "৯"],
   ["0", "০"]
 ];
-
