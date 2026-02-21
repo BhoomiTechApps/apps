@@ -30,16 +30,16 @@ main {
 }
 
 .container {
-  width: 100%;           /* default desktop width */
+  width: 100%;
   max-width: 800px;
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin: 0 auto;       /* center on desktop */
+  margin: 0 auto;
 }
 
 textarea {
-  width: 100%;           /* fill container width */
+  width: 100%;
   min-height: 400px;
   font-size: 1.2rem;
   padding: 1rem;
@@ -72,10 +72,13 @@ button:hover {
   background: #005f99;
 }
 
-/* MOBILE: full width textarea/container */
+/* MOBILE --------------------
 @media(max-width: 480px) {
   .container {
     width: 100%;
+    max-width: 400px;
+    min-height: 400px;
+    margin: 0 auto;
   }
   textarea {
     font-size: 1rem;
