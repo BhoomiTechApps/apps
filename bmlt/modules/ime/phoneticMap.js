@@ -38,6 +38,7 @@ export const consonantRules = [
   ["ssh", "ষ"],
   ["kkh", "ক্ষ"],
   ["t``", "ৎ"],
+  ["t'", "ৎ"],
   ["Sh", "ষ"],
   ["kh", "খ"],
   ["gh", "ঘ"],
@@ -111,3 +112,4 @@ export const numberRules = [
   ["9", "৯"],
   ["0", "০"]
 ];
+
