@@ -30,7 +30,7 @@ main {
 }
 
 .container {
-  width: 75%;           /* default desktop width */
+  width: 100%;           /* default desktop width */
   max-width: 800px;
   display: flex;
   flex-direction: column;
@@ -40,7 +40,7 @@ main {
 
 textarea {
   width: 100%;           /* fill container width */
-  min-height: 200px;
+  min-height: 400px;
   font-size: 1.2rem;
   padding: 1rem;
   border-radius: 8px;
@@ -76,7 +76,6 @@ button:hover {
 @media(max-width: 480px) {
   .container {
     width: 100%;
-    padding: 0 0.5rem;
   }
   textarea {
     font-size: 1rem;
