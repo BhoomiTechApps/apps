@@ -5,11 +5,17 @@ const FILES_TO_CACHE = [
   '/apps/bmlt/assets/css/style.css',
   '/apps/bmlt/assets/js/main.js',
   '/apps/bmlt/modules/ime/transliterator.js',
+  '/apps/bmlt/modules/ime/reverse.js',
+  '/apps/bmlt/modules/ime/reverseMap.js',
+  '/apps/bmlt/modules/ime/utils.js',
   '/apps/bmlt/modules/ime/phoneticMap.js',
   '/apps/bmlt/modules/ime/ime.js',
+  '/apps/bmlt/assets/fonts/Kaliprasad.ttf',
+  '/apps/bmlt/assets/fonts/NotoSansBengali-Regular.ttf',
+  '/apps/bmlt/assets/fonts/NotoSansBengali-Bold.ttf',
   '/apps/bmlt/favicon.ico',
   '/apps/bmlt/icon-192.png',
-  '/apps/bmlt/icon-512.png' // Removed the comma here
+  '/apps/bmlt/icon-512.png'
 ];
 
 self.addEventListener('install', (evt) => {
