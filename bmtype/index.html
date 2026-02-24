@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bishnupriya Manipuri IME</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="favicon.ico" type="image/x-icon">
+<!-- <link rel="stylesheet" href="assets/css/style-kp.css"> -->
+<link rel="stylesheet" href="assets/css/style-noto.css">
+</head>
+<body>
+<header>Bishnupriya Manipuri IME</header>
+<main>
+  <div class="container">
+    <div class="textarea-wrapper" style="position: relative;">
+      <textarea id="input" placeholder="Type Roman script here..."></textarea>
+      
+      <div id="ligature-prompt" class="ligature-prompt hidden">
+        <span class="prompt-text">Form ligature?</span>
+        <button id="accept-ligature" title="Press Tab to accept"></button>
+        <span class="hint">Tab ↹</span>
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button id="helpBtn">Help</button>
+      <button id="saveBtn">Save</button>
+      <button id="exportBtn">Export</button>
+      <button id="clearBtn">Clear</button>
+    </div>
+
+    <div class="reverse-wrapper">
+      <label for="reverseOutput">Reverse Logic View:</label>
+      <textarea id="reverseOutput" readonly placeholder="Reversed Roman script will appear here..."></textarea>
+    </div>
+  </div>
+</main>
+
+<div id="helpModal" class="modal">
+  <div class="modal-content">
+    <button id="closeHelpModal" class="close-btn">✕</button>
+    <div id="helpContainer" class="modal-body"></div>
+  </div>
+</div>
+
+<script type="module" src="modules/ime/phoneticMap.js"></script>
+<script type="module" src="modules/ime/transliterator.js"></script>
+<script type="module" src="modules/ime/ime.js"></script>
+<script type="module" src="modules/ime/reverseMap.js"></script>
+<script type="module" src="modules/ime/reverse.js"></script>
+<script type="module" src="modules/ime/utils.js"></script>
+<script type="module" src="assets/js/main.js"></script>
+</body>
+</html>
