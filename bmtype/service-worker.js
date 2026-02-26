@@ -1,21 +1,23 @@
-const CACHE_NAME = 'bmlt-cache-v1';
+const CACHE_NAME = 'bmtype-cache-v1';
 const FILES_TO_CACHE = [
-  '/apps/bmlt/index.html',
-  '/apps/bmlt/manifest.json',
-  '/apps/bmlt/assets/css/style.css',
-  '/apps/bmlt/assets/js/main.js',
-  '/apps/bmlt/modules/ime/transliterator.js',
-  '/apps/bmlt/modules/ime/reverse.js',
-  '/apps/bmlt/modules/ime/reverseMap.js',
-  '/apps/bmlt/modules/ime/utils.js',
-  '/apps/bmlt/modules/ime/phoneticMap.js',
-  '/apps/bmlt/modules/ime/ime.js',
-  '/apps/bmlt/assets/fonts/Kaliprasad.ttf',
-  '/apps/bmlt/assets/fonts/NotoSansBengali-Regular.ttf', // Add this line
-  '/apps/bmlt/assets/fonts/NotoSansBengali-Bold.ttf', // Add this line
-  '/apps/bmlt/favicon.ico',
-  '/apps/bmlt/icon-192.png',
-  '/apps/bmlt/icon-512.png' // Removed the comma here
+  '/apps/bmtype/index.html',
+  '/apps/bmtype/manifest.json',
+  '/apps/bmtype/assets/css/style-kp.css',
+  '/apps/bmtype/assets/css/style-noto.css',
+  '/apps/bmtype/assets/js/main.js',
+  '/apps/bmtype/modules/ime/transliterator.js',
+  '/apps/bmtype/modules/ime/reverse.js',
+  '/apps/bmtype/modules/ime/reverseMap.js',
+  '/apps/bmtype/modules/ime/utils.js',
+  '/apps/bmtype/modules/ime/phoneticMap.js',
+  '/apps/bmtype/modules/ime/ime.js',
+  '/apps/bmtype/modules/recording/recording.js';
+  '/apps/bmtype/assets/fonts/Kaliprasad.ttf',
+  '/apps/bmtype/assets/fonts/NotoSansBengali-Regular.ttf',
+  '/appsbmtype/assets/fonts/NotoSansBengali-Bold.ttf',
+  '/apps/bmtype/favicon.ico',
+  '/apps/bmtype/icon-192.png',
+  '/apps/bmtype/icon-512.png'
 ];
 
 self.addEventListener('install', (evt) => {
