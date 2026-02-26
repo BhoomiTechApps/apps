@@ -24,10 +24,12 @@
         <div class="rec-controls">
           <button id="startRec">🎤</button>
           <button id="stopRec" disabled>⏹️</button>
-		  <audio id="audioPreview" controls></audio>
+		  <canvas id="audioVisualizer"></canvas>
         </div>
-		<canvas id="audioVisualizer"></canvas>
       </div>
+	<div align="center">  
+	  <audio id="audioPreview" controls></audio> 
+    </div>		
     <div class="reverse-wrapper">
       <textarea id="reverseOutput" readonly placeholder="Reversed Roman script will appear here..."></textarea>
     </div>
