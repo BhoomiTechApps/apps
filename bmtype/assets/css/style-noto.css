@@ -1,5 +1,4 @@
 /* assets/styles/fonts.css */
-
 @font-face {
   font-family: 'Noto Sans Assamese';
   src: url('../fonts/NotoSansBengali-Regular.ttf') format('truetype');
@@ -7,7 +6,6 @@
   font-style: normal;
   font-display: swap; 
 }
-
 @font-face {
   font-family: 'Noto Sans Assamese';
   src: url('../fonts/NotoSansBengali-Bold.ttf') format('truetype');
@@ -15,7 +13,6 @@
   font-style: normal;
   font-display: swap;
 }
-
 .transliteration-output {
   font-family: 'Noto Sans Assamese', sans-serif;
   font-size: 16px;
@@ -27,7 +24,6 @@
 * {
   box-sizing: border-box;
 }
-
 body {
   margin: 0;
   font-family: 'Noto Sans Assamese', sans-serif;
@@ -37,7 +33,6 @@ body {
   flex-direction: column;
   min-height: 100vh;
 }
-
 header {
   background: #007acc;
   color: white;
@@ -54,7 +49,6 @@ main {
   align-items: flex-start;
   padding: 1rem;
 }
-
 .container {
   width: 100%;
   max-width: 800px;
@@ -63,10 +57,9 @@ main {
   gap: 1rem;
   margin: 0 auto;
 }
-
 textarea {
   width: 100%;
-  min-height: 200px;
+  min-height: 150px;
   font-size: 16px;
   padding: 1rem;
   border-radius: 8px;
@@ -75,42 +68,36 @@ textarea {
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
   caret-color: black;
 }
-
 .buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
   justify-content: flex-end;
 }
-
 button {
-  padding: 0.6rem 1.2rem;
+  padding: 6px 12px;
   border: none;
-  border-radius: 6px;
+  border-radius: 5px;
   background: #007acc;
   color: white;
-  font-size: 1rem;
+  font-size: 13px;
   cursor: pointer;
   transition: background 0.2s;
 }
-
 button:hover {
   background: #005f99;
 }
-
 .reverse-wrapper {
   margin-top: 20px;
   display: flex;
   flex-direction: column;
 }
-
 .reverse-wrapper label {
   font-size: 0.9rem;
   color: #666;
   margin-bottom: 5px;
   font-family: sans-serif;
 }
-
 #reverseOutput {
   width: 100%;
   height: 100px;
@@ -122,63 +109,11 @@ button:hover {
   font-family: 'Courier New', Courier, monospace;
   resize: none;
 }
-
-/* Ligature Prompt Styling */
-.textarea-wrapper {
-    position: relative;
-}
-
-.ligature-prompt {
-    position: absolute;
-    bottom: 10px; /* Positioned inside the bottom of the textarea */
-    right: 15px;
-    background: #2c3e50;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    font-family: Arial, sans-serif;
-    transition: opacity 0.2s;
-    z-index: 10;
-}
-
-.ligature-prompt.hidden {
-    display: none;
-    opacity: 0;
-}
-
-#accept-ligature {
-    background: #27ae60;
-    border: none;
-    color: white;
-    padding: 4px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1.1em;
-    font-weight: bold;
-}
-
-#accept-ligature:hover {
-    background: #2ecc71;
-}
-
-.hint {
-    font-size: 0.75em;
-    color: #bdc3c7;
-    border: 1px solid #7f8c8d;
-    padding: 1px 4px;
-    border-radius: 3px;
-}
-
-/* MOBILE --------------------*/
 @media(max-width: 480px) {
   .container {
     width: 100%;
     max-width: 400px;
-    min-height: 200px;
+    min-height: 150px;
     margin: 0 auto;
   }
   textarea {
@@ -189,8 +124,6 @@ button:hover {
     padding: 0.5rem 1rem;
   }
 }
-
-/* MODAL --------------------*/
 .modal {
   display: none;
   position: fixed;
@@ -200,7 +133,6 @@ button:hover {
   align-items: center;
   z-index: 9999;
 }
-
 .modal-content {
   position: relative;
   width: 90%;
@@ -212,7 +144,6 @@ button:hover {
   flex-direction: column;
   overflow: hidden;
 }
-
 .close-btn {
   position: absolute;
   top: 8px;
@@ -225,39 +156,62 @@ button:hover {
   border-radius: 4px;
   z-index: 2;
 }
-
 .modal-body {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
   overflow-x: hidden;
 }
-
-/* MODAL TABLE --------------------*/
 .table-container {
   overflow-x: auto;
   background: #fff;
   padding: 15px;
   border-radius: 8px;
 }
-
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
 }
-
 th, td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: center;
 }
-
 th {
   background: #222;
   color: #fff;
 }
-
 tr:nth-child(even) {
   background: #f2f2f2;
+}
+.recorder-bar {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+.rec-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#audioPreview {
+  height: 32px;
+}
+#audioVisualizer {
+  flex: 1;
+  height: 26px;
+  background: transparent;
+  border: solid 1px;
+  border-color: #007acc;
+  border-radius: 5px;
 }
