@@ -1,23 +1,23 @@
 const CACHE_NAME = 'bmtype-cache-v1';
 const FILES_TO_CACHE = [
-  '/apps/bmtype/index.html',
-  '/apps/bmtype/manifest.json',
-  '/apps/bmtype/assets/css/style-kp.css',
-  '/apps/bmtype/assets/css/style-noto.css',
-  '/apps/bmtype/assets/js/main.js',
-  '/apps/bmtype/modules/ime/transliterator.js',
-  '/apps/bmtype/modules/ime/reverse.js',
-  '/apps/bmtype/modules/ime/reverseMap.js',
-  '/apps/bmtype/modules/ime/utils.js',
-  '/apps/bmtype/modules/ime/phoneticMap.js',
-  '/apps/bmtype/modules/ime/ime.js',
-  '/apps/bmtype/modules/recording/recording.js';
-  '/apps/bmtype/assets/fonts/Kaliprasad.ttf',
-  '/apps/bmtype/assets/fonts/NotoSansBengali-Regular.ttf',
-  '/appsbmtype/assets/fonts/NotoSansBengali-Bold.ttf',
-  '/apps/bmtype/favicon.ico',
-  '/apps/bmtype/icon-192.png',
-  '/apps/bmtype/icon-512.png'
+  './index.html',
+  './manifest.json',
+  './assets/css/style-kp.css',
+  './assets/css/style-noto.css',
+  './assets/js/main.js',
+  './modules/ime/transliterator.js',
+  './modules/ime/reverse.js',
+  './modules/ime/reverseMap.js',
+  './modules/ime/utils.js',
+  './modules/ime/phoneticMap.js',
+  './modules/ime/ime.js',
+  './modules/recording/recording.js';
+  './assets/fonts/Kaliprasad.ttf',
+  './assets/fonts/NotoSansBengali-Regular.ttf',
+  './assets/fonts/NotoSansBengali-Bold.ttf',
+  './favicon.ico',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 self.addEventListener('install', (evt) => {
@@ -43,3 +43,4 @@ self.addEventListener('fetch', (evt) => {
     caches.match(evt.request).then(resp => resp || fetch(evt.request))
   );
 });
+
