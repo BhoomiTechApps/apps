@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bishnupriya Manipuri IME - Demo</title>
+<title>Bishnupriya Manipuri IME</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
 <!-- <link rel="stylesheet" href="assets/css/style-kp.css"> -->
@@ -13,37 +13,36 @@
 <header>Bishnupriya Manipuri IME</header>
 <main>
   <div class="container">
-    <div class="textarea-wrapper" style="position: relative;">
-      <textarea id="input" placeholder="Type Roman script here..."></textarea>
-      
-      <div id="ligature-prompt" class="ligature-prompt hidden">
-        <span class="prompt-text">Form ligature?</span>
-        <button id="accept-ligature" title="Press Tab to accept"></button>
-        <span class="hint">Tab ↹</span>
-      </div>
-    </div>
-
     <div class="buttons">
-      <button id="helpBtn">Help</button>
-      <button id="saveBtn">Save</button>
-      <button id="exportBtn">Export</button>
-      <button id="clearBtn">Clear</button>
+	  <button id="clearBtn">Clear</button>
+      <button id="exportBtn">Export Vernacular Script</button>
+	  <button id="helpBtn">Help</button>
     </div>
-
+    <div class="textarea-wrapper" style="position: relative;">
+      <textarea style="margin-top: -10px;" id="input" placeholder="Type Roman script here..."></textarea>
+    </div>	
     <div class="reverse-wrapper">
-      <label for="reverseOutput">Reverse Logic View:</label>
-      <textarea id="reverseOutput" readonly placeholder="Reversed Roman script will appear here..."></textarea>
+	  <div class="buttons">
+        <button id="exportRBtn">Export Roman Script</button>
+      </div>
+      <textarea style="margin-top: 5px;" id="reverseOutput" readonly placeholder="Reversed Roman script will appear here..."></textarea>
+	  <div id="recorderBar" class="recorder-bar hidden">
+        <div class="rec-controls">
+          <button id="startRec">Start</button>
+		  <canvas id="audioVisualizer"></canvas>
+          <button id="stopRec" disabled>Stop</button>
+		  <audio id="audioPreview" controls></audio>
+        </div>
     </div>
   </div>
+  <button id="uploadBtn">Submit Scripts & Recording</button>
 </main>
-
 <div id="helpModal" class="modal">
   <div class="modal-content">
     <button id="closeHelpModal" class="close-btn">✕</button>
     <div id="helpContainer" class="modal-body"></div>
   </div>
 </div>
-
 <script type="module" src="modules/ime/phoneticMap.js"></script>
 <script type="module" src="modules/ime/transliterator.js"></script>
 <script type="module" src="modules/ime/ime.js"></script>
@@ -51,7 +50,6 @@
 <script type="module" src="modules/ime/reverse.js"></script>
 <script type="module" src="modules/ime/utils.js"></script>
 <script type="module" src="assets/js/main.js"></script>
+<script type="module" src="modules/recorder/recorder.js"></script>
 </body>
-
 </html>
-
