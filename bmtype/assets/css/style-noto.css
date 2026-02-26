@@ -189,6 +189,7 @@ tr:nth-child(even) {
 #audioVisualizer {
   flex: 1;
   height: 26px;
+  width: 100px;
   background: transparent;
   border: solid 1px;
   border-color: #007acc;
@@ -210,3 +211,4 @@ tr:nth-child(even) {
     padding: 0.5rem 1rem;
   }
 }
+
