@@ -15,26 +15,22 @@
   <div class="container">
     <div class="buttons">
 	  <button id="clearBtn">Clear</button>
-      <button id="exportBtn">Export Vernacular Script</button>
 	  <button id="helpBtn">Help</button>
     </div>
     <div class="textarea-wrapper" style="position: relative;">
-      <textarea style="margin-top: -10px;" id="input" placeholder="Type Roman script here..."></textarea>
-    </div>	
-    <div class="reverse-wrapper">
-	  <div class="buttons">
-        <button id="exportRBtn">Export Roman Script</button>
-      </div>
-      <textarea style="margin-top: 5px;" id="reverseOutput" readonly placeholder="Reversed Roman script will appear here..."></textarea>
-	  <div id="recorderBar" class="recorder-bar hidden">
+      <textarea id="input" placeholder="Type Roman script here..."></textarea>
+    </div>
+	<div id="recorderBar" class="recorder-bar hidden">
         <div class="rec-controls">
-          <button id="startRec">Start</button>
-		  <canvas id="audioVisualizer"></canvas>
-          <button id="stopRec" disabled>Stop</button>
+          <button id="startRec">🎤</button>
+          <button id="stopRec" disabled>⏹️</button>
 		  <audio id="audioPreview" controls></audio>
         </div>
+		<canvas id="audioVisualizer"></canvas>
+      </div>
+    <div class="reverse-wrapper">
+      <textarea id="reverseOutput" readonly placeholder="Reversed Roman script will appear here..."></textarea>
     </div>
-  </div>
   <button id="uploadBtn">Submit Scripts & Recording</button>
 </main>
 <div id="helpModal" class="modal">
