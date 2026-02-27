@@ -1,42 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
-  <title>BhoomiTech Locator</title>
+  <title>BhoomiTech Heritage & Development Foundation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- PWA -->
-  <link rel="manifest" href="assets/manifest-D_VhgHti.json">
-  <link rel="icon" href="assets/favicon-BPfJLI-x.ico" type="image/x-icon">
-  <script type="module" src="assets/index-C81D2Fy4.js"></script>
-  <link rel="stylesheet" href="assets/index-Dke6wNcH.css">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="./leaflet/leaflet.css"/>
+  <script type="module" crossorigin src="./assets/main-6bV3x6M1.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="stylesheet" crossorigin href="./assets/main-lRD3bWCo.css">
 </head>
+
 <body>
-  <header>
-    BhoomiTech Locator
-  </header>
-  <div id="map"></div>
-  <div class="container">
-    <button onclick="useLocation()">Get Current Location</button>
-    <div class="coord-row">
-      <input type="text" id="lat" placeholder="Latitude">
-      <input type="text" id="lng" placeholder="Longitude">
-    </div>
-    <input type="text" id="name" placeholder="Your Name">
-    <input type="text" id="phone" placeholder="WhatsApp Number">
-    <textarea id="description" placeholder="Description"></textarea>
-    <input type="file" id="photo" accept="image/*" capture="environment">
-    <div style="display:flex; gap:10px;">
-      <button onclick="manualSync()" style="background:#1976d2;">
-        Sync Now
-      </button>
-      <button id="submitBtn" onclick="submitData()" disabled>
-        Submit
-      </button>
-    </div>
-    <div style="margin-top: 10px; font-size: 10px; " align="center"><a href="./dashboard/">Admin Dashboard</a></div>
+<header>
+  BhoomiTech Locator
+  <span id="status-dot"></span>
+</header>
+<div id="map"></div>
+<div class="container">
+  <button onclick="useLocation()">Get Current Location</button>
+  <div class="coord-row">
+    <input type="text" id="lat" placeholder="Latitude">
+    <input type="text" id="lng" placeholder="Longitude">
   </div>
-  <hr>
-  <div id="status" style="text-align:center;padding:8px;"></div>
-  <!-- Vite Entry -->
+  <input type="text" id="name" placeholder="Your Name">
+  <input type="text" id="phone" placeholder="WhatsApp Number">
+  <textarea id="description" placeholder="Description"></textarea>
+  <input type="file" id="photo" accept="image/*" capture="environment">
+  <div class="button-group">
+    <button id="btnDash" onclick="window.location.href='./dashboard/'">Dash</button>
+    <button id="btnSync" onclick="manualSync()">Sync</button>
+    <button id="submitBtn" onclick="submitData()" disabled>Submit</button>
+  </div>
+</div>
+
+<script src="./leaflet/leaflet.js"></script>
+<script src="./db.js"></script>
+<script src="./main.js"></script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+        .then(reg => console.log('Service Worker registered'))
+        .catch(err => console.log('Service Worker registration failed', err));
+    });
+  }
+</script>
+
 </body>
 </html>
