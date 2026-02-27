@@ -1,4 +1,5 @@
 /* assets/styles/fonts.css */
+
 @font-face {
   font-family: 'Noto Sans Assamese';
   src: url('../fonts/NotoSansBengali-Regular.ttf') format('truetype');
@@ -6,6 +7,7 @@
   font-style: normal;
   font-display: swap; 
 }
+
 @font-face {
   font-family: 'Noto Sans Assamese';
   src: url('../fonts/NotoSansBengali-Bold.ttf') format('truetype');
@@ -13,6 +15,7 @@
   font-style: normal;
   font-display: swap;
 }
+
 .transliteration-output {
   font-family: 'Noto Sans Assamese', sans-serif;
   font-size: 16px;
@@ -24,6 +27,7 @@
 * {
   box-sizing: border-box;
 }
+
 body {
   margin: 0;
   font-family: 'Noto Sans Assamese', sans-serif;
@@ -33,6 +37,7 @@ body {
   flex-direction: column;
   min-height: 100vh;
 }
+
 header {
   background: #007acc;
   color: white;
@@ -41,6 +46,7 @@ header {
   font-size: 1.5rem;
   font-weight: bold;
 }
+
 main {
   flex: 1;
   display: flex;
@@ -48,6 +54,7 @@ main {
   align-items: flex-start;
   padding: 1rem;
 }
+
 .container {
   width: 100%;
   max-width: 800px;
@@ -57,6 +64,7 @@ main {
   margin: 0 auto;
   gap: 6px;
 }
+
 textarea {
   width: 100%;
   min-height: 150px;
@@ -68,12 +76,14 @@ textarea {
   box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
   caret-color: black;
 }
+
 .buttons {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   justify-content: flex-end;
 }
+
 button {
   padding: 6px 12px;
   border: solid 1px;
@@ -85,14 +95,17 @@ button {
   cursor: pointer;
   transition: background 0.2s;
 }
+
 button:hover {
   background: #f2ea91;
 }
+
 .reverse-wrapper {
   margin-top: 6px;
   display: flex;
   flex-direction: column;
 }
+
 #reverseOutput {
   width: 100%;
   height: 100px;
@@ -104,6 +117,8 @@ button:hover {
   font-family: 'Courier New', Courier, monospace;
   resize: none;
 }
+
+/* MODAL --------------------*/
 .modal {
   display: none;
   position: fixed;
@@ -113,6 +128,7 @@ button:hover {
   align-items: center;
   z-index: 9999;
 }
+
 .modal-content {
   position: relative;
   width: 90%;
@@ -124,6 +140,7 @@ button:hover {
   flex-direction: column;
   overflow: hidden;
 }
+
 .close-btn {
   position: absolute;
   top: 8px;
@@ -136,35 +153,44 @@ button:hover {
   border-radius: 4px;
   z-index: 2;
 }
+
 .modal-body {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
   overflow-x: hidden;
 }
+
+/* MODAL TABLE --------------------*/
 .table-container {
   overflow-x: auto;
   background: #fff;
   padding: 15px;
   border-radius: 8px;
 }
+
 table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 10px;
 }
+
 th, td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: center;
 }
+
 th {
   background: #222;
   color: #fff;
 }
+
 tr:nth-child(even) {
   background: #f2f2f2;
 }
+
+/* INLINE RECORDER BAR --------------------*/
 .recorder-bar {
   width: 100%;
   box-sizing: border-box;
@@ -178,14 +204,17 @@ tr:nth-child(even) {
   flex-wrap: nowrap;
   overflow: hidden;
 }
+
 .rec-controls {
   display: flex;
   align-items: center;
   gap: 6px;
 }
+
 #audioPreview {
   height: 32px;
 }
+
 #audioVisualizer {
   flex: 1;
   height: 26px;
@@ -195,6 +224,30 @@ tr:nth-child(even) {
   border-color: #007acc;
   border-radius: 5px;
 }
+
+#uploadBtn.loading {
+  position: relative;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+#uploadBtn.loading::before {
+  content: "";
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-top: 2px solid #fff;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align: middle;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 /* MOBILE --------------------*/
 @media(max-width: 480px) {
   .container {
@@ -211,5 +264,3 @@ tr:nth-child(even) {
     padding: 0.5rem 1rem;
   }
 }
-
-
