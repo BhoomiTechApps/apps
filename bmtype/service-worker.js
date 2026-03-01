@@ -11,7 +11,7 @@ const FILES_TO_CACHE = [
   './modules/ime/utils.js',
   './modules/ime/phoneticMap.js',
   './modules/ime/ime.js',
-  './modules/recording/recording.js';
+  './modules/recording/recording.js',
   './assets/fonts/Kaliprasad.ttf',
   './assets/fonts/NotoSansBengali-Regular.ttf',
   './assets/fonts/NotoSansBengali-Bold.ttf',
