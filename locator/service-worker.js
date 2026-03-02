@@ -4,11 +4,15 @@ const urlsToCache = [
   './index.html',
   './manifest.json',
   './main.js',
-  './assets/module.js',
+  './assets/modulepreload-polyfill-B5Qt9EMX.js',
   './db.js',
-  './assets/style.css',
+  './assets/main-lRD3bWCo.css',
   './leaflet/leaflet.css',
   './leaflet/leaflet.js',
+  './dashboard/index.html',
+  './dashboard/firebase.js',
+  './dashboard/login.html',
+  './assets/dashboard-CdaAg7P4.js',
   './leaflet/images/marker-icon.png',
   './leaflet/images/marker-shadow.png',
   './leaflet/images/marker-icon-2x.png',
@@ -23,9 +27,6 @@ const urlsToCache = [
   'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js',
   'https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css',
   'https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js',
-  './dashboard/index.html',
-  './dashboard/login.html',
-  './dashboard/firebase.js'
 ];
 
 self.addEventListener('install', event => {
