@@ -1,6 +1,7 @@
 {
   "name": "BhoomiTech Locator",
   "short_name": "Locator",
+  "description": "Easily locate and manage your community assets.",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#004d40",
@@ -10,13 +11,34 @@
       "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-mobile.png",
+      "sizes": "750x1334",
+      "type": "image/png",
+      "label": "BhoomiTech Locator on Mobile"
+    },
+    {
+      "src": "screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "BhoomiTech Locator on Desktop"
     }
   ]
 }
