@@ -21,6 +21,8 @@ const urlsToCache = [
   './leaflet/images/pegman.png',
   './icon-192.png',
   './icon-512.png',
+  './screenshot-mobile.png',
+  './screenshot-desktop.png',
   'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js',
   'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js',
   'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js',
