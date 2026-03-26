@@ -1,17 +1,17 @@
 const CACHE_NAME = 'lexipic-v1';
 const ASSETS = [
-  '/aShiv/lexipic/',
-  '/aShiv/lexipic/manifest.json',
-  '/aShiv/lexipic/index.html',
-  '/aShiv/lexipic/style.css',
-  '/aShiv/lexipic/script.js',
-  '/aShiv/lexipic/database.js',
-  '/aShiv/lexipic/favicon.ico',
-  '/aShiv/lexipic/icon-192.png',
-  '/aShiv/lexipic/icon-512.png',
-  '/aShiv/lexipic/modules/ime/reverse.js',
-  '/aShiv/lexipic/modules/ime/reverseMap.js',
-  '/aShiv/lexipic/modules/ime/utils.js'
+  '/apps/lexipic/',
+  '/apps/lexipic/manifest.json',
+  '/apps/lexipic/index.html',
+  '/apps/lexipic/style.css',
+  '/apps/lexipic/script.js',
+  '/apps/lexipic/database.js',
+  '/apps/lexipic/favicon.ico',
+  '/apps/lexipic/icon-192.png',
+  '/apps/lexipic/icon-512.png',
+  '/apps/lexipic/modules/ime/reverse.js',
+  '/apps/lexipic/modules/ime/reverseMap.js',
+  '/apps/lexipic/modules/ime/utils.js'
 ];
 
 self.addEventListener('install', (e) => {
