@@ -1,0 +1,27 @@
+{
+  "name": "Home Language Archive",
+  "short_name": "Lexipic",
+  "description": "Image and Text Processing Tool",
+  "start_url": "/aShiv/lexipic/index.html",
+  "scope": "/aShiv/lexipic/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

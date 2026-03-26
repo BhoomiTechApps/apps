@@ -1,0 +1,1 @@
+export function phoneticTransform(e){if(!e)return"";let r=e;return r=r.replace(/O/g,"PROTECT_O"),r=r.replace(/o(?=[.,!?;।])/g,""),r=r.replace(/PROTECT_O/g,"o"),r=r.replace(/্+o/g,""),r.toLowerCase().trim()}

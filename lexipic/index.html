@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Language Archive</title>
+	<link rel="manifest" href="manifest.json">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+	<script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js', { scope: './' })
+          .then(reg => console.log('SW registered!', reg))
+          .catch(err => console.log('SW registration failed:', err));
+        });
+    }
+</script>
+</head>
+
+<body>
+    <div class="top-accordion">
+      <div class="accordion-header" id="accordionToggle" tabindex="0">
+        <h1>Lexopic</h1>
+        <i class="fa-solid fa-chevron-down"></i>
+      </div>
+      <div class="accordion-body" id="accordionBody">
+        <div class="data-controls">
+          <button id="downloadBtn" class="util-btn">Save to Disk</button>
+          <label class="util-btn">
+            Load from Disk
+            <input type="file" id="restoreInput" accept=".json" hidden>
+          </label>
+          <button id="clearDbBtn" class="util-btn danger">Clean Browser DB</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="app-container">
+        <div class="slider-wrapper">
+          <button id="prevBtn" class="nav-btn prev">❮</button>
+          <div id="archiveSlider" class="slider-container"></div>
+          <button id="nextBtn" class="nav-btn next">❯</button>
+        </div>
+		<div class="bottom-accordion">
+          <div class="accordion-header" id="accordionNewItem">
+            <h4>Add New Item</h4>
+            <i class="fa-solid fa-chevron-down"></i>
+          </div>
+          <div class="accordion-section" id="accordionItem">
+			<section class="creator-card">
+		      <div class="control-group">
+                <input type="file" id="imageInput" accept="image/*">
+                <button id="captureAction" class="primary-btn">Speak</button>
+              </div>
+              <div id="previewContainer"></div>		  
+                <div class="control-group">  
+                  <input type="text" id="heritageInput" placeholder="Heritage">
+                  <input type="text" id="transInput" placeholder="Roman">
+                </div>
+                <input type="text" id="description" placeholder="Description">				
+                <button id="saveCard" class="save-btn">Add to Slider</button>
+            </section>
+          </div>
+        </div>
+    </div>
+	
+	<script type="module" src="script.js"></script>
+</body>
+</html>
