@@ -1,0 +1,29 @@
+{
+  "name": "Geotag Images",
+  "short_name": "GeoImg",
+  "description": "Image Geotagging Tool",
+  "id": "/apps/geoimg/",
+  "start_url": "/apps/geoimg/index.html",
+  "scope": "/apps/geoimg/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "/apps/geoimg/favicon.ico",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/apps/geoimg/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/apps/geoimg/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
