@@ -23,7 +23,7 @@
 <body>
     <div class="top-accordion">
       <div class="accordion-header" id="accordionToggle" tabindex="0">
-        <h1>LexiPic</h1>
+        <h1>Lexopic</h1>
         <i class="fa-solid fa-chevron-down"></i>
       </div>
       <div class="accordion-body" id="accordionBody">
@@ -35,22 +35,10 @@
           </label>
           <button id="clearDbBtn" class="util-btn danger">Clean Browser DB</button>
         </div>
-      </div>
-    </div>
-
-    <div class="app-container">
-        <div class="slider-wrapper">
-          <button id="prevBtn" class="nav-btn prev">❮</button>
-          <div id="archiveSlider" class="slider-container"></div>
-          <button id="nextBtn" class="nav-btn next">❯</button>
-        </div>
-		<div class="bottom-accordion">
-          <div class="accordion-header" id="accordionNewItem">
-            <h4>Add New Item</h4>
-            <i class="fa-solid fa-chevron-down"></i>
-          </div>
-          <div class="accordion-section" id="accordionItem">
-			<section class="creator-card">
+		<div class="newItem">
+		  <h4>Add New Item</h4>
+		  <hr>
+		  <section class="creator-card">
 		      <div class="control-group">
                 <input type="file" id="imageInput" accept="image/*">
                 <button id="captureAction" class="primary-btn">Speak</button>
@@ -63,7 +51,15 @@
                 <input type="text" id="description" placeholder="Description">				
                 <button id="saveCard" class="save-btn">Add to Slider</button>
             </section>
-          </div>
+		</div>
+      </div>
+    </div>
+
+    <div class="app-container">
+        <div class="slider-wrapper">
+          <button id="prevBtn" class="nav-btn prev">❮</button>
+          <div id="archiveSlider" class="slider-container"></div>
+          <button id="nextBtn" class="nav-btn next">❯</button>
         </div>
     </div>
 	
