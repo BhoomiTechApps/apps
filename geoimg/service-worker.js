@@ -6,7 +6,7 @@ const ASSETS = [
   '/apps/geoimg/index.html',
   '/apps/geoimg/styles.css',
   '/apps/geoimg/scripts.js',
-  '/apps/geoimg/favicon.png',
+  '/apps/geoimg/favicon.ico',
   '/apps/geoimg/icon-192.png',
   '/apps/geoimg/icon-512.png',
   '/apps/geoimg/editor/escripts.js',
