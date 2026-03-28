@@ -25,6 +25,9 @@
             <button class="tool-btn" onclick="loadJson()" title="Open Playlist">
                 <i class="fa-solid fa-folder-open"></i>
             </button>
+			<button class="tool-btn" onclick="openEditor()" title="Open Editor">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </button>
         </div>
     </div>
 
@@ -45,7 +48,11 @@
         <div id="lightbox-video-container"></div>
     </div>
 </div>
-
+<script>
+  function openEditor() {
+    window.location.href = 'editor/index.html';
+}
+</script>
 <script src="scripts.js"></script>
 </body>
 </html>

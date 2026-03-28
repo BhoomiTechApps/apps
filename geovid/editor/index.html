@@ -22,35 +22,25 @@
 <body>
 
 <div id="app">
-
   <div id="toolbar">
     <button class="tool-btn" onclick="loadJson()" title="Open Local JSON"><i class="fa-solid fa-folder-open"></i></button>
+	<input type="file" id="fileInput" style="display:none" accept=".json" onchange="handleFileSelect(event)">
 	<div class="sep"></div>
     <button class="tool-btn" onclick="importYoutube()" title="Import YouTube Video"><i class="fa-brands fa-youtube"></i></button>
 	<div class="sep"></div>
-    <button class="tool-btn" onclick="exportJson()" title="Download JSON"><i class="fa-solid fa-download"></i></button>
+    <button class="tool-btn" onclick="exportJson()" title="Save JSON"><i class="fa-solid fa-download"></i></button>
+	<div class="sep"></div>
+	<button class="tool-btn" onclick="openViewer()" title="Open Viewer"><i class="fa-solid fa-eye"></i></button>
+	<div class="sep"></div>
+	<div id="status-msg"></div>
   </div>
-  
   <div id="preview">
     <div class="preview-box"><div id="map"></div></div>
     <div class="preview-box" id="videoPreview">
         <div class="placeholder-text">Select a row to play video</div>
     </div>
   </div>
-  
   <div id="table-container"></div>
-  
-</div>
-
-<canvas id="canvas-buffer"></canvas>
-
-<div id="toolbar">
-    <button class="tool-btn" onclick="loadJson()" title="Open Local JSON">
-        <i class="fa-solid fa-folder-open"></i>
-    </button>
-    <input type="file" id="fileInput" style="display:none" accept=".json" onchange="handleFileSelect(event)">
-    
-    <div id="status-msg"></div>
 </div>
 
 <div id="lightbox" class="lightbox" onclick="closeLightbox()">
@@ -59,7 +49,11 @@
         <div id="lightbox-video-container"></div>
     </div>
 </div>
-
+<script>
+  function openViewer() {
+    window.location.href = '../index.html';
+}
+</script>
 <script src="escripts.js"></script>
 </body>
 </html>
