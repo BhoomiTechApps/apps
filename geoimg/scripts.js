@@ -6,12 +6,10 @@ let currentCenter = null;
 let modal = null;
 let jsonList = null;
 
-// --- BASEMAPS ---
 const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png");
 const street = L.tileLayer("https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}");
 const satellite = L.tileLayer("https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}");
 
-// --- MAP ---
 const map = L.map("map", {
   center: [25, 93],
   zoom: 7,
@@ -27,7 +25,6 @@ L.control.layers({
 map.addLayer(markers);
 highlightLayer.addTo(map);
 
-// --- CONTROLS ---
 L.control.fullscreen({ position: "topleft" }).addTo(map);
 
 L.control.locate({
@@ -47,7 +44,6 @@ L.Control.geocoder({
 })
 .addTo(map);
 
-// --- HAVERSINE ---
 function haversine(a,b,c,d){
   const R=6371;
   const dLat=(c-a)*Math.PI/180;
@@ -59,12 +55,10 @@ function haversine(a,b,c,d){
   ));
 }
 
-// --- MAP CLICK ---
 map.on("click", e => {
   runSearch(e.latlng.lat, e.latlng.lng);
 });
 
-// --- SEARCH ---
 function runSearch(lat, lng) {
   currentCenter = [lat, lng];
   const r = +document.getElementById("radius").value;
@@ -84,23 +78,17 @@ function runSearch(lat, lng) {
   );
 
   nearby.forEach(i => {
-    // Escape single quotes in description for the JS call
     const descEscaped = (i.description || "").replace(/'/g, "\\'");
-    
-    // Updated: removed width="150" and added class="popup-thumb"
     const popupImg =
       `<img src="${i.thumb}" class="popup-thumb" 
         onclick="openLightbox('${i.image}', '${descEscaped}')">`;
-
     const m = L.marker([i.lat, i.lng]).bindPopup(popupImg);
     m.imageData = i;
     markers.addLayer(m);
   });
-
   showResults(nearby);
 }
 
-// --- GALLERY (Panel) ---
 function showResults(list) {
   const res = document.getElementById("results");
   res.innerHTML = "";
@@ -117,8 +105,6 @@ function showResults(list) {
       <img src="${i.thumb}" loading="lazy">
       <div class="desc">${i.description || ""}</div>
     `;
-
-    // Panel click centers map and opens the popup (where the lightbox trigger lives)
     d.onclick = () => {
       highlightLayer.clearLayers();
       L.circleMarker([i.lat, i.lng], {
@@ -126,33 +112,26 @@ function showResults(list) {
         color: "red",
         fillOpacity: 0.8
       }).addTo(highlightLayer);
-
       map.setView([i.lat, i.lng], 16);
-
-      // Programmatically open the marker popup on map
       markers.eachLayer(layer => {
         if(layer.getLatLng().lat === i.lat && layer.getLatLng().lng === i.lng) {
           layer.openPopup();
         }
       });
     };
-
     res.appendChild(d);
   });
 }
 
-// --- LIGHTBOX ---
 function openLightbox(url, desc) {
   const lb = document.getElementById("lightbox");
   const img = document.getElementById("lightboxImg");
   const cap = document.getElementById("lightboxCaption");
-  
   img.src = url;
   if (cap) cap.innerText = desc || "";
   lb.style.display = "flex";
 }
 
-// --- RADIUS SLIDER ---
 const slider = document.getElementById("radius");
 slider.oninput = () => {
   document.getElementById("radiusValue").innerText = slider.value;
@@ -160,65 +139,49 @@ slider.oninput = () => {
     runSearch(currentCenter[0], currentCenter[1]);
 };
 
-// --- FOLDER & JSON LOADING ---
 document.addEventListener("DOMContentLoaded", () => {
   const folderInput = document.getElementById("folderInput");
   const openBtn = document.getElementById("openJsonBtn");
-
   if (openBtn) openBtn.onclick = () => folderInput.click();
-
   folderInput.onchange = async (e) => {
     const files = Array.from(e.target.files);
     const jsonFile = files.find(f => f.name === "data.json");
-    
     if (!jsonFile) {
       alert("Could not find data.json in the selected folder.");
       return;
     }
-
     try {
       const text = await jsonFile.text();
       const rawImages = JSON.parse(text);
-
-      // Helper to handle filename extraction logic from your original code
       const getFileName = (path) => path.split('/').pop().toLowerCase();
-
       images = rawImages.map(img => {
         const thumbName = getFileName(img.thumb);
         const imageName = getFileName(img.image);
-
         const thumbFile = files.find(f => 
           f.webkitRelativePath.toLowerCase().endsWith(`thumbs/${thumbName}`)
         );
         const fullFile = files.find(f => 
           f.webkitRelativePath.toLowerCase().endsWith(`images/${imageName}`)
         );
-
         return {
           ...img,
           thumb: thumbFile ? URL.createObjectURL(thumbFile) : "https://via.placeholder.com/150?text=No+Thumb",
           image: fullFile ? URL.createObjectURL(fullFile) : ""
         };
       });
-
-      // Clear UI
       markers.clearLayers();
       highlightLayer.clearLayers();
       if (radiusCircle) map.removeLayer(radiusCircle);
-      
       document.getElementById("results").innerHTML = `
         <p style="padding:10px; font-weight:bold;">
           ${images.length} images loaded.<br>
           <span style="font-size:10px; font-weight:normal;">Click the map to view gallery.</span>
         </p>
       `;
-
-      // Auto-zoom to fit markers
       if (images.length) {
         const group = L.featureGroup(images.map(i => L.marker([i.lat, i.lng])));
         map.fitBounds(group.getBounds());
       }
-
     } catch (err) {
       console.error("JSON Error:", err);
       alert("Error parsing data.json.");
@@ -226,7 +189,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 });
 
-// --- LEGACY JSON HANDLERS (Kept per your request) ---
 function loadJsonIndex() {
   if(!jsonList) return;
   jsonList.innerHTML = "Loading...";

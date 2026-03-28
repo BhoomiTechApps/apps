@@ -1,4 +1,3 @@
-/* --- GLOBAL LAYOUT --- */
 body {
   margin: 0;
   display: flex;
@@ -6,10 +5,9 @@ body {
   height: 100vh;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow: hidden;
-  background-color: #222; /* Matches dark toolbar */
+  background-color: #222;
 }
 
-/* --- STICKY TOOLBAR (Dark Theme) --- */
 #top-bar {
   display: flex;
   align-items: center;
@@ -40,7 +38,6 @@ body {
   gap: 8px;
 }
 
-/* --- TOOL BUTTONS (Icon Only) --- */
 .tool-btn {
   width: 32px;
   height: 32px;
@@ -60,7 +57,6 @@ body {
   background: #555;
 }
 
-/* Button Variants */
 #openJsonBtn { background: #444; color: white !important; }
 .editor-link { background: #2e7d32; color: white !important; }
 .editor-link:hover { background: #388e3c; }
@@ -74,7 +70,6 @@ body {
   margin: 0 4px;
 }
 
-/* --- RADIUS CONTROL --- */
 .radius-control {
   display: flex;
   align-items: center;
@@ -94,20 +89,19 @@ body {
 .radius-label { font-size: 10px; color: #888; }
 .radius-value { font-size: 10px; min-width: 35px; color: #aaa; font-weight: bold; }
 
-/* --- MAIN CONTENT & FRAMED MAP --- */
 #main-container {
   display: flex;
   flex: 1;
   overflow: hidden;
-  background: #fff; /* The white frame */
-  padding: 10px;    /* 10px padding around map */
+  background: #fff;
+  padding: 10px;
   box-sizing: border-box;
 }
 
 #map { 
   flex: 0 0 80%;
   height: 100%;
-  border-radius: 12px; /* Rounded map corners */
+  border-radius: 12px;
   border: 1px solid #ddd;
   overflow: hidden;
   box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
@@ -115,14 +109,14 @@ body {
 }
 
 .leaflet-popup-content {
-  margin: 8px; /* Tighten up the space around the image */
-  width: 100px !important; /* Force the popup width */
+  margin: 8px;
+  width: 100px !important;
 }
 
 .popup-thumb {
   width: 100px !important;
   height: 100px !important;
-  object-fit: cover; /* Crops the image to fill the square without stretching */
+  object-fit: cover;
   border-radius: 4px;
   cursor: pointer;
   display: block;
@@ -133,14 +127,13 @@ body {
   padding: 0;
 }
 
-/* --- GALLERY SIDEBAR --- */
 #gallery {
   flex: 0 0 20%;
   background: #fff;
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  padding: 0 0 0 15px; /* Spacing from map frame */
+  padding: 0 0 0 15px;
   box-sizing: border-box;
 }
 
@@ -157,7 +150,7 @@ body {
 .thumb img {
   width: 100%;
   aspect-ratio: 1 / 1;
-  object-fit: cover; /* Strict square crop */
+  object-fit: cover;
   border-radius: 8px;
   display: block;
   border: 1px solid #eee;
@@ -174,7 +167,6 @@ body {
   overflow: hidden;
 }
 
-/* --- LIGHTBOX --- */
 #lightbox {
   position: fixed;
   inset: 0;
@@ -218,7 +210,6 @@ body {
   display: none;
 }
 
-/* --- MOBILE RESPONSIVE --- */
 @media (max-width: 768px) {
   #main-container {
     flex-direction: column;
@@ -253,7 +244,7 @@ body {
 
   .desc {
     font-size: 10px;
-    -webkit-line-clamp: 1; /* Shorter for mobile grid */
+    -webkit-line-clamp: 1;
   }
 
   .app-title {
