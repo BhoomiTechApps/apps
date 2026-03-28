@@ -5,14 +5,12 @@ let fileHandle = null;
 let directoryHandle = null;
 let columnVisibility = {}; 
 
-/* ---------- Map Setup ---------- */
 const osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19 });
 const satellite = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", { maxZoom: 19 });
 const map = L.map("map", { center: [20, 0], zoom: 2, layers: [osm], zoomControl: false });
 L.control.zoom({ position: "bottomright" }).addTo(map);
 L.control.layers({ "Street": osm, "Satellite": satellite }, null, { position: "topright" }).addTo(map);
 const marker = L.marker([0, 0]).addTo(map);
-
 const geocoder = L.Control.geocoder({
   defaultMarkGeocode: false,
   position: 'topleft'
@@ -30,23 +28,15 @@ map.on("click", e => {
   if(selectedIndex === null || jsonData[selectedIndex].locked) return;
   const lt = e.latlng.lat.toFixed(6);
   const lg = e.latlng.lng.toFixed(6);
-  
   jsonData[selectedIndex].lat = lt;
   jsonData[selectedIndex].lng = lg;
   dirty = true;
-  
-  // Update UI without redrawing table
   updateMap(selectedIndex);
   const row = document.querySelector(`tr[data-index="${selectedIndex}"]`);
   if(row) {
-    // We target the cells directly. In our render, lat/lng are usually index 5 and 6
-    // (Lock=0, id=1, name=2, image=3, thumb=4, lat=5, lng=6)
-    row.cells[5].innerText = lt;
-    row.cells[6].innerText = lg;
+    renderTable(); 
   }
 });
-
-/* ---------- Core Functions ---------- */
 
 async function initNewProject() {
   try {
@@ -78,8 +68,6 @@ async function saveJson() {
   flashToolbar("Saved ✓");
 }
 
-/* ---------- Table Logic (Non-Interruptive) ---------- */
-
 function toggleColumn(key) {
   columnVisibility[key] = !columnVisibility[key];
   renderTable(); 
@@ -101,8 +89,6 @@ function renderTable() {
   keys.forEach(k => {
     if (columnVisibility[k]) {
       html += `<th><div class="header-cell"><span>${k}</span><button class="toggle-btn" onclick="toggleColumn('${k}')"><i class="fa-solid fa-eye-slash"></i></button></div></th>`;
-    } else {
-      html += `<th style="width:20px; background:#ccc; cursor:pointer;" onclick="toggleColumn('${k}')"><i class="fa-solid fa-eye"></i></th>`;
     }
   });
   html += `</tr></thead><tbody>`;
@@ -112,23 +98,20 @@ function renderTable() {
     const isSelected = (i === selectedIndex) ? 'selected' : '';
     html += `<tr class="${isSelected} ${isLocked}" onclick="selectRow(${i}, false)" data-index="${i}">`;
     html += `<td style="text-align:center;"><input type="checkbox" ${row.locked ? 'checked' : ''} onclick="event.stopPropagation(); toggleLock(${i}, this.checked)"></td>`;
-
     keys.forEach(k => {
-      const isVisible = columnVisibility[k];
-      const editable = row.locked ? "false" : "true";
-      html += `<td contenteditable="${editable}" 
-                   oninput="updateCell(${i},'${k}',this.innerText)"
-                   style="display: ${isVisible ? 'table-cell' : 'none'}">
-                   ${row[k] || ""}
-               </td>`;
-      if(!isVisible) html += `<td style="background:#eee;"></td>`;
+      if (columnVisibility[k]) {
+        const editable = row.locked ? "false" : "true";
+        html += `<td contenteditable="${editable}" 
+                     oninput="updateCell(${i},'${k}',this.innerText)">
+                     ${row[k] || ""}
+                 </td>`;
+      }
     });
     html += "</tr>";
   });
   container.innerHTML = html + "</tbody></table>";
 }
 
-// Typing update - NEVER calls renderTable()
 function updateCell(i, k, val) {
   jsonData[i][k] = val;
   dirty = true;
@@ -136,11 +119,9 @@ function updateCell(i, k, val) {
 
 function selectRow(index, redraw = true) {
   selectedIndex = index;
-  // Visual select without full redraw if possible
   document.querySelectorAll('tr').forEach(r => r.classList.remove('selected'));
   const row = document.querySelector(`tr[data-index="${index}"]`);
   if(row) row.classList.add('selected');
-  
   updatePreview(index);
   if(redraw) renderTable(); 
 }
@@ -148,10 +129,8 @@ function selectRow(index, redraw = true) {
 function toggleLock(i, checked) {
   jsonData[i].locked = checked;
   dirty = true;
-  renderTable(); // We redraw here because we need to toggle contenteditable status
+  renderTable();
 }
-
-/* ---------- Media & Preview ---------- */
 
 async function updatePreview(i) {
   const row = jsonData[i];
@@ -180,20 +159,15 @@ async function replaceMainImage() {
   try {
     const [h] = await window.showOpenFilePicker();
     const f = await h.getFile();
-    
-    // Save Main
     const d = await directoryHandle.getDirectoryHandle("images", {create:true});
     const dest = await d.getFileHandle(f.name, {create:true});
     const w = await dest.createWritable();
     await w.write(await f.arrayBuffer()); await w.close();
-
-    // Save Thumb
-    const tBlob = await createThumbnail(f, 300);
+    const tBlob = await createThumbnail(f, 100);
     const tD = await directoryHandle.getDirectoryHandle("thumbs", {create:true});
     const tDest = await tD.getFileHandle(f.name, {create:true});
     const tW = await tDest.createWritable();
     await tW.write(tBlob); await tW.close();
-
     jsonData[selectedIndex].image = `images/${f.name}`;
     jsonData[selectedIndex].thumb = `thumbs/${f.name}`;
     renderTable(); 
@@ -201,7 +175,7 @@ async function replaceMainImage() {
   } catch(e){}
 }
 
-function createThumbnail(file, width) {
+function createThumbnail(file, size = 100) {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -209,9 +183,12 @@ function createThumbnail(file, width) {
       img.onload = () => {
         const canvas = document.getElementById('canvas-buffer');
         const ctx = canvas.getContext('2d');
-        const scale = width / img.width;
-        canvas.width = width; canvas.height = img.height * scale;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.width = size;
+        canvas.height = size;
+        const scale = Math.max(size / img.width, size / img.height);
+        const x = (size / 2) - (img.width / 2) * scale;
+        const y = (size / 2) - (img.height / 2) * scale;
+        ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
         canvas.toBlob((b) => resolve(b), 'image/jpeg', 0.8);
       };
       img.src = e.target.result;

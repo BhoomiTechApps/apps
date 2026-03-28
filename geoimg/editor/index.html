@@ -2,18 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Project Editor (Final Stable Version)</title>
-
 <link rel="stylesheet" href="estyles.css">
-<link rel="icon" type="image/png" href="favicon.png">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 </head>
-
 <body>
 <div id="app">
   <div id="toolbar">
@@ -27,20 +23,18 @@
     <button class="tool-btn" onclick="deleteRow()" title="Delete Row"><i class="fa-solid fa-trash"></i></button>
     <button class="tool-btn" onclick="replaceMainImage()" title="Image Upload"><i class="fa-solid fa-image"></i></button>
     <div class="sep"></div>
-    <button class="tool-btn" onclick="location.reload()" title="Exit"><i class="fa-solid fa-xmark"></i></button>
+    <button class="tool-btn" onclick="window.location.href='../'" title="Open Viewer" style="background:#2e7d32;">
+      <i class="fa-solid fa-eye"></i>
+    </button>
+	<button class="tool-btn" onclick="location.reload()" title="Exit"><i class="fa-solid fa-xmark"></i></button>
   </div>
-
   <div id="preview">
     <div class="preview-box"><div id="map"></div></div>
     <div class="preview-box" id="imagePreview">No Image</div>
   </div>
-
   <div id="table-container"></div>
 </div>
-
 <canvas id="canvas-buffer"></canvas>
-
 <script src="escripts.js"></script>
-
 </body>
 </html>

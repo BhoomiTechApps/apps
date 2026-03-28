@@ -2,15 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Geo Image Viewer</title>
 
 <!-- Leaflet -->
 <link rel="stylesheet" href="styles.css"/>
-<link rel="icon" type="image/png" href="favicon.ico">
-<link rel="manifest" href="/apps/geoimg/manifest.json">
-<meta name="theme-color" content="#000000">
-
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
@@ -20,6 +15,7 @@
 <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
 
 <!-- Plugins -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.css"/>
 <script src="https://unpkg.com/leaflet.fullscreen@1.6.0/Control.FullScreen.js"></script>
 
@@ -33,21 +29,24 @@
 
 <body>
 
-<div id="top-bar">
-  <input type="file" id="folderInput" webkitdirectory directory multiple style="display:none;">
-  
-  <button id="openJsonBtn" title="Select Project Folder" style="background:#A8A8A8; border:none; padding:8px; cursor:pointer; border-radius:4px; display:flex; align-items:center;">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M3 18V6a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10" stroke="#000" stroke-width="2" fill="none"/>
-      <path d="M3 12h18l-2 6H5l-2-6z" stroke="#000" stroke-width="2" fill="none"/>
-    </svg>
-    <span style="margin-left:8px; font-size:12px; font-weight:bold;">LOAD FOLDER</span>
-  </button>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-  <div style="display:flex; align-items:center; gap:8px;">
-    <span class="radius-label">Radius:</span>
-    <input type="range" id="radius" min="1" max="50" value="10" style="width:100px;">
-    <span class="radius-value"><span id="radiusValue">10</span> km</span>
+<div id="top-bar">
+  <div class="app-title">GeoImg</div>
+  <div class="toolbar-actions">
+    <div class="radius-control">
+      <input type="range" id="radius" min="1" max="50" value="10">
+      <span class="radius-value"><span id="radiusValue">10</span> km</span>
+    </div>
+	<input type="file" id="folderInput" webkitdirectory directory multiple style="display:none;">
+    <button id="openJsonBtn" class="tool-btn" title="Load Project Folder">
+      <i class="fa-solid fa-folder-open"></i>
+    </button>
+    <button class="tool-btn editor-link" onclick="window.location.href='editor/index.html'" title="Open Editor">
+       <i class="fa-solid fa-pen-to-square"></i>
+    </button>
+	<button class="tool-btn exit-btn" onclick="location.reload()" title="Exit & Reset">
+      <i class="fa-solid fa-xmark"></i>
   </div>
 </div>
 
@@ -59,23 +58,15 @@
 </div>
 
 <div id="lightbox" onclick="this.style.display='none'">
-  <img id="lightboxImg" src="">
+  <div id="lightbox-content">
+    <img id="lightboxImg" src="">
+    <div id="lightboxCaption"></div>
+  </div>
 </div>
-
-<script src="scripts.js"></script>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/apps/geoimg/service-worker.js')
-      .then((reg) => console.log('Service Worker registered', reg))
-      .catch((err) => console.log('Service Worker failed', err));
-  });
-}
-</script>
 
 </body>
 
-
+<script src="scripts.js"></script>
 </html>
 
 

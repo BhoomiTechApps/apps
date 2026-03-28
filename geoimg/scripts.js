@@ -47,11 +47,6 @@ L.Control.geocoder({
 })
 .addTo(map);
 
-// --- LOAD DATA ---
-//fetch("jsons/imglist.json")
-  //.then(r => r.json())
-  //.then(data => images = data);
-
 // --- HAVERSINE ---
 function haversine(a,b,c,d){
   const R=6371;
@@ -89,9 +84,13 @@ function runSearch(lat, lng) {
   );
 
   nearby.forEach(i => {
+    // Escape single quotes in description for the JS call
+    const descEscaped = (i.description || "").replace(/'/g, "\\'");
+    
+    // Updated: removed width="150" and added class="popup-thumb"
     const popupImg =
-      `<img src="${i.thumb}" width="150" style="cursor:pointer"
-        onclick="openLightbox('${i.image}')">`;
+      `<img src="${i.thumb}" class="popup-thumb" 
+        onclick="openLightbox('${i.image}', '${descEscaped}')">`;
 
     const m = L.marker([i.lat, i.lng]).bindPopup(popupImg);
     m.imageData = i;
@@ -101,13 +100,13 @@ function runSearch(lat, lng) {
   showResults(nearby);
 }
 
-// --- GALLERY ---
+// --- GALLERY (Panel) ---
 function showResults(list) {
   const res = document.getElementById("results");
   res.innerHTML = "";
 
   if (!list.length) {
-    res.innerHTML = "<p>No images found.</p>";
+    res.innerHTML = "<p style='padding:10px; font-size:12px;'>No images found.</p>";
     return;
   }
 
@@ -119,18 +118,23 @@ function showResults(list) {
       <div class="desc">${i.description || ""}</div>
     `;
 
-    // CLICK instead of mouseover
+    // Panel click centers map and opens the popup (where the lightbox trigger lives)
     d.onclick = () => {
       highlightLayer.clearLayers();
-
       L.circleMarker([i.lat, i.lng], {
         radius: 8,
         color: "red",
         fillOpacity: 0.8
       }).addTo(highlightLayer);
 
-      // Center map on image location at zoom 16
       map.setView([i.lat, i.lng], 16);
+
+      // Programmatically open the marker popup on map
+      markers.eachLayer(layer => {
+        if(layer.getLatLng().lat === i.lat && layer.getLatLng().lng === i.lng) {
+          layer.openPopup();
+        }
+      });
     };
 
     res.appendChild(d);
@@ -138,10 +142,13 @@ function showResults(list) {
 }
 
 // --- LIGHTBOX ---
-function openLightbox(url) {
+function openLightbox(url, desc) {
   const lb = document.getElementById("lightbox");
   const img = document.getElementById("lightboxImg");
+  const cap = document.getElementById("lightboxCaption");
+  
   img.src = url;
+  if (cap) cap.innerText = desc || "";
   lb.style.display = "flex";
 }
 
@@ -153,127 +160,75 @@ slider.oninput = () => {
     runSearch(currentCenter[0], currentCenter[1]);
 };
 
-// --- JSON FILE PICKER ---
+// --- FOLDER & JSON LOADING ---
 document.addEventListener("DOMContentLoaded", () => {
   const folderInput = document.getElementById("folderInput");
   const openBtn = document.getElementById("openJsonBtn");
 
-  // Trigger file input when button is clicked
-  openBtn.onclick = () => folderInput.click();
+  if (openBtn) openBtn.onclick = () => folderInput.click();
 
   folderInput.onchange = async (e) => {
-  const files = Array.from(e.target.files);
-  
-  const jsonFile = files.find(f => f.name === "data.json");
-  if (!jsonFile) {
-    alert("Could not find data.json in the selected folder.");
-    return;
-  }
-
-  try {
-    const text = await jsonFile.text();
-    const rawImages = JSON.parse(text);
-
-    // Helper to get just the filename if your JSON has "images/photo.jpg"
-    const getFileName = (path) => path.split('/').pop().toLowerCase();
-
-    images = rawImages.map(img => {
-      const thumbName = getFileName(img.thumb);
-      const imageName = getFileName(img.image);
-
-      // Look for the file anywhere in the upload that matches the subfolder + filename
-      const thumbFile = files.find(f => 
-        f.webkitRelativePath.toLowerCase().endsWith(`thumbs/${thumbName}`)
-      );
-      const fullFile = files.find(f => 
-        f.webkitRelativePath.toLowerCase().endsWith(`images/${imageName}`)
-      );
-
-      return {
-        ...img,
-        thumb: thumbFile ? URL.createObjectURL(thumbFile) : "https://via.placeholder.com/150?text=No+Thumb",
-        image: fullFile ? URL.createObjectURL(fullFile) : ""
-      };
-    });
-
-    // Reset UI
-    markers.clearLayers();
-    highlightLayer.clearLayers();
-    if (radiusCircle) map.removeLayer(radiusCircle);
+    const files = Array.from(e.target.files);
+    const jsonFile = files.find(f => f.name === "data.json");
     
-    document.getElementById("results").innerHTML = `
-      <p style="padding:10px; font-weight:bold;">
-        ${images.length} images loaded.<br>
-        <span style="font-size:10px; font-weight:normal;">Click the map to view gallery.</span>
-      </p>
-    `;
+    if (!jsonFile) {
+      alert("Could not find data.json in the selected folder.");
+      return;
+    }
 
-  } catch (err) {
-    console.error("JSON Error:", err);
-  }
-  // Optional: Auto-zoom to fit all markers once loaded
-    if (images.length) {
-       const group = L.featureGroup(images.map(i => L.marker([i.lat, i.lng])));
-       map.fitBounds(group.getBounds());
-     }
+    try {
+      const text = await jsonFile.text();
+      const rawImages = JSON.parse(text);
+
+      // Helper to handle filename extraction logic from your original code
+      const getFileName = (path) => path.split('/').pop().toLowerCase();
+
+      images = rawImages.map(img => {
+        const thumbName = getFileName(img.thumb);
+        const imageName = getFileName(img.image);
+
+        const thumbFile = files.find(f => 
+          f.webkitRelativePath.toLowerCase().endsWith(`thumbs/${thumbName}`)
+        );
+        const fullFile = files.find(f => 
+          f.webkitRelativePath.toLowerCase().endsWith(`images/${imageName}`)
+        );
+
+        return {
+          ...img,
+          thumb: thumbFile ? URL.createObjectURL(thumbFile) : "https://via.placeholder.com/150?text=No+Thumb",
+          image: fullFile ? URL.createObjectURL(fullFile) : ""
+        };
+      });
+
+      // Clear UI
+      markers.clearLayers();
+      highlightLayer.clearLayers();
+      if (radiusCircle) map.removeLayer(radiusCircle);
+      
+      document.getElementById("results").innerHTML = `
+        <p style="padding:10px; font-weight:bold;">
+          ${images.length} images loaded.<br>
+          <span style="font-size:10px; font-weight:normal;">Click the map to view gallery.</span>
+        </p>
+      `;
+
+      // Auto-zoom to fit markers
+      if (images.length) {
+        const group = L.featureGroup(images.map(i => L.marker([i.lat, i.lng])));
+        map.fitBounds(group.getBounds());
+      }
+
+    } catch (err) {
+      console.error("JSON Error:", err);
+      alert("Error parsing data.json.");
+    }
   };
 });
 
-folderInput.onchange = async (e) => {
-  const files = Array.from(e.target.files);
-  console.log("Files detected:", files.length);
-
-  // 1. Find the data.json file
-  const jsonFile = files.find(f => f.name === "data.json");
-  if (!jsonFile) {
-    alert("Could not find data.json in the selected folder.");
-    return;
-  }
-
-  try {
-    const text = await jsonFile.text();
-    const rawImages = JSON.parse(text);
-
-    images = rawImages.map(img => {
-      // Robust matching: check if the path ends with the expected subfolder + filename
-      const thumbFile = files.find(f => 
-        f.webkitRelativePath.toLowerCase().endsWith(`thumbs/${img.thumb}`.toLowerCase())
-      );
-      const fullFile = files.find(f => 
-        f.webkitRelativePath.toLowerCase().endsWith(`images/${img.image}`.toLowerCase())
-      );
-
-      // Log if a file is missing to help debugging
-      if (!thumbFile) console.warn(`Thumbnail missing: thumbs/${img.thumb}`);
-      if (!fullFile) console.warn(`Full image missing: images/${img.image}`);
-
-      return {
-        ...img,
-        // Generate the blob URLs
-        thumb: thumbFile ? URL.createObjectURL(thumbFile) : "https://via.placeholder.com/150?text=No+Thumb",
-        image: fullFile ? URL.createObjectURL(fullFile) : ""
-      };
-    });
-
-    // 2. Clear and Reset UI
-    markers.clearLayers();
-    highlightLayer.clearLayers();
-    if (radiusCircle) map.removeLayer(radiusCircle);
-    
-    document.getElementById("results").innerHTML = `
-      <p style="padding:10px; font-weight:bold;">
-        ${images.length} images loaded.<br>
-        <span style="font-size:10px; font-weight:normal;">Click the map to see images in a radius.</span>
-      </p>
-    `;
-
-  } catch (err) {
-    console.error("JSON Error:", err);
-    alert("Error parsing data.json. Check the console for details.");
-  }
-};
-
+// --- LEGACY JSON HANDLERS (Kept per your request) ---
 function loadJsonIndex() {
+  if(!jsonList) return;
   jsonList.innerHTML = "Loading...";
   fetch("jsons/index.json")
     .then(r => r.json())
@@ -284,9 +239,7 @@ function loadJsonIndex() {
         d.textContent = f;
         d.style.cursor = "pointer";
         d.style.padding = "6px 0";
-
         d.addEventListener("click", () => loadJsonFile(f));
-
         jsonList.appendChild(d);
       });
     });
@@ -297,16 +250,13 @@ function loadJsonFile(file) {
     .then(r => r.json())
     .then(data => {
       images = data;
-
-      // reset UI state
       markers.clearLayers();
       highlightLayer.clearLayers();
       document.getElementById("results").innerHTML = "";
-
-      modal.style.display = "none";
+      if(modal) modal.style.display = "none";
     });
-	
-    window.addEventListener('resize', () => {
-    map.invalidateSize();
-  });
 }
+
+window.addEventListener('resize', () => {
+  map.invalidateSize();
+});
