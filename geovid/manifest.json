@@ -1,0 +1,40 @@
+{
+  "short_name": "GeoVid",
+  "name": "GeoVid Video Mapper",
+  "description": "Map-based video playlist viewer and editor.",
+  "icons": [
+    {
+      "src": "favicon.png",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "id": "/apps/geovid/",
+  "start_url": "/apps/geovid/index.html",
+  "scope": "/apps/geovid/",
+  "display": "standalone",
+  "orientation": "any",
+  "theme_color": "#121212",
+  "background_color": "#121212",
+  "shortcuts": [
+    {
+      "name": "Open Editor",
+      "short_name": "Editor",
+      "description": "Edit your video coordinates",
+      "url": "/apps/geovid/editor/index.html",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

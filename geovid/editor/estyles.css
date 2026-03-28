@@ -1,0 +1,87 @@
+:root {
+  --bg-dark: #121212;
+  --bg-panel: #1e1e1e;
+  --accent: #2196f3;
+  --border: #333;
+  --text: #eee;
+}
+
+html, body { margin: 0; height: 100%; font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg-dark); color: var(--text); overflow: hidden; }
+
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+#toolbar { 
+  height: 60px; background: var(--bg-panel); display: flex; 
+  align-items: center; gap: 12px; padding: 0 20px; border-bottom: 1px solid var(--border); 
+}
+.tool-btn { 
+  width: 38px; height: 38px; background: #2a2a2a; border: 1px solid #444; 
+  color: var(--text); cursor: pointer; border-radius: 6px; transition: 0.2s;
+}
+.tool-btn:hover { background: var(--accent); border-color: var(--accent); }
+.sep { width: 1px; height: 30px; background: #444; }
+
+#preview { 
+  height: 45%; display: grid; grid-template-columns: 1fr 480px; 
+  gap: 10px; padding: 10px; background: var(--bg-dark); 
+}
+.preview-box { 
+  background: #000; border-radius: 8px; border: 1px solid var(--border); 
+  overflow: hidden; position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+}
+#map { width: 100%; height: 100%; }
+
+#table-container { 
+  flex-grow: 1; overflow: auto; background: var(--bg-panel); 
+  margin: 0 10px 10px 10px; border-radius: 8px; border: 1px solid var(--border);
+}
+table { width: 100%; border-collapse: collapse; color: #ccc; }
+th { 
+  background: #252525; color: #aaa; position: sticky; top: 0; 
+  z-index: 10; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+  padding: 12px 8px; border-bottom: 2px solid var(--border);
+}
+td { border-bottom: 1px solid #2a2a2a; padding: 10px 8px; font-size: 13px; }
+
+/* Row States */
+tr:hover { background: #252525; }
+tr.selected { background: rgba(33, 150, 243, 0.15) !important; }
+tr.selected td { border-top: 1px solid var(--accent); border-bottom: 1px solid var(--accent); color: #fff; }
+
+tr.locked-row td { color: #ff9800 !important; font-style: italic; }
+
+
+td[contenteditable="true"] {	cursor: text; }
+td[contenteditable="true"]:focus { outline: none; background: #2a2a2a; color: var(--accent); }
+
+.placeholder-text {
+    color: #555;
+    font-size: 14px;
+    text-align: center;
+    pointer-events: none;
+}
+
+.lightbox {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background-color: rgba(0,0,0,0.9);
+    align-items: center; justify-content: center;
+}
+
+.lightbox-content {
+    position: relative;
+    width: 80%;
+    max-width: 900px;
+    aspect-ratio: 16 / 9;
+    background: #000;
+}
+
+.close-btn {
+    position: absolute;
+    top: -40px; right: 0;
+    color: #fff; font-size: 35px; cursor: pointer;
+}
+
+#lightbox-video-container { width: 100%; height: 100%; }

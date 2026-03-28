@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GeoVid Editor</title>
+<link rel="icon" type="image/png" href="/apps/geovid/favicon.png">
+<link rel="manifest" href="/apps/geovid/manifest.json">
+<link rel="stylesheet" href="estyles.css">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+</head>
+
+<body>
+
+<div id="app">
+
+  <div id="toolbar">
+    <button class="tool-btn" onclick="loadJson()" title="Open Local JSON"><i class="fa-solid fa-folder-open"></i></button>
+	<div class="sep"></div>
+    <button class="tool-btn" onclick="importYoutube()" title="Import YouTube Video"><i class="fa-brands fa-youtube"></i></button>
+	<div class="sep"></div>
+    <button class="tool-btn" onclick="exportJson()" title="Download JSON"><i class="fa-solid fa-download"></i></button>
+  </div>
+  
+  <div id="preview">
+    <div class="preview-box"><div id="map"></div></div>
+    <div class="preview-box" id="videoPreview">
+        <div class="placeholder-text">Select a row to play video</div>
+    </div>
+  </div>
+  
+  <div id="table-container"></div>
+  
+</div>
+
+<canvas id="canvas-buffer"></canvas>
+
+<div id="toolbar">
+    <button class="tool-btn" onclick="loadJson()" title="Open Local JSON">
+        <i class="fa-solid fa-folder-open"></i>
+    </button>
+    <input type="file" id="fileInput" style="display:none" accept=".json" onchange="handleFileSelect(event)">
+    
+    <div id="status-msg"></div>
+</div>
+
+<div id="lightbox" class="lightbox" onclick="closeLightbox()">
+    <div class="lightbox-content" onclick="event.stopPropagation()">
+        <span class="close-btn" onclick="closeLightbox()">&times;</span>
+        <div id="lightbox-video-container"></div>
+    </div>
+</div>
+
+<script src="escripts.js"></script>
+</body>
+</html>
