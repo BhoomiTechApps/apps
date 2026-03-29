@@ -291,3 +291,12 @@ document.addEventListener("DOMContentLoaded", () => {
     MapPreview.initMap();
     MapPreview.refresh();
 });
+
+document.getElementById('toolbarMenuBtn').addEventListener('click', function() {
+  const tray = document.getElementById('secondaryControls');
+  const isExpanded = tray.classList.toggle('expanded');
+  const icon = this.querySelector('i');
+  
+  icon.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+  this.style.background = isExpanded ? 'var(--accent-color)' : '';
+});

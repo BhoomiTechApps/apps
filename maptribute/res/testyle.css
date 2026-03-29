@@ -9,10 +9,9 @@ body {
   margin: 0;
   padding: 0;
   background: #f6f6f6;
-  overflow: hidden; /* Prevent body scroll, use wrapper scrolls */
+  overflow: hidden;
 }
 
-/* Fixed Toolbar */
 .toolbar {
   position: fixed;
   top: 0;
@@ -38,10 +37,32 @@ body {
 .controls-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-/* Content adjustment for fixed header */
+.secondary-controls {
+  display: none;
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: #34495e;
+  padding: 10px 15px;
+  flex-direction: row;
+  gap: 12px;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  border-bottom-left-radius: 8px;
+  z-index: 2999;
+}
+
+.secondary-controls.expanded {
+  display: flex;
+}
+
+#toolbarMenuBtn i {
+  transition: transform 0.3s ease;
+}
+
 .content-area {
   flex: 1;
   margin-top: 50px;
@@ -53,7 +74,6 @@ body {
   min-height: 0;
 }
 
-/* Icon Buttons and Labels */
 button, .icon-btn-label {
   background: rgba(255,255,255,0.1);
   border: none;
@@ -72,12 +92,10 @@ button:hover, .icon-btn-label:hover {
   background: var(--accent-color);
 }
 
-/* Hide actual file input */
 input[type="file"] {
   display: none;
 }
 
-/* Search styling */
 .search-container {
   position: relative;
   display: flex;
@@ -101,8 +119,15 @@ input[type="file"] {
   color: white;
 }
 
-#searchInput::placeholder { color: #bdc3c7; }
-#searchInput:focus { background: white; color: #333; outline: none; }
+#searchInput::placeholder {
+  color: #bdc3c7;
+}
+
+#searchInput:focus {
+  background: white;
+  color: #333;
+  outline: none;
+}
 
 #fontSizeSelect {
   height: 32px;
@@ -113,9 +138,10 @@ input[type="file"] {
   padding: 0 5px;
 }
 
-#fontSizeSelect option { color: black; }
+#fontSizeSelect option {
+  color: black;
+}
 
-/* Filter */
 .filters-hidden #fltrControls {
     display: none !important;
 }
@@ -141,7 +167,6 @@ button#toggleFilterBtn.active {
     height: 30px;
 }
 
-/* Table and Map Containers */
 #tableWrapper {
   flex: 1; 
   overflow: auto;
@@ -183,7 +208,6 @@ th.resizable .resize-handle {
   cursor: col-resize;
 }
 
-/* Column Toggle List Adjustments */
 #columnToggle { position: relative; }
 #columnList {
   display: none;
@@ -209,25 +233,45 @@ th.resizable .resize-handle {
   cursor: pointer;
 }
 
-/* Map Panel */
 #mapPanel {
   height: 0;
   overflow: hidden;
   transition: height 0.3s ease-in-out;
   border: 1px solid #ccc;
   margin-bottom: 10px;
-  border-radius: 8px; /* Optional: matches the modern toolbar look */
+  border-radius: 8px;
 }
 
 #mapPanel.expanded { 
-  height: 50vh; /* Increased from ~340px to 50% of screen height */
+  height: 50vh;
 }
 	
-#map { width: 100%; height: 100%; }
+#map {
+  width: 100%;
+  height: 100%;
+}
 
-tr.selected td { background-color: #d0e7ff !important; }
+tr.selected td {
+  background-color: #d0e7ff !important;
+}
 
-@media (max-width: 768px) {
-  .brand { display: none; }
-  #searchInput { width: 120px; }
+@media (max-width: 600px) {
+  .brand { 
+    font-size: 1rem; 
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+  }
+  
+  #searchInput { 
+    width: 100px; 
+  }
+
+  .secondary-controls {
+    left: 0;
+    border-radius: 0;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
 }
