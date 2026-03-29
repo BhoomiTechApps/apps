@@ -208,12 +208,16 @@ th.resizable .resize-handle {
   cursor: col-resize;
 }
 
-#columnToggle { position: relative; }
+#columnToggle {
+  position: relative;
+}
+
+
 #columnList {
   display: none;
   position: absolute;
   top: 42px;
-  right: 0;
+  right: 0; /* Aligns to right edge of button on desktop */
   background: white;
   border: 1px solid #ccc;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
@@ -273,5 +277,15 @@ tr.selected td {
     border-radius: 0;
     justify-content: center;
     flex-wrap: wrap;
+  }
+  
+  #columnList {
+    right: auto;
+    left: 0;
+    min-width: 250px;
+    position: fixed;
+    top: 100px;
+    left: 10px;
+    right: 10px;
   }
 }
