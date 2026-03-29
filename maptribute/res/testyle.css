@@ -51,7 +51,7 @@ body {
   background: #34495e;
   padding: 10px 15px;
   flex-direction: row;
-  gap: 12px;
+  gap: 8px;
   align-items: center;
   box-shadow: 0 4px 10px rgba(0,0,0,0.3);
   border-bottom-left-radius: 8px;
@@ -60,6 +60,22 @@ body {
 
 .secondary-controls.expanded {
   display: flex;
+}
+
+.table-locked td {
+  background-color: #fcfcfc;
+  cursor: default;
+  color: #888;
+  outline: none;
+}
+
+.table-locked tr.selected td {
+  background-color: #d0e7ff !important;
+  color: #333;
+}
+
+#toggleEditBtn.locked {
+  background: #e74c3c;
 }
 
 #toolbarMenuBtn i {

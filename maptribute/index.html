@@ -20,14 +20,17 @@
 <body>
 
 <header class="toolbar">
-  <div class="brand">BhoomiTech MapTribute</div>
+  <div class="brand">MapTribute</div>
   
   <div class="controls-right">
     <div class="search-container">
       <i class="fas fa-search"></i>
       <input type="text" id="searchInput" placeholder="Search attributes..." />
     </div>
-
+    <label class="icon-btn-label" title="Open GeoJSON">
+        <input type="file" id="fileInput" accept=".geojson,.json" />
+        <i class="fas fa-folder-open"></i>
+    </label>
     <button id="toolbarMenuBtn" title="More Options">
       <i class="fas fa-chevron-down"></i>
     </button>
@@ -48,10 +51,9 @@
       <button id="toggleMapBtn" title="Toggle Map View"><i class="fas fa-map-marked-alt"></i></button>
       <button id="toggleFilterBtn" title="Toggle Filters"><i class="fas fa-filter"></i></button>
       
-      <label class="icon-btn-label" title="Open GeoJSON">
-        <input type="file" id="fileInput" accept=".geojson,.json" />
-        <i class="fas fa-folder-open"></i>
-      </label>
+      <button id="toggleEditBtn" title="Toggle Edit Lock">
+        <i class="fas fa-lock-open"></i>
+      </button>
 
       <button id="exportExcelBtn" style="display:none;" title="Export to Excel"><i class="fas fa-file-excel"></i></button>
       <button id="saveBtn" style="display:none;" title="Save GeoJSON"><i class="fas fa-save"></i></button>

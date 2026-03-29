@@ -2,6 +2,7 @@ let geojsonData = null;
 let visibleColumns = {};
 let filteredFeatures = [];
 let selectedRowIndex = null;
+let isTableLocked = true;
 
 document.getElementById('fileInput').addEventListener('change', handleFile);
 document.getElementById('fontSizeSelect').addEventListener('change', e => {
@@ -166,30 +167,42 @@ function handleSearch(e) {
 function renderTable() {
   const feats = filteredFeatures;
   const tableContainer = document.getElementById('tableContainer');
-  const isCurrentlyHidden = tableContainer.classList.contains('filters-hidden'); // new line
-  if (!feats.length) {
+  if (!feats || !feats.length) {
     tableContainer.innerHTML = "<p style='padding:10px;'>No matching records.</p>";
     return;
   }
+  const isCurrentlyHidden = tableContainer.classList.contains('filters-hidden');
   const keys = Object.keys(feats[0].properties).filter(k => visibleColumns[k]);
+  const editableAttr = isTableLocked ? 'false' : 'true';
+  if (isTableLocked) {
+    tableContainer.classList.add('table-locked');
+  } else {
+    tableContainer.classList.remove('table-locked');
+  }
   let html = '<table><thead><tr>';
-  keys.forEach(k => (html += `<th class="resizable">${k}<div class="resize-handle"></div></th>`));
+  keys.forEach(k => {
+    html += `<th class="resizable">${k}<div class="resize-handle"></div></th>`;
+  });
   html += '</tr></thead><tbody>';
   feats.forEach((f, i) => {
     html += `<tr data-row="${i}">`;
     keys.forEach(k => {
-      html += `<td contenteditable="true" data-row="${i}" data-key="${k}">${f.properties[k] ?? ''}</td>`;
+      html += `<td contenteditable="${editableAttr}" data-row="${i}" data-key="${k}">${f.properties[k] ?? ''}</td>`;
     });
     html += '</tr>';
   });
   html += '</tbody></table>';
   tableContainer.innerHTML = html;
-  if (isCurrentlyHidden) { //new line
-    tableContainer.classList.add('filters-hidden');//new line
-  } //new line
-  if (typeof fltr_build === 'function') fltr_build();
-    enableResizing();
-    enableRowSelection();
+  if (isCurrentlyHidden) {
+    tableContainer.classList.add('filters-hidden');
+  } else {
+    tableContainer.classList.remove('filters-hidden');
+  }
+  if (typeof fltr_build === 'function') {
+    fltr_build(); 
+  }
+  enableResizing();
+  enableRowSelection();
 }
 
 function enableRowSelection() {
@@ -295,17 +308,39 @@ document.getElementById('toggleFilterBtn').addEventListener('click', function() 
   this.classList.toggle('active', !isHidden);
 });
 
-document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById('tableContainer').classList.add('filters-hidden');
-    MapPreview.initMap();
-    MapPreview.refresh();
-});
-
 document.getElementById('toolbarMenuBtn').addEventListener('click', function() {
   const tray = document.getElementById('secondaryControls');
   const isExpanded = tray.classList.toggle('expanded');
   const icon = this.querySelector('i');
-  
   icon.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
   this.style.background = isExpanded ? 'var(--accent-color)' : '';
+});
+
+document.getElementById('toggleEditBtn').addEventListener('click', function() {
+  isTableLocked = !isTableLocked;
+  const icon = this.querySelector('i');
+  const tableContainer = document.getElementById('tableContainer');
+  if (isTableLocked) {
+    this.classList.add('locked');
+    icon.classList.replace('fa-lock-open', 'fa-lock');
+    tableContainer.classList.add('table-locked');
+  } else {
+    this.classList.remove('locked');
+    icon.classList.replace('fa-lock', 'fa-lock-open');
+    tableContainer.classList.remove('table-locked');
+  }
+  document.querySelectorAll('td[contenteditable]').forEach(td => {
+    td.contentEditable = !isTableLocked;
+  });
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const tableContainer = document.getElementById('tableContainer');
+    tableContainer.classList.add('filters-hidden');
+    const lockBtn = document.getElementById('toggleEditBtn');
+    lockBtn.classList.add('locked');
+    lockBtn.querySelector('i').classList.replace('fa-lock-open', 'fa-lock');
+    tableContainer.classList.add('table-locked');
+    MapPreview.initMap();
+    MapPreview.refresh();
 });
