@@ -88,24 +88,26 @@ const MapPreview = (() => {
   function highlightFeature(feature) {
     if (!map) return;
     if (highlightLayer) highlightLayer.remove();
-    highlightLayer = L.geoJSON(feature, {
+   highlightLayer = L.geoJSON(feature, {
       style: { color: 'red', weight: 4, fillOpacity: 0.4 },
       pointToLayer: (feature, latlng) =>
         L.circleMarker(latlng, { radius: 7, color: 'red', fillOpacity: 0.8, weight: 3 })
     }).addTo(map);
-
-    try {
-      const bounds = highlightLayer.getBounds();
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, { 
-          padding: [30, 30], 
-          maxZoom: 16,
-          animate: true 
-        });
-      }
-    } catch (e) {
-      console.error("Could not zoom to feature bounds", e);
-    }
+    setTimeout(() => {
+      try {
+        const bounds = highlightLayer.getBounds();
+        if (bounds.isValid()) {
+          map.invalidateSize();
+          map.fitBounds(bounds, { 
+            padding: [30, 30], 
+            maxZoom: 16,
+            animate: true 
+          });
+        }
+      } catch (e) {
+        console.error("Could not zoom to feature bounds", e);
+     }
+    }, 50);
   }
 
   function refresh() {
@@ -272,11 +274,18 @@ function handleMapFeatureClick(feature) {
   if (rowIndex === -1) return;
   const tableWrapper = document.getElementById('tableWrapper');
   const rows = tableWrapper.querySelectorAll('tbody tr');
-  rows.forEach(r => r.classList.remove('selected'));
   const row = rows[rowIndex];
   if (row) {
+    rows.forEach(r => r.classList.remove('selected'));
     row.classList.add('selected');
-    row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const wrapperRect = tableWrapper.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    if (rowRect.top < wrapperRect.top || rowRect.bottom > wrapperRect.bottom) {
+      tableWrapper.scrollTo({
+        top: row.offsetTop - (tableWrapper.offsetHeight / 2),
+        behavior: 'smooth'
+      });
+    }
   }
 }
 

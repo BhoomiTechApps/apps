@@ -5,11 +5,14 @@
 }
 
 body {
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  overflow: hidden;
   font-family: 'Segoe UI', Arial, sans-serif;
   margin: 0;
   padding: 0;
   background: #f6f6f6;
-  overflow: hidden;
 }
 
 .toolbar {
@@ -212,7 +215,6 @@ th.resizable .resize-handle {
   position: relative;
 }
 
-
 #columnList {
   display: none;
   position: absolute;
@@ -238,21 +240,26 @@ th.resizable .resize-handle {
 }
 
 #mapPanel {
+  position: relative;
   height: 0;
   overflow: hidden;
   transition: height 0.3s ease-in-out;
   border: 1px solid #ccc;
   margin-bottom: 10px;
   border-radius: 8px;
+  clear: both;
 }
 
 #mapPanel.expanded { 
   height: 50vh;
 }
-	
+
 #map {
   width: 100%;
   height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 tr.selected td {
