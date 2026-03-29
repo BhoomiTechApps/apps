@@ -1,47 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GeoJSON Attribute Editor</title>
+<title>Bhoomitech Maptribute</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#2c3e50">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
-<link rel="stylesheet" href="leaflet/leaflet.css"/>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<link rel="stylesheet" href="res/testyle-mnf.css"/>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="leaflet/leaflet.css" />
+<link rel="stylesheet" href="fontawesome/all.min.css">
+<link rel="stylesheet" href="res/testyle.css"/>
 <script src="cdn/xlsx.full.min.js"></script>
+  
 </head>
+
 <body>
-<h3>BhoomiTech Attribute Editor</h3>
-<div class="inline-row" id="controls">
-  <input type="file" id="fileInput" accept=".geojson,.json" />
-  <div>
-    <select id="fontSizeSelect">
-	  <option value="" selected><- Select Font Size -></option>
-      <option value="12px">Small</option>
-      <option value="14px">Normal</option>
-      <option value="16px">Large</option>
+
+<header class="toolbar">
+  <div class="brand">BhoomiTech MapTribute</div>
+  
+  <div class="controls-right">
+    <div class="search-container">
+      <i class="fas fa-search"></i>
+      <input type="text" id="searchInput" placeholder="Search attributes..." />
+    </div>
+
+    <select id="fontSizeSelect" title="Change Font Size">
+      <option value="12px">S</option>
+      <option value="14px" selected>M</option>
+      <option value="16px">L</option>
       <option value="18px">XL</option>
     </select>
+
+    <div id="columnToggle">
+      <button id="toggleColumnsBtn" title="Show/Hide Columns"><i class="fas fa-columns"></i></button>
+      <div id="columnList"></div>
+    </div>
+
+    <button id="toggleMapBtn" title="Toggle Map View"><i class="fas fa-map-marked-alt"></i></button>
+    <button id="toggleFilterBtn" title="Toggle Filters"><i class="fas fa-filter"></i></button>
+    <label class="icon-btn-label" title="Open GeoJSON">
+      <input type="file" id="fileInput" accept=".geojson,.json" />
+      <i class="fas fa-folder-open"></i>
+    </label>
+
+    <button id="exportExcelBtn" style="display:none;" title="Export to Excel"><i class="fas fa-file-excel"></i></button>
+    <button id="saveBtn" style="display:none;" title="Save GeoJSON"><i class="fas fa-save"></i></button>
   </div>
-  <input type="text" id="searchInput" placeholder="Search..." />
-  <div id="columnToggle">
-    <button id="toggleColumnsBtn">Show/Hide Columns</button>
-    <div id="columnList"></div>
-  </div>
-  <button id="toggleMapBtn"> Show/Hide Map</button>
-</div>
-<div id="mapPanel" class="expanded"><div id="map"></div></div>
-<div id="tableWrapper"><div id="tableContainer"></div></div>
-<hr>
-<div class="inline-row" id="controls1">
-  <button id="exportExcelBtn" style="display:none;">Export Excel</button>
-  <button id="saveBtn" style="display:none;">Save GeoJSON</button>
-</div>
+</header>
+
+<main class="content-area">
+  <div id="mapPanel" class="expanded"><div id="map"></div></div>
+  <div id="tableWrapper"><div id="tableContainer"></div></div>
+</main>
+
 <script src="leaflet/leaflet.js"></script>
-<script src="res/tescript-obf.js"></script>
-<script src="res/fltr-obf.js"></script>
+<script src="res/tescript.js"></script>
+<script src="res/fltr.js"></script>
 </body>
 </html>
-
-
-
