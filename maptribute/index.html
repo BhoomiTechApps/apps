@@ -64,6 +64,17 @@
   <div id="tableWrapper"><div id="tableContainer"></div></div>
 </main>
 
+<script>
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('SW Registered!', reg))
+        .catch(err => console.error('SW Registration failed!', err));
+    });
+  }
+</script>
+
 <script src="leaflet/leaflet.js"></script>
 <script src="res/tescript.js"></script>
 <script src="res/fltr.js"></script>
