@@ -32,11 +32,11 @@ body, html {
 
 .top-status {
     position: absolute;
-    top: 20px;
+    bottom: 10px;
     left: 50%;
     transform: translateX(-50%);
     background: rgba(255, 255, 255, 0.95);
-    padding: 10px 20px;
+    padding: 8px 16px;
     border-radius: 30px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     z-index: 1100;
@@ -46,6 +46,7 @@ body, html {
     align-items: center;
     gap: 8px;
     border: 1px solid #e2e8f0;
+    white-space: nowrap;
 }
 
 #fab-camera {
@@ -71,6 +72,12 @@ body, html {
 }
 
 #fab-camera:active { transform: scale(0.9); }
+
+.popup-coords-text {
+	font-size: .6em;
+	text-align: center;
+	margin-top: 5px;
+}
 
 #fab-upload {
     position: absolute;
@@ -231,16 +238,42 @@ input, textarea {
 
 .queue-item {
     display: flex;
-    align-items: center;
-    gap: 6px;
+    align-items: left;
+    gap: 2px;
     padding: 8px;
     background: #f1f5f9;
-    border-radius: 6px;
-    margin-bottom: 6px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+	font-size: 12px;
 }
 
 .queue-thumb {
-    width: 65px; height: 65px;
+    width: 50px; height: 50px;
     object-fit: cover;
-    border-radius: 8px;
+    border-radius: 5px;
+}
+
+#queue-list {
+    max-height: 54vh;
+    overflow-y: auto;
+    padding-right: 5px;
+    margin-top: 10px;
+}
+
+#queue-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+#queue-list::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#queue-list::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+#queue-list::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
 }

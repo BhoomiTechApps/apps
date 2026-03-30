@@ -15,7 +15,9 @@ const ASSETS = [
   'images/marker-icon-2x.png',
   'images/marker-shadow.png',
   'Control.Geocoder.css',
-  'Control.Geocoder.js'
+  'Control.Geocoder.js',
+  'L.Control.Locate.min.css',
+  'L.Control.Locate.min.js'
 ];
 
 self.addEventListener('install', (event) => {

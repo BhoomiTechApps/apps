@@ -1,14 +1,16 @@
 const dbName = "GeoTagDB";
 const storeName = "captures";
 let map, marker;
-let currentCoords = { lat: 0, lng: 0 };
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
     iconRetinaUrl: 'images/marker-icon-2x.png',
     iconUrl: 'images/marker-icon.png',
     shadowUrl: 'images/marker-shadow.png',
+    iconSize: [25, 41],
+    iconAnchor: [12, 41], 
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41]
 });
-
 const openDB = () => {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(dbName, 2);
@@ -52,7 +54,7 @@ async function initCamera() {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
         video.srcObject = stream;
     } catch (err) {
-        console.warn("Camera blocked or unavailable. Using file picker fallback.");
+        console.warn("Camera blocked or unavailable.");
     }
 }
 
@@ -71,65 +73,46 @@ async function getImageFromDevice() {
 }
 
 function initMap() {
-    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { 
-        maxZoom: 19, 
-        attribution: '© OpenStreetMap' 
-    });
-    const googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { 
-        maxZoom: 19, 
-        attribution: '© Google' 
-    });
-    const googleStreet = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { 
-        maxZoom: 19, 
-        attribution: '© Google' 
-    });
+    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+    const googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', { maxZoom: 19 });
+    const googleStreet = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', { maxZoom: 19 });
     map = L.map('map', { 
         zoomControl: false,
         layers: [osmLayer] 
     }).setView([20.5937, 78.9629], 5);
-	L.control.zoom({
-        position: 'bottomleft'
-    }).addTo(map);
-    const baseMaps = {
-        "OpenStreetMap": osmLayer,
-        "Google Hybrid": googleHybrid,
-        "Google Street": googleStreet
-    };
-    L.control.layers(baseMaps, null, { position: 'topright' 
-	}).addTo(map);
-    map.addControl(new StreetViewControl());
-    const bottomCenter = map._controlCorners.bottomcenter = L.DomUtil.create('div', 'leaflet-bottom leaflet-center', map._controlContainer);
+    L.control.zoom({ position: 'bottomleft' }).addTo(map);
     const geocoder = L.Control.geocoder({
         defaultMarkGeocode: false,
-       placeholder: "Search location...",
-        position: 'bottomcenter'
+        placeholder: "Search location...",
+        position: 'bottomleft'
     })
     .on('markgeocode', function(e) {
-        const bbox = e.geocode.bbox;
-        const poly = L.polygon([
-            bbox.getSouthEast(),
-            bbox.getNorthEast(),
-            bbox.getNorthWest(),
-            bbox.getSouthWest()
-        ]);
-        map.fitBounds(poly.getBounds());
-        setMarker(e.geocode.center.lat, e.geocode.center.lng);
+        setMarker(e.geocode.center.lat, e.geocode.center.lng, true);
     })
     .addTo(map);
-    map.on('click', function(e) {
-        setMarker(e.latlng.lat, e.latlng.lng);
+    const LocateControl = L.Control.extend({
+        options: { position: 'bottomleft' },
+        onAdd: function(map) {
+            const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+            const button = L.DomUtil.create('a', '', container);
+            button.innerHTML = '🎯';
+            button.style.cssText = 'cursor:pointer; background:white; text-align:center; line-height:30px; font-size:18px; display:block; width:30px; height:30px;';
+            button.onclick = function(e) {
+                L.DomEvent.stopPropagation(e);
+                window.useLocation();
+            };
+            return container;
+        }
     });
-    navigator.geolocation.watchPosition(updateGPS, handleGPSError, {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 10000
+    map.addControl(new LocateControl());
+    L.control.layers({ "OSM": osmLayer, "Hybrid": googleHybrid, "Street": googleStreet }, null, { position: 'topright' }).addTo(map);
+    map.addControl(new StreetViewControl());
+    window.useLocation();
+    map.on('click', function(e) {
+        setMarker(e.latlng.lat, e.latlng.lng, false);
     });
     document.getElementById('lat').addEventListener('input', updateFromInputs);
     document.getElementById('lng').addEventListener('input', updateFromInputs);
-}
-
-function updateGPS(pos) {
-    setMarker(pos.coords.latitude, pos.coords.longitude, false); 
 }
 
 function setMarker(lat, lng, moveMap = true) {
@@ -152,27 +135,25 @@ function setMarker(lat, lng, moveMap = true) {
     }
 }
 
-function updateFromInputs() {
-    const lat = document.getElementById('lat').value;
-    const lng = document.getElementById('lng').value;
-    if (lat && lng) setMarker(lat, lng);
-}
-
 window.useLocation = function() {
-    navigator.geolocation.getCurrentPosition(function(position) {
-        setMarker(position.coords.latitude, position.coords.longitude);
-    }, handleGPSError, { enableHighAccuracy: true });
+    if (!navigator.geolocation) return;
+    document.getElementById('coord-display').innerText = "🛰️ Finding location...";
+    navigator.geolocation.getCurrentPosition(
+        (pos) => setMarker(pos.coords.latitude, pos.coords.longitude, true), 
+        handleGPSError, 
+        { enableHighAccuracy: true, timeout: 5000 }
+    );
 };
 
 function handleGPSError(err) {
     console.warn("GPS Error: ", err.message);
-    const display = document.getElementById('coord-display');
-    if (err.code === 1) {
-        display.innerHTML = "⚠️ Location Access Denied. Please enable GPS.";
-        alert("Please enable location permissions in your browser settings to use this app.");
-    } else {
-        display.innerText = "🛰️ GPS Signal Weak / Finding Location...";
-    }
+    document.getElementById('coord-display').innerText = `⚠️ GPS: ${err.message}`;
+}
+
+function updateFromInputs() {
+    const lat = document.getElementById('lat').value;
+    const lng = document.getElementById('lng').value;
+    if (lat && lng) setMarker(lat, lng, true);
 }
 
 document.getElementById('save-idb-btn').onclick = async () => {
@@ -180,8 +161,7 @@ document.getElementById('save-idb-btn').onclick = async () => {
     const originalText = btn.innerText;
     btn.innerText = "💾 Saving...";
     btn.disabled = true;
-    const lat = document.getElementById('lat').value;
-    const lng = document.getElementById('lng').value;
+
     let imageBlob;
     if (video.srcObject && video.readyState === 4) {
         imageBlob = await captureFromCamera();
@@ -196,8 +176,8 @@ document.getElementById('save-idb-btn').onclick = async () => {
     }
     const entry = {
         id: Date.now().toString(),
-        lat: lat,
-        lng: lng,
+        lat: document.getElementById('lat').value,
+        lng: document.getElementById('lng').value,
         phone: document.getElementById('phone').value,
         desc: document.getElementById('desc').value,
         image: imageBlob
@@ -212,18 +192,6 @@ document.getElementById('save-idb-btn').onclick = async () => {
     renderQueue();
 };
 let selectedFileBlob = null;
-
-function openUploadPopup() {
-    document.getElementById('upload-popup').style.display = 'flex';
-}
-
-function closeUploadPopup() {
-    document.getElementById('upload-popup').style.display = 'none';
-    selectedFileBlob = null;
-    document.getElementById('file-preview').style.display = 'none';
-    document.getElementById('placeholder-text').style.display = 'block';
-}
-
 function triggerFileInput() {
     const input = document.createElement('input');
     input.type = 'file';
@@ -246,13 +214,11 @@ function triggerFileInput() {
 }
 
 document.getElementById('save-upload-btn').onclick = async () => {
-    if (!selectedFileBlob) return alert("Please select an image first!");
-    const lat = document.getElementById('lat').value;
-    const lng = document.getElementById('lng').value;
+    if (!selectedFileBlob) return alert("Select image!");
     const entry = {
         id: Date.now().toString(),
-        lat: lat,
-        lng: lng,
+        lat: document.getElementById('lat').value,
+        lng: document.getElementById('lng').value,
         phone: document.getElementById('phone-upload').value,
         desc: document.getElementById('desc-upload').value,
         image: selectedFileBlob
@@ -260,7 +226,7 @@ document.getElementById('save-upload-btn').onclick = async () => {
     const db = await openDB();
     const tx = db.transaction(storeName, "readwrite");
     await tx.objectStore(storeName).add(entry);
-    alert("Point Captured Successfully!");
+    alert("Captured!");
     closeUploadPopup();
     renderQueue();
 };
@@ -269,38 +235,28 @@ async function renderQueue() {
     const db = await openDB();
     const tx = db.transaction(storeName, "readonly");
     const entries = await new Promise(res => {
-    const req = tx.objectStore(storeName).getAll();
+        const req = tx.objectStore(storeName).getAll();
         req.onsuccess = () => res(req.result);
     });
     const list = document.getElementById('queue-list');
     const count = entries.length;
-    let html = `
-        <div class="sync-header">
-            <span><strong>${count}</strong> Pending Tags</span>
-            ${count > 0 ? `<button class="btn-bulk" onclick="exportAllToDisk()">💾 Save All</button>` : ''}
-        </div>
-    `;
+    let html = `<div class="sync-header"><span><strong>${count}</strong> Pending</span>
+                ${count > 0 ? `<button class="btn-bulk" onclick="exportAllToDisk()">💾 Save All</button>` : ''}</div>`;
+    
     if (count === 0) {
-        html += '<p style="text-align:center; padding:20px; color:#64748b;">No data in queue.</p>';
-        list.innerHTML = html;
+        list.innerHTML = html + '<p style="text-align:center; padding:20px;">Queue empty.</p>';
         return;
     }
     entries.forEach(entry => {
         const thumbUrl = URL.createObjectURL(entry.image);
-        html += `
-            <div class="queue-item">
-                <img src="${thumbUrl}" class="queue-thumb">
-                <div class="queue-info">
-                    <strong>Tag: ${entry.id.slice(-5)}</strong>
-                    <p>📍 ${entry.lat}, ${entry.lng}</p>
-                    <p>📞 ${entry.phone || 'N/A'}</p>
-                </div>
-                <div class="queue-actions">
-                    <button class="btn-mini btn-save" onclick="saveSingleToDisk('${entry.id}')">Export</button>
-                    <button class="btn-mini btn-del" onclick="deleteEntry('${entry.id}')">Clear</button>
-                </div>
+        html += `<div class="queue-item">
+            <img src="${thumbUrl}" class="queue-thumb">
+            <div class="queue-info"><strong>Tag: ${entry.id.slice(-5)}</strong><p>📍 ${entry.lat}, ${entry.lng}</p></div>
+            <div class="queue-actions">
+                <button class="btn-mini btn-save" onclick="saveSingleToDisk('${entry.id}')">Export</button>
+                <button class="btn-mini btn-del" onclick="deleteEntry('${entry.id}')">Clear</button>
             </div>
-        `;
+        </div>`;
     });
     list.innerHTML = html;
 }
@@ -356,33 +312,22 @@ async function saveSingleToDisk(id) {
 }
 
 async function deleteEntry(id) {
-    if (!confirm("Remove this item?")) return;
+    if (!confirm("Remove item?")) return;
     const db = await openDB();
     const tx = db.transaction(storeName, "readwrite");
     await tx.objectStore(storeName).delete(id);
     renderQueue();
 }
 
-function openCameraPopup() {
-    document.getElementById('camera-popup').style.display = 'flex';
-    initCamera();
-}
-
-function closeCameraPopup() {
+function openCameraPopup() { document.getElementById('camera-popup').style.display = 'flex'; initCamera(); }
+function closeCameraPopup() { 
     document.getElementById('camera-popup').style.display = 'none';
-    if (video.srcObject) {
-        video.srcObject.getTracks().forEach(track => track.stop());
-    }
+    if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
 }
-
-function showSettings() {
-    document.getElementById('settings-view').style.display = 'flex';
-    renderQueue();
-}
-
-function closeSettings() {
-    document.getElementById('settings-view').style.display = 'none';
-}
+function openUploadPopup() { document.getElementById('upload-popup').style.display = 'flex'; }
+function closeUploadPopup() { document.getElementById('upload-popup').style.display = 'none'; selectedFileBlob = null; }
+function showSettings() { document.getElementById('settings-view').style.display = 'flex'; renderQueue(); }
+function closeSettings() { document.getElementById('settings-view').style.display = 'none'; }
 
 window.onload = () => {
     initMap();
