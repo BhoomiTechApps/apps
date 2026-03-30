@@ -1,54 +1,79 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-  <meta charset="utf-8">
-  <title>BhoomiTech Heritage & Development Foundation</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="manifest" href="./manifest.json">
-  <link rel="icon" href="./favicon.ico" type="image/x-icon">
-  <link rel="stylesheet" href="./leaflet/leaflet.css"/>
-  <script type="module" crossorigin src="./assets/main-6bV3x6M1.js"></script>
-  <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
-  <link rel="stylesheet" crossorigin href="./assets/main-lRD3bWCo.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GeoTag Pro Mapper</title>
+	<link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="stylesheet" href="leaflet.css" />
+    <link rel="stylesheet" href="Control.Geocoder.css" />
+    <link rel="stylesheet" href="styles.css">
+    <script src="leaflet.js"></script>
+    <script src="Control.Geocoder.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js', { scope: '/apps/locator/' })
+            .then(reg => console.log("SW registered", reg))
+            .catch(err => console.log("SW registration failed", err));
+        });
+      }
+    </script>
 </head>
-
 <body>
-<header>
-  BhoomiTech Locator
-  <span id="status-dot"></span>
-</header>
-<div id="map"></div>
-<div class="container">
-  <button onclick="useLocation()">Get Current Location</button>
-  <div class="coord-row">
-    <input type="text" id="lat" placeholder="Latitude">
-    <input type="text" id="lng" placeholder="Longitude">
-  </div>
-  <input type="text" id="name" placeholder="Your Name">
-  <input type="text" id="phone" placeholder="WhatsApp Number">
-  <textarea id="description" placeholder="Description"></textarea>
-  <input type="file" id="photo" accept="image/*" capture="environment">
-  <div class="button-group">
-    <button id="btnDash" onclick="window.location.href='./dashboard/'">Dash</button>
-    <button id="btnSync" onclick="manualSync()">Sync</button>
-    <button id="submitBtn" onclick="submitData()" disabled>Submit</button>
-  </div>
-</div>
-
-<script src="./leaflet/leaflet.js"></script>
-<script src="./db.js"></script>
-<script src="./main.js"></script>
-
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js')
-        .then(reg => console.log('Service Worker registered'))
-        .catch(err => console.log('Service Worker registration failed', err));
-    });
-  }
-</script>
-
+<div id="app-container">
+    <div id="map"></div>
+    <div class="top-status">
+        <span id="coord-display">🛰️ Initializing GPS...</span>
+    </div>
+    <button id="fab-camera" onclick="openCameraPopup()">📸</button>
+    <button id="fab-upload" onclick="openUploadPopup()">📁</button>
+    <button class="settings-btn" onclick="showSettings()">⚙️</button>
+    <div id="camera-popup" class="popup-overlay">
+        <div class="popup-content">
+            <button class="close-btn" onclick="closeCameraPopup()">✕</button>
+            <video id="video" autoplay playsinline></video>
+            <canvas id="canvas" style="display:none;"></canvas>            
+            <div class="form-group">
+                <input type="text" id="phone" placeholder="Phone Number">
+                <textarea id="desc" placeholder="Enter site observations..."></textarea>
+                <input type="hidden" id="lat">
+                <input type="hidden" id="lng">
+            </div>
+            <button id="save-idb-btn" class="main-btn">Save to Queue</button>
+            <div class="popup-coords-text">
+                Current Lock: <span id="popup-coords">Detecting...</span>
+            </div>
+        </div>
+    </div>
+    <div id="upload-popup" class="popup-overlay">
+      <div class="popup-content">
+        <button class="close-btn" onclick="closeUploadPopup()">✕</button>      
+        <div id="file-preview-container">
+            <img id="file-preview" src="" alt="Preview">
+            <div id="placeholder-text">No image selected</div>
+        </div>
+        <button class="main-btn btn-secondary" onclick="triggerFileInput()">
+            Choose Image
+        </button>
+        <div class="form-group">
+            <input type="text" id="phone-upload" placeholder="Phone Number">
+            <textarea id="desc-upload" placeholder="Enter site observations..."></textarea>
+        </div>
+        <button id="save-upload-btn" class="main-btn">Save to Queue</button>
+      </div>
+    </div>
+    <div id="settings-view" class="popup-overlay">
+        <div class="popup-content">
+            <button class="close-btn" onclick="closeSettings()">✕</button>
+            <h3>Local Queue Management</h3>
+            <div id="queue-list">
+                <p>No pending captures.</p>
+            </div>
+        </div>
+    </div>
+</div> <script src="scripts.js"></script>
 </body>
 </html>

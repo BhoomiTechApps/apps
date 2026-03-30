@@ -1,0 +1,246 @@
+:root {
+    --primary: #2563eb;
+    --success: #10b981;
+    --danger: #ef4444;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --text: #1e293b;
+    --text-light: #64748b;
+}
+
+body, html {
+    margin: 00;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    font-family: system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+}
+
+#app-container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#map {
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+}
+
+.top-status {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 10px 20px;
+    border-radius: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    z-index: 1100;
+    font-weight: bold;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+#fab-camera {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: auto;
+    bottom: auto;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: white;
+    font-size: 28px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1100; 
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+#fab-camera:active { transform: scale(0.9); }
+
+#fab-upload {
+    position: absolute;
+    top: 90px;
+    left: 20px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #64748b;
+    color: white;
+    font-size: 28px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1100;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.settings-btn {
+    position: absolute;
+    top: 160px;
+    left: 20px;
+    bottom: auto;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    background: white;
+    border: 1px solid #e2e8f0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.leaflet-bottom.leaflet-center {
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 20px;
+    margin-bottom: 0;
+}
+
+.leaflet-control-geocoder {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    background: white;
+}
+
+.popup-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.popup-content {
+    background: var(--card);
+    width: 100%;
+    max-width: 450px;
+    border-radius: 10px;
+    padding: 10px;
+    position: relative;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    max-height: 90vh;
+}
+
+#video {
+    width: 100%;
+    border-radius: 10px;
+    background: #000;
+    margin: 6px 0;
+    aspect-ratio: 4/3;
+    object-fit: cover;
+}
+
+.form-group {
+    display: flex;
+	flex-direction: column;
+	gap: 6px; }
+
+input, textarea {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 14px !important;
+}
+
+.main-btn {
+    width: 100%;
+    padding: 10px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: .85rem;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.close-btn {
+    position: absolute;
+    top: 5px; right: 5px;
+    width: 20px; height: 20px;
+    background: var(--danger);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+#file-preview-container {
+    width: 100%;
+    margin: 8px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+}
+
+#file-preview {
+    width: 100%;
+    max-height: 40vh;
+    border-radius: 12px;
+    display: none;
+    aspect-ratio: 16 / 9;
+    object-fit: contain;
+    background: #eee;
+}
+
+#placeholder-text {
+    width: 100%;
+    text-align: center;
+    padding: 20px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-light);
+    box-sizing: border-box;
+}
+
+.btn-secondary {
+    background: #64748b !important;
+    margin-bottom: 10px;
+}
+
+.queue-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px;
+    background: #f1f5f9;
+    border-radius: 6px;
+    margin-bottom: 6px;
+}
+
+.queue-thumb {
+    width: 65px; height: 65px;
+    object-fit: cover;
+    border-radius: 8px;
+}

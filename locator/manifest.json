@@ -1,11 +1,13 @@
 {
-  "name": "BhoomiTech Locator",
-  "short_name": "Locator",
-  "description": "Easily locate and manage your community assets.",
-  "start_url": "./index.html",
+  "short_name": "GeoTag",
+  "name": "GeoTag: Location & Image Mapper",
+  "start_url": "/apps/locator/index.html",
+  "scope": "/apps/locator/",
   "display": "standalone",
-  "background_color": "#004d40",
-  "theme_color": "#004d40",
+  "orientation": "any",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "description": "Capture images with GPS coordinates and export them directly to your local file system.",
   "icons": [
     {
       "src": "icon-192.png",
@@ -31,14 +33,14 @@
       "src": "screenshot-mobile.png",
       "sizes": "750x1553",
       "type": "image/png",
-      "label": "BhoomiTech Locator on Mobile"
+      "label": "GeoTag on Mobile"
     },
     {
       "src": "screenshot-desktop.png",
       "sizes": "1280x720",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "BhoomiTech Locator on Desktop"
+      "label": "GeoTag on Desktop"
     }
   ]
 }
