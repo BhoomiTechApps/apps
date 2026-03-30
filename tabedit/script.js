@@ -33,29 +33,81 @@
     }
 
     function renderUI() {
-        if (!geoData || !geoData.features.length) return;
-        const columns = Object.keys(geoData.features[0].properties);
-        const listContainer = document.getElementById('columnList');
-        listContainer.innerHTML = '';
-        columns.forEach((col, index) => {
-            const div = document.createElement('div');
-            div.className = 'col-item';
-            div.innerHTML = `
-                <div class="col-info">
-                    <i class="fas fa-ellipsis-v"></i>
-                    <span>${col}</span>
-                </div>
-                <div class="actions">
-                    <button class="btn-tool" onclick="moveCol(${index}, -1)" title="Move Up"><i class="fas fa-chevron-up"></i></button>
-                    <button class="btn-tool" onclick="moveCol(${index}, 1)" title="Move Down"><i class="fas fa-chevron-down"></i></button>
-                    <button class="btn-tool" onclick="renameCol('${col}')" title="Rename"><i class="fas fa-pen"></i></button>
-                    <button class="btn-danger" onclick="deleteCol('${col}')" title="Delete"><i class="fas fa-trash-alt"></i></button>
-                </div>
-            `;
-            listContainer.appendChild(div);
-        });
-        document.getElementById('jsonDisplay').innerText = JSON.stringify(geoData, null, 2);
+    const listContainer = document.getElementById('columnList');
+    const jsonDisplay = document.getElementById('jsonDisplay');
+
+    if (!geoData || !geoData.features || geoData.features.length === 0) {
+        listContainer.innerHTML = '<p style="font-size: 0.8rem; color: #94a3b8;">Empty or invalid GeoJSON.</p>';
+        return;
     }
+
+    // 1. Render Column Rows (Schema)
+    // We only look at the first feature to determine the schema
+    const columns = Object.keys(geoData.features[0].properties);
+    listContainer.innerHTML = '';
+
+    columns.forEach((col, index) => {
+        const div = document.createElement('div');
+        div.className = 'col-item';
+        div.innerHTML = `
+            <div class="col-info">
+                <i class="fas fa-grip-vertical"></i>
+                <span>${col}</span>
+            </div>
+            <div class="actions">
+                <button class="btn-tool" onclick="moveCol(${index}, -1)" title="Move Up"><i class="fas fa-chevron-up"></i></button>
+                <button class="btn-tool" onclick="moveCol(${index}, 1)" title="Move Down"><i class="fas fa-chevron-down"></i></button>
+                <button class="btn-tool" onclick="renameCol('${col}')" title="Rename"><i class="fas fa-edit"></i></button>
+                <button class="btn-danger" onclick="deleteCol('${col}')" title="Delete"><i class="fas fa-trash-alt"></i></button>
+            </div>
+        `;
+        listContainer.appendChild(div);
+    });
+
+    // 2. Render JSON Summary instead of full code for large files
+    const featureCount = geoData.features.length;
+    
+    // Check if total character count is likely to lag the browser (approx > 500KB)
+    // Or if feature count is high.
+    const approxSize = JSON.stringify(geoData).length;
+
+    if (approxSize > 500000) {
+        jsonDisplay.innerHTML = `
+        <span style="color: #fbbf24;">// LARGE FILE MODE ENABLED</span>
+        // Features: ${featureCount}
+        // Approx Size: ${(approxSize / 1024 / 1024).toFixed(2)} MB
+
+        // Full text preview is hidden to maintain performance.
+        // All Geometry data is preserved in memory.
+        // Use "Save" to apply schema changes to your file.
+
+        {
+          "type": "FeatureCollection",
+          "features": [ 
+            { 
+              "type": "Feature",
+              "properties": ${JSON.stringify(geoData.features[0].properties, null, 2)}
+              "geometry": { ... (Geometry Hidden) ... }
+               },
+               ... 
+              ]
+            }`;
+        } else {
+            jsonDisplay.innerText = JSON.stringify(geoData, null, 2);
+        }
+    }
+	
+    function unloadData() {
+    if (!geoData) return;
+    if (confirm("Unload GeoJSON from memory? Unsaved changes will be lost.")) {
+        geoData = null;
+        fileHandle = null;
+        document.getElementById('columnList').innerHTML = '<p>Data unloaded.</p>';
+        document.getElementById('jsonDisplay').innerText = '// Awaiting data...';
+        document.getElementById('status').innerText = 'No file loaded';
+        document.title = "TabEdit";
+      }
+   }
 
     function addColumn() {
         const name = prompt("New Column Name:");
