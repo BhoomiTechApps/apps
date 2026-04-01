@@ -42,7 +42,7 @@
 .leaflet-control-measure .leaflet-control-measure-toggle,
 .leaflet-control-measure .leaflet-control-measure-toggle:hover {
   background-size: 14px 14px;
-  background-image: url(../leaflet/assets/rulers.png);
+  background-image: url(/apps/mapview/leaflet/assets/rulers.png);
   border: 0;
   border-radius: 4px;
   text-indent: 100%;
@@ -55,7 +55,7 @@
 }
 .leaflet-retina .leaflet-control-measure .leaflet-control-measure-toggle,
 .leaflet-retina .leaflet-control-measure .leaflet-control-measure-toggle:hover {
-  background-image: url(../assets/rulers_@2X.png);
+  background-image: url(/apps/mapviewleaflet/assets/rulers_@2X.png);
 }
 .leaflet-touch .leaflet-control-measure .leaflet-control-measure-toggle,
 .leaflet-touch .leaflet-control-measure .leaflet-control-measure-toggle:hover {
