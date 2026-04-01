@@ -158,7 +158,7 @@ html {
   font-size: 16px;
 }
 .leaflet-control-measure-toggle::before {
-  content: "\f545"; /* ruler icon */
+  content: "\f545";
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
 }
