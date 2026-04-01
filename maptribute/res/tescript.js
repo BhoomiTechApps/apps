@@ -187,10 +187,18 @@ function renderTable() {
   feats.forEach((f, i) => {
     html += `<tr data-row="${i}">`;
     keys.forEach(k => {
-      html += `<td contenteditable="${editableAttr}" data-row="${i}" data-key="${k}">${f.properties[k] ?? ''}</td>`;
+      const rawValue = String(f.properties[k] ?? '');
+      const escapedValue = rawValue
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+      html += `<td contenteditable="${editableAttr}" data-row="${i}" data-key="${k}">${escapedValue}</td>`;
     });
     html += '</tr>';
   });
+  
   html += '</tbody></table>';
   tableContainer.innerHTML = html;
   if (isCurrentlyHidden) {
@@ -222,7 +230,15 @@ document.addEventListener('input', e => {
     const row = +e.target.dataset.row;
     const key = e.target.dataset.key;
     const feature = filteredFeatures[row];
-    if (feature) feature.properties[key] = e.target.innerText.trim();
+    if (feature) feature.properties[key] = e.target.textContent;
+  }
+});
+
+document.addEventListener('paste', e => {
+  if (e.target.matches('td[contenteditable="true"]')) {
+    e.preventDefault();
+    const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+    document.execCommand('insertText', false, text);
   }
 });
 

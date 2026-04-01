@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="26" height="52" viewBox="0 0 26 52">
+  <!-- Enter fullscreen (top 26px) -->
+  <g transform="translate(0,0)" fill="#000">
+    <path d="M2 2h7v2H4v5H2zM24 2v7h-2V4h-5V2zM2 24v-7h2v5h5v2zM24 24h-7v-2h5v-5h2z"/>
+  </g>
+  <!-- Exit fullscreen (bottom 26px) -->
+  <g transform="translate(0,26)" fill="#000">
+    <path d="M4 4h5V2H2v7h2zM22 2h-7v2h5v5h2zM2 22h7v-2H4v-5H2zM24 22v-7h-2v5h-5v2z"/>
+  </g>
+</svg>
