@@ -18,10 +18,9 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": "apps/mapview/index.html",
+  "start_url": "/apps/mapview/index.html",
   "scope": "/apps/mapview/",
   "background_color": "#ffffff",
   "display": "standalone",
-  "scope": "./",
   "theme_color": "#2c3e50"
 }
