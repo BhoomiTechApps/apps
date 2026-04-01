@@ -55,7 +55,7 @@
 }
 .leaflet-retina .leaflet-control-measure .leaflet-control-measure-toggle,
 .leaflet-retina .leaflet-control-measure .leaflet-control-measure-toggle:hover {
-  background-image: url(/apps/mapviewleaflet/assets/rulers_@2X.png);
+  background-image: url(/apps/mapview/leaflet/assets/rulers_@2X.png);
 }
 .leaflet-touch .leaflet-control-measure .leaflet-control-measure-toggle,
 .leaflet-touch .leaflet-control-measure .leaflet-control-measure-toggle:hover {
@@ -96,7 +96,7 @@
   line-height: 1em;
   border: 0;
   text-align: left;
-  background-image: url("../leaflet/assets/start.png");
+  background-image: url("/apps/mapview/leaflet/assets/start.png");
   background-repeat: no-repeat;
   background-position: 0 50%;
   background-size: 12px 12px;
@@ -108,7 +108,7 @@
   background-color: transparent;
 }
 .leaflet-retina .leaflet-control-measure a.start {
-  background-image: url("../leaflet/assets/start_@2X.png");
+  background-image: url("/apps/mapview/leaflet/assets/start_@2X.png");
 }
 .leaflet-control-measure a.start:hover {
   opacity: 0.5;
@@ -123,7 +123,7 @@
   line-height: 1em;
   border: 0;
   text-align: left;
-  background-image: url("../leaflet/assets/cancel.png");
+  background-image: url("/apps/mapview/leaflet/assets/cancel.png");
   background-repeat: no-repeat;
   background-position: 0 50%;
   background-size: 12px 12px;
@@ -135,7 +135,7 @@
   background-color: transparent;
 }
 .leaflet-retina .leaflet-control-measure a.cancel {
-  background-image: url("../leaflet/assets/cancel_@2X.png");
+  background-image: url("/apps/mapview/leaflet/assets/cancel_@2X.png");
 }
 .leaflet-control-measure a.cancel:hover {
   opacity: 0.5;
@@ -150,7 +150,7 @@
   line-height: 1em;
   border: 0;
   text-align: left;
-  background-image: url("../leaflet/assets/check.png");
+  background-image: url("/apps/mapview/leaflet/assets/check.png");
   background-repeat: no-repeat;
   background-position: 0 50%;
   background-size: 12px 12px;
@@ -162,7 +162,7 @@
   background-color: transparent;
 }
 .leaflet-retina .leaflet-control-measure a.finish {
-  background-image: url("../leaflet/assets/check_@2X.png");
+  background-image: url("/apps/mapview/leaflet/assets/check_@2X.png");
 }
 .leaflet-control-measure a.finish:hover {
   opacity: 0.5;
@@ -177,7 +177,7 @@
   line-height: 1em;
   border: 0;
   text-align: left;
-  background-image: url("../leaflet/assets/focus.png");
+  background-image: url("/apps/mapview/leaflet/assets/focus.png");
   background-repeat: no-repeat;
   background-position: 0 50%;
   background-size: 12px 12px;
@@ -189,7 +189,7 @@
   background-color: transparent;
 }
 .leaflet-retina .leaflet-measure-resultpopup a.zoomto {
-  background-image: url("../leaflet/assets/focus_@2X.png");
+  background-image: url("/apps/mapview/leaflet/assets/focus_@2X.png");
 }
 .leaflet-measure-resultpopup a.zoomto:hover {
   opacity: 0.5;
@@ -204,7 +204,7 @@
   line-height: 1em;
   border: 0;
   text-align: left;
-  background-image: url("../leaflet/assets/trash.png");
+  background-image: url("/apps/mapview/leaflet/assets/trash.png");
   background-repeat: no-repeat;
   background-position: 0 50%;
   background-size: 12px 12px;
@@ -216,7 +216,7 @@
   background-color: transparent;
 }
 .leaflet-retina .leaflet-measure-resultpopup a.deletemarkup {
-  background-image: url("../leaflet/assets/trash_@2X.png");
+  background-image: url("/apps/mapview/leaflet/assets/trash_@2X.png");
 }
 .leaflet-measure-resultpopup a.deletemarkup:hover {
   opacity: 0.5;
