@@ -7,7 +7,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Mapper</title>
-  
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="fontas/all.min.css">
@@ -29,16 +28,6 @@
   <link rel="stylesheet" href="leaflet/Control.FullScreen.css" />
   <script src="leaflet/Control.FullScreen.js"></script>
   <link rel="stylesheet" href="res/mapstyle-mini.css">
-  
-  <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js')
-        .then(reg => console.log('Service Worker registered successfully with scope:', reg.scope))
-        .catch(err => console.log('Service Worker registration failed:', err));
-    });
-  }
-</script>
 
 </head>
 
