@@ -28,7 +28,15 @@
   <link rel="stylesheet" href="leaflet/Control.FullScreen.css" />
   <script src="leaflet/Control.FullScreen.js"></script>
   <link rel="stylesheet" href="res/mapstyle-mini.css">
-
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('SW Registered!', reg))
+        .catch(err => console.error('SW Registration failed!', err));
+    });
+  }
+</script>
 </head>
 
 <body>
