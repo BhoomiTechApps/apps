@@ -46,7 +46,7 @@ const urlsToCache = [
   '/apps/mapview/leaflet/images/marker-shadow.png',
   '/apps/mapview/leaflet-ext/leaflet.markercluster.js',
   '/apps/mapview/leaflet-ext/leaflet-heat.js',
-  '/apps/mapview/leaflet-ext/turf-min.js',
+  '/apps/mapview/leaflet-ext/turf.min.js',
   '/apps/mapview/leaflet-ext/MarkerCluster.css',
   '/apps/mapview/leaflet-ext/MarkerCluster.Default.css',
   '/apps/mapview/nominatim_proxy.php'
