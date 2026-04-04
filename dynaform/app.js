@@ -1094,9 +1094,15 @@ function flushImageScriptMemory() {
     }
 }
 
-
-
-
-
-
-
+function toggleBuilder() {
+    const builder = document.getElementById("sideBuilder");
+    const toggleBtn = document.getElementById("toggleSidebar");
+    const icon = toggleBtn.querySelector("i");
+    if (!builder || !toggleBtn || !icon) return;
+    builder.classList.toggle("collapsed");
+    if (builder.classList.contains("collapsed")) {
+        icon.className = "fas fa-bars";
+    } else {
+        icon.className = "fas fa-times";
+    }
+}

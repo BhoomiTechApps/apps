@@ -1,122 +1,138 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Form Builder</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="manifest" href="manifest.json">
 	<link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="style.css">
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 	<script src="conn.js"></script>
 	<script src="noto_sans_bengali-normal.js"></script>
+	<script>
+		if ('serviceWorker' in navigator) {
+			window.addEventListener('load', () => {
+			navigator.serviceWorker.register('./sw.js', { scope: './' })
+			.then(reg => console.log('SW registered!', reg))
+			.catch(err => console.log('SW registration failed:', err));
+			});
+		}
+	</script>
 </head>
+
 <body>
-<h2>BhoomiTech DynaForm</h2>
-<div class="container">
-    <div class="builder">
-	    <div class="inline-row">
-			<button onclick="loadSubmission()">Upload Form Data</button>
-		    <button type="button" onclick="document.getElementById('jsonLoader').click()">Open Form</button>
-			<input id="jsonLoader" type="file" accept=".json" onchange="loadSurveyJSON(event)" style="display:none;">
-			<button onclick="addConnection()">Add Connection</button>
-			<button onclick="deleteConnection()">Remove Connection</button>
-        </div><hr>
-		<h3>Create New Form</h3>
-		<div class="inline-row">
-          <h4>Form Title</h4>
-          <input id="surveyTitle" placeholder="Form Title" />
+	<header class="top-bar">
+		<div class="logo-section">
+			<img src="icon-192.png" width="70" height="70" />
+			<div class="brand-title">BhoomiTech DynaForm</div>
 		</div>
-		<div class="inline-row">
-          <h4>Add Question</h4>
-          <input id="questionText" placeholder="Enter question" />
+		<button id="toggleSidebar" onclick="toggleBuilder()" title="Toggle Sidebar"><i class="fas fa-bars"></i></button>
+	</header>
+	
+	<div class="container">
+		<div class="builder collapsed" id="sideBuilder">
+			<div class="inline-row">
+				<button onclick="loadSubmission()"><i class="fas fa-cloud-upload-alt"></i></button>
+				<button type="button" onclick="document.getElementById('jsonLoader').click()"><i class="fas fa-folder-open"></i></button>
+				<input id="jsonLoader" type="file" accept=".json" onchange="loadSurveyJSON(event)" style="display:none;">
+				<button onclick="addConnection()"><i class="fas fa-plug"></i></button>
+				<button onclick="deleteConnection()"><i class="fas fa-unlink"></i></button>
+			</div><hr>
+			<h3>Create New Form</h3>
+			<div class="inline-row">
+				<h4>Form Title</h4>
+				<input id="surveyTitle" placeholder="Form Title" />
+			</div>
+			<div class="inline-row">
+				<h4>Add Question</h4>
+				<input id="questionText" placeholder="Enter question" />
+			</div>
+			<div class="inline-row">
+				<h4>Select Answer Type</h4>
+				<select id="questionType">
+					<option value="text">Short Answer</option>
+					<option value="textarea">Paragraph</option>
+					<option value="date">Date</option>
+					<option value="email">Email</option>
+					<option value="number">Number</option>
+					<option value="phone">Phone Number</option>
+					<option value="radio">Multiple Choice</option>
+					<option value="checkbox">Checkbox</option>
+					<option value="dropdown">Dropdown (Single Select)</option>
+					<option value="gps">GPS Location</option>
+					<option value="image">Image Upload</option>
+					<option value="pagebreak">---- Page Break ----</option>
+				</select>
+			</div>
+			<div id="numberRange" style="display:none;">
+				<h5>Number Validation</h5>
+				<input id="minValue" placeholder="Minimum Value (optional)" type="number">
+				<input id="maxValue" placeholder="Maximum Value (optional)" type="number">
+			</div>
+			<div id="dateRange" style="display:none;">
+				<h5>Date Range Validation</h5>
+				<input id="minDate" type="date" placeholder="Minimum Date">
+				<input id="maxDate" type="date" placeholder="Maximum Date">
+			</div>
+			<textarea id="options" style="display:none;"
+			placeholder="Options (one per line) – only for MCQ/Checkbox"></textarea>
+			<div class="inline-row">
+				<label class="required-inline">
+					<input type="checkbox" id="isRequired"> Check if field is mandatory
+				</label>
+				<button onclick="addQuestion()"><i class="fas fa-plus-square"></i></button>
+			</div>
+			<hr>
+			<h3>Manage Scripts & Connections</h3>
+			<div class="inline-row" id="connSourceOptions">
+				<label><input type="radio" name="connSource" value="server" checked>To Server</label>
+				<label><input type="radio" name="connSource" value="local">To Device</label>
+				<button onclick="loadConnectionsBySource()"><i class="fas fa-plug"></i></button>
+				<select id="connSelect"></select>
+				<button onclick="loadConnection()"><i class="fas fa-copy"></i></button>
+			</div>
 		</div>
-		<div class="inline-row">
-          <h4>Select Answer Type</h4>
-		  <select id="questionType">
-            <option value="text">Short Answer</option>
-            <option value="textarea">Paragraph</option>
-            <option value="date">Date</option>
-            <option value="email">Email</option>
-            <option value="number">Number</option>
-            <option value="phone">Phone Number</option>
-            <option value="radio">Multiple Choice</option>
-            <option value="checkbox">Checkbox</option>
-			<option value="dropdown">Dropdown (Single Select)</option>
-			<option value="gps">GPS Location</option>
-            <option value="image">Image Upload</option>
-            <option value="pagebreak">---- Page Break ----</option>
-          </select>
+		
+		<div class="preview">
+			<h3>Live Preview</h3>
+			<div id="previewArea"></div>
+				<hr>
+			<div class="inline-row">
+				<h4>Image Upload Script:</h4>
+				<input id="imageScript" placeholder="Enter Google script url" />
+			</div>
+			<div class="inline-row">
+				<h4>Data Upload Script:</h4>
+				<input id="dataScript" placeholder="Enter Google script url" />
+			</div>
+			<hr>
+			<div class="inline-row">
+				<label>
+					<input type="checkbox" id="twoColumn">
+					Two Column Layout
+				</label>
+				<button onclick="downloadHTML()"><i class="fab fa-html5"></i></button>
+				<button onclick="downloadPDF()"><i class="fas fa-file-pdf"></i></button>
+				<button onclick="saveSurveyJSON()"><i class="fas fa-save"></i></button>
+			</div>
 		</div>
-        <div id="numberRange" style="display:none;">
-            <h5>Number Validation</h5>
-            <input id="minValue" placeholder="Minimum Value (optional)" type="number">
-            <input id="maxValue" placeholder="Maximum Value (optional)" type="number">
-        </div>
-        <div id="dateRange" style="display:none;">
-            <h5>Date Range Validation</h5>
-            <input id="minDate" type="date" placeholder="Minimum Date">
-            <input id="maxDate" type="date" placeholder="Maximum Date">
-        </div>
-        <textarea id="options" style="display:none;"
-          placeholder="Options (one per line) – only for MCQ/Checkbox"></textarea>
-		<div class="inline-row">
-          <label class="required-inline">
-            <input type="checkbox" id="isRequired"> Check if field is mandatory
-          </label>
-		  <button onclick="addQuestion()">Add Question</button>
-        </div>
-        <hr>
-		<h3>Manage Scripts & Connections</h3>
-		<div class="inline-row" id="connSourceOptions" style="margin-bottom:10px;">
-          <label><input type="radio" name="connSource" value="server" checked>Connections at Server</label>
-            &nbsp;&nbsp;
-          <label><input type="radio" name="connSource" value="local">Connections in Device</label>
-          <button onclick="loadConnectionsBySource()" style="margin-left:10px;">Load Connections</button>
-        </div>
-		<div class="inline-row">
-		  <select id="connSelect"></select>
-		  <button onclick="loadConnection()">Copy to Form</button>
-		</div>
-		<hr>
-		<a href="https://bhoomitechfoundation.org/dynaform/" target="_blank">About DynaForm</a>
-    </div>
-    <div class="preview">
-		<h3>Live Preview</h3>
-        <div id="previewArea"></div>
-		<hr>
-		<div class="inline-row">
-          <h4>Image Upload Script:</h4>
-          <input id="imageScript" placeholder="Enter Google script url" />
-		</div>
-		<div class="inline-row">
-          <h4>Data Upload Script:</h4>
-          <input id="dataScript" placeholder="Enter Google script url" />
-		</div>
-		<hr>
-		<div class="inline-row">
-		</div>
-		<div class="inline-row">
-		  <label>
-            <input type="checkbox" id="twoColumn">
-            Two Column Layout
-          </label>
-          <button onclick="downloadHTML()">Get HTML</button>
-          <button onclick="downloadPDF()">Get PDF</button>
-          <button onclick="saveSurveyJSON()">Save JSON</button>
-        </div>
-    </div>
-</div>
-<script src="app.js"></script>
-<script>
-const questionTypeSelect = document.getElementById("questionType");
-questionTypeSelect.addEventListener("change", function() {
-    let type = this.value;
-    document.getElementById("numberRange").style.display = (type === "number") ? "block" : "none";
-    document.getElementById("dateRange").style.display = (type === "date") ? "block" : "none";
-    document.getElementById("options").style.display =
-        (type === "radio" || type === "checkbox" || type === "dropdown") ? "block" : "none";
-});
-questionTypeSelect.dispatchEvent(new Event('change'));
-</script>
+		
+	</div>
+	<script src="app.js"></script>
+	<script>
+	const questionTypeSelect = document.getElementById("questionType");
+	questionTypeSelect.addEventListener("change", function() {
+		let type = this.value;
+		document.getElementById("numberRange").style.display = (type === "number") ? "block" : "none";
+		document.getElementById("dateRange").style.display = (type === "date") ? "block" : "none";
+		document.getElementById("options").style.display =
+			(type === "radio" || type === "checkbox" || type === "dropdown") ? "block" : "none";
+	});
+	questionTypeSelect.dispatchEvent(new Event('change'));
+	</script>
 </body>
 </html>
 
