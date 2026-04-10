@@ -15,13 +15,13 @@ const urlsToCache = [
   '/apps/gstreets/webfonts/fa-v4compatibility.woff2',
   '/apps/gstreets/leaflet/leaflet.css',
   '/apps/gstreets/leaflet/leaflet.js',
-  '/apps/mapview/leaflet/Control.Geocoder.css',
-  '/apps/mapview/leaflet/Control.Geocoder.js',
-  '/apps/mapview/leaflet/images/layers.png',
-  '/apps/mapview/leaflet/images/layers-2x.png',
-  '/apps/mapview/leaflet/images/marker-icon.png',
-  '/apps/mapview/leaflet/images/marker-icon-2x.png',
-  '/apps/mapview/leaflet/images/marker-shadow.png'
+  '/apps/gstreets/leaflet/Control.Geocoder.css',
+  '/apps/gstreets/leaflet/Control.Geocoder.js',
+  '/apps/gstreets/leaflet/images/layers.png',
+  '/apps/gstreets/leaflet/images/layers-2x.png',
+  '/apps/gstreets/leaflet/images/marker-icon.png',
+  '/apps/gstreets/leaflet/images/marker-icon-2x.png',
+  '/apps/gstreets/leaflet/images/marker-shadow.png'
 ];
 
 self.addEventListener('install', event => {
