@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro 3D Viewer</title>
+	<link rel="manifest" href="manifest.json">
+	<link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        body { margin: 0; overflow: hidden; background: #111; font-family: sans-serif; }
+        #ui-layer { position: absolute; top: 20px; left: 20px; z-index: 10; display: flex; gap: 10px; }
+        .btn { background: #333; color: white; padding: 10px; border: 1px solid #555; cursor: pointer; border-radius: 4px; }
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); 
+                    display: none; justify-content: center; align-items: center; color: white; z-index: 1000; }
+					
+		.label {
+			color: #fff;
+			font-family: sans-serif;
+			padding: 5px 10px;
+			background: rgba(0, 0, 0, 0.7);
+			border: 1px solid #fff;
+			border-radius: 4px;
+			cursor: pointer;
+			pointer-events: auto; /* Allows clicking the label */
+			font-size: 12px;
+		}
+    </style>
+	<script>
+	if ('serviceWorker' in navigator) {
+		window.addEventListener('load', () => {
+		navigator.serviceWorker.register('./sw.js')
+			.then(reg => console.log('SW Registered!', reg))
+			.catch(err => console.error('SW Registration failed!', err));
+		});
+	}
+	</script>
+</head>
+<body>
+    <div id="loading">Processing Geometry...</div>
+    <div id="ui-layer">
+        <label class="btn">📂 Open File <input type="file" id="filePicker" accept=".kmz,.dae" style="display:none"></label>
+    </div>
+
+    <script type="importmap">
+	{
+	"imports": {
+    "three": "./three/three.module.min.js",
+    "three/addons/": "./three/addons/"
+	}
+	}
+	</script>
+    <script type="module" src="viewer.js"></script>
+</body>
+</html>
