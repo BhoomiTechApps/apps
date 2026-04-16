@@ -13,7 +13,7 @@ const urlsToCache = [
   '/apps/3dview/three/addons/controls/OrbitControls.js',
   '/apps/3dview/three/addons/loaders/ColladaLoader.js',
   '/apps/3dview/three/addons/loaders/KMZLoader.js',
-  '/apps/3dview/three/addons/renderers/TGALoader.js',
+  '/apps/3dview/three/addons/loaders/TGALoader.js',
   '/apps/3dview/three/addons/libs/fflate.module.js',
   '/apps/3dview/three/addons/libs/lil-gui.module.min.js'
 ];
