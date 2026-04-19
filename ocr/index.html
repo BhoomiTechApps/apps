@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>OCR Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
+
+  <script src="cdn/pdf.min.js"></script>
+  <script src="cdn/tesseract.min.js"></script>
+  <script src="cdn/lucide.min.js"></script>
+  
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "cdn/pdf.worker.min.js";
+
+	if ('serviceWorker' in navigator) {
+		window.addEventListener('load', () => {
+		navigator.serviceWorker.register('./service-worker1.js')
+			.then(reg => console.log('SW Registered!', reg))
+			.catch(err => console.error('SW Registration failed!', err));
+		});
+	}
+  </script>
+
+</head>
+
+<body>
+<header>
+  <details>
+    <summary>
+      <div class="summary-content">
+        <h1>OCR Studio & Controls</h1>
+        <i data-lucide="chevron-down" class="chevron"></i>
+      </div>
+    </summary>
+    <div class="controls">
+      <div class="control-group">
+        <label for="lang">Language</label>
+        <select id="lang" class="custom-select">
+		  <option value="ben+asm+eng" selected BN/AS/EN>BN/AS/EN</option>
+          <option value="ben+asm">BN/AS</option>
+          <option value="ben">BN</option>
+          <option value="asm">AS</option>
+        </select>
+      </div>
+      <div class="control-group">
+        <input type="file" id="fileInput" accept="application/pdf,image/*" hidden onchange="handleFileSelect(this)">
+        <button class="secondary-btn" onclick="document.getElementById('fileInput').click()">
+          <i data-lucide="file-up"></i> Choose File
+        </button>
+        <span id="fileNameDisplay" style="font-size: 0.8rem; color: #64748b;">No file chosen</span>
+        
+        <button class="primary-btn" onclick="startOCR()">
+          <i data-lucide="play"></i> Start OCR
+        </button>
+      </div>
+      <div class="control-group">
+        <progress id="ocrProgress" value="0" max="100" style="display: none;"></progress>
+        <span id="progressText" style="display: none;">0%</span>
+      </div>
+    </div>
+  </details>
+</header>
+
+<main class="main-container">
+  <div class="panel left-panel">
+    <div class="panel-header">
+      <div class="zoom-controls">
+        <button onclick="changeZoom(-0.1)"><i data-lucide="minus"></i></button>
+        <span id="zoomLevel">100%</span>
+        <button onclick="changeZoom(0.1)"><i data-lucide="plus"></i></button>
+      </div>
+	  <div class="pagination-controls">
+		<button id="prevPage" onclick="changePage(-1)" class="icon-btn"><i data-lucide="chevron-left"></i></button>
+		<span id="pageInfo">
+			Page <input type="number" id="pageJump" value="1" min="1" onchange="jumpToPage()" style="width: 40px; text-align: center; border: 1px solid var(--border); border-radius: 4px;"> 
+			of <span id="pageCount">-</span>
+		</span>
+		<button id="nextPage" onclick="changePage(1)" class="icon-btn"><i data-lucide="chevron-right"></i></button>
+	  </div>
+    </div>
+    <div class="canvas-wrapper" id="canvasWrapper">
+      <canvas id="canvas"></canvas>
+    </div>
+  </div>
+
+  <div class="panel right-panel">
+    <div class="panel-header">
+      <h3>Extracted Text</h3>
+      <button class="icon-btn" onclick="copyText()" title="Copy to Clipboard">
+        <i data-lucide="copy"></i>
+      </button>
+    </div>
+    <textarea id="output" placeholder="Text will appear here..."></textarea>
+  </div>
+</main>
+
+<script src="app.js"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>
