@@ -4,6 +4,8 @@
   --bg-light: #f8fafc;
   --border: #e2e8f0;
   --text-main: #1e293b;
+  --rec: #ef4444;
+  --rec-hover: #dc2626;
 }
 
 body, html {
@@ -320,7 +322,14 @@ canvas {
   max-width: none;
 }
 
-/* --- Right Panel --- */
+/* --- Right Panel header actions --- */
+.right-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* --- Icon button (copy) --- */
 .icon-btn {
   border: none;
   background: #f1f5f9;
@@ -336,6 +345,56 @@ canvas {
   background: #e2e8f0;
 }
 
+/* --- Record button --- */
+.record-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid var(--rec);
+  background: white;
+  color: var(--rec);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.record-btn:hover {
+  background: #fef2f2;
+}
+
+.record-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Active recording state */
+.record-btn.recording {
+  background: var(--rec);
+  color: white;
+  border-color: var(--rec);
+  animation: pulse-border 1.2s ease-in-out infinite;
+}
+
+.record-btn.recording:hover {
+  background: var(--rec-hover);
+}
+
+#recordTimer {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+  font-size: 0.8rem;
+}
+
+@keyframes pulse-border {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  50%       { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0);  }
+}
+
+/* --- Textarea --- */
 textarea {
   flex: 1;
   width: 100%;
@@ -437,4 +496,7 @@ textarea {
   .perspective-hint span { display: none; }
 
   .perspective-header { flex-wrap: nowrap !important; }
+
+  /* On mobile, hide "Record" label text, show just icon + timer */
+  #recordLabel { display: none; }
 }

@@ -8,7 +8,7 @@ let totalPages = 0;
 let perspectiveMode = false;
 let corners = [];
 let draggingCorner = -1;
-let originalImageSnapshot = null; // canvas snapshot before warp
+let originalImageSnapshot = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
@@ -151,7 +151,7 @@ async function changeZoom(delta) {
 function copyText() {
   const text = document.getElementById("output").value;
   navigator.clipboard.writeText(text).then(() => {
-    const btn = document.querySelector('.right-panel .icon-btn');
+    const btn = document.getElementById("copyBtn");
     if (btn) {
       btn.innerHTML = '<i data-lucide="check"></i>';
       lucide.createIcons();
@@ -203,7 +203,7 @@ async function deskewCanvas() {
   canvas.width = newW;
   canvas.height = newH;
   ctx.drawImage(temp, 0, 0);
-  showToast(`Deskewed ${angle.toFixed(1)}°`);
+  showToast(`Deskewed ${angle.toFixed(1)}\u00b0`);
 }
 
 function detectSkewAngle(imageData) {
@@ -249,24 +249,21 @@ function enterPerspectiveMode() {
 
   perspectiveMode = true;
 
-  // Save snapshot of current canvas
   const snap = document.createElement("canvas");
   snap.width = canvas.width;
   snap.height = canvas.height;
   snap.getContext("2d").drawImage(canvas, 0, 0);
   originalImageSnapshot = snap;
 
-  // Default corners: slight inset from edges
   const w = canvas.width, h = canvas.height;
   const pad = Math.min(w, h) * 0.05;
   corners = [
-    { x: pad,     y: pad },      // top-left
-    { x: w - pad, y: pad },      // top-right
-    { x: w - pad, y: h - pad },  // bottom-right
-    { x: pad,     y: h - pad },  // bottom-left
+    { x: pad,     y: pad },
+    { x: w - pad, y: pad },
+    { x: w - pad, y: h - pad },
+    { x: pad,     y: h - pad },
   ];
 
-  // Show perspective toolbar, hide normal tools
   document.getElementById("perspectiveToolbar").style.display = "flex";
   document.getElementById("normalToolbar").style.display = "none";
 
@@ -293,14 +290,9 @@ function exitPerspectiveMode(restore = true) {
 function applyPerspectiveCorrection() {
   if (corners.length !== 4) return;
 
-  const src = corners; // [{x,y}, ...]
-  // Order: TL, TR, BR, BL
-  const width  = Math.round(Math.max(
-    dist(src[0], src[1]), dist(src[3], src[2])
-  ));
-  const height = Math.round(Math.max(
-    dist(src[0], src[3]), dist(src[1], src[2])
-  ));
+  const src    = corners;
+  const width  = Math.round(Math.max(dist(src[0], src[1]), dist(src[3], src[2])));
+  const height = Math.round(Math.max(dist(src[0], src[3]), dist(src[1], src[2])));
 
   const dst = [
     { x: 0,     y: 0 },
@@ -309,25 +301,22 @@ function applyPerspectiveCorrection() {
     { x: 0,     y: height },
   ];
 
-  const H = computeHomography(src, dst);
-
+  const H        = computeHomography(src, dst);
   const srcCanvas = originalImageSnapshot;
   const dstCanvas = document.getElementById("canvas");
   dstCanvas.width  = width;
   dstCanvas.height = height;
-  const dstCtx = dstCanvas.getContext("2d");
-
-  // Pixel-by-pixel inverse warp
-  const srcCtx  = srcCanvas.getContext("2d");
-  const srcData = srcCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
-  const dstData = dstCtx.createImageData(width, height);
-  const Hinv    = invertHomography(H);
+  const dstCtx   = dstCanvas.getContext("2d");
+  const srcCtx   = srcCanvas.getContext("2d");
+  const srcData  = srcCtx.getImageData(0, 0, srcCanvas.width, srcCanvas.height);
+  const dstData  = dstCtx.createImageData(width, height);
+  const Hinv     = invertHomography(H);
 
   for (let dy = 0; dy < height; dy++) {
     for (let dx = 0; dx < width; dx++) {
       const { x: sx, y: sy } = applyHomography(Hinv, dx, dy);
       const sxi = Math.round(sx), syi = Math.round(sy);
-      const di = (dy * width + dx) * 4;
+      const di  = (dy * width + dx) * 4;
       if (sxi >= 0 && sxi < srcCanvas.width && syi >= 0 && syi < srcCanvas.height) {
         const si = (syi * srcCanvas.width + sxi) * 4;
         dstData.data[di]     = srcData.data[si];
@@ -348,9 +337,7 @@ function dist(a, b) {
   return Math.sqrt((a.x - b.x) ** 2 + (a.y - b.y) ** 2);
 }
 
-// --- Homography (DLT) ---
 function computeHomography(src, dst) {
-  // Build 8x8 system Ax = b
   const A = [], b = [];
   for (let i = 0; i < 4; i++) {
     const { x: sx, y: sy } = src[i];
@@ -377,13 +364,12 @@ function applyHomography(H, x, y) {
 }
 
 function invertHomography(H) {
-  // 3x3 matrix inverse
   const m = H.map(r => [...r]);
   const det =
     m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
     m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
     m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
-  const inv = [
+  return [
     [
       (m[1][1]*m[2][2] - m[1][2]*m[2][1]) / det,
       (m[0][2]*m[2][1] - m[0][1]*m[2][2]) / det,
@@ -400,13 +386,11 @@ function invertHomography(H) {
       (m[0][0]*m[1][1] - m[0][1]*m[1][0]) / det,
     ],
   ];
-  return inv;
 }
 
 function gaussianElimination(A, b) {
   const n = b.length;
   for (let col = 0; col < n; col++) {
-    // Pivot
     let maxRow = col;
     for (let row = col + 1; row < n; row++) {
       if (Math.abs(A[row][col]) > Math.abs(A[maxRow][col])) maxRow = row;
@@ -427,15 +411,11 @@ function gaussianElimination(A, b) {
   return x;
 }
 
-// --- Canvas Overlay ---
 function drawCornersOverlay() {
   const canvas = document.getElementById("canvas");
   const ctx    = canvas.getContext("2d");
-
-  // Restore original image first
   ctx.drawImage(originalImageSnapshot, 0, 0);
 
-  // Draw connecting quad
   ctx.beginPath();
   ctx.moveTo(corners[0].x, corners[0].y);
   for (let i = 1; i < 4; i++) ctx.lineTo(corners[i].x, corners[i].y);
@@ -446,7 +426,6 @@ function drawCornersOverlay() {
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Semi-transparent overlay outside quad
   ctx.save();
   ctx.beginPath();
   ctx.rect(0, 0, canvas.width, canvas.height);
@@ -457,10 +436,9 @@ function drawCornersOverlay() {
   ctx.fill("evenodd");
   ctx.restore();
 
-  // Draw corner handles
-  const r = Math.max(12, canvas.width / 50);
+  const r      = Math.max(12, canvas.width / 50);
   const labels = ["TL", "TR", "BR", "BL"];
-  const colors  = ["#f59e0b","#10b981","#ef4444","#8b5cf6"];
+  const colors = ["#f59e0b", "#10b981", "#ef4444", "#8b5cf6"];
   corners.forEach((c, i) => {
     ctx.beginPath();
     ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
@@ -469,7 +447,6 @@ function drawCornersOverlay() {
     ctx.strokeStyle = "white";
     ctx.lineWidth = 2;
     ctx.stroke();
-
     ctx.fillStyle = "white";
     ctx.font = `bold ${Math.max(10, r * 0.8)}px sans-serif`;
     ctx.textAlign = "center";
@@ -478,7 +455,6 @@ function drawCornersOverlay() {
   });
 }
 
-// --- Mouse / Touch listeners ---
 function getCanvasPos(e) {
   const canvas = document.getElementById("canvas");
   const rect   = canvas.getBoundingClientRect();
@@ -493,7 +469,7 @@ function getCanvasPos(e) {
 }
 
 function findNearestCorner(pos) {
-  const canvas = document.getElementById("canvas");
+  const canvas    = document.getElementById("canvas");
   const threshold = Math.max(30, canvas.width / 25);
   let best = -1, bestD = Infinity;
   corners.forEach((c, i) => {
@@ -512,14 +488,11 @@ function onMouseDown(e) {
 function onMouseMove(e) {
   if (!perspectiveMode || draggingCorner === -1) return;
   e.preventDefault();
-  const pos = getCanvasPos(e);
-  corners[draggingCorner] = pos;
+  corners[draggingCorner] = getCanvasPos(e);
   drawCornersOverlay();
 }
 
-function onMouseUp(e) {
-  draggingCorner = -1;
-}
+function onMouseUp() { draggingCorner = -1; }
 
 function attachCanvasListeners() {
   const canvas = document.getElementById("canvas");
@@ -539,6 +512,149 @@ function detachCanvasListeners() {
   canvas.removeEventListener("touchstart", onMouseDown);
   canvas.removeEventListener("touchmove",  onMouseMove);
   canvas.removeEventListener("touchend",   onMouseUp);
+}
+
+// ============================================================
+//  WAV RECORDER  (Web Audio API — raw PCM, no extra libraries)
+// ============================================================
+
+let audioCtx        = null;
+let micStream       = null;
+let scriptProcessor = null;
+let pcmBuffers      = [];     // Float32Array chunks collected during recording
+let isRecording     = false;
+let recTimerID      = null;
+let recSeconds      = 0;
+
+const SAMPLE_RATE = 44100;
+const BUFFER_SIZE = 4096;
+
+async function toggleRecording() {
+  if (isRecording) {
+    stopRecording();
+  } else {
+    await startRecording();
+  }
+}
+
+async function startRecording() {
+  try {
+    micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+  } catch (err) {
+    showToast("Microphone access denied.");
+    return;
+  }
+
+  audioCtx        = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: SAMPLE_RATE });
+  const source    = audioCtx.createMediaStreamSource(micStream);
+  scriptProcessor = audioCtx.createScriptProcessor(BUFFER_SIZE, 1, 1);
+  pcmBuffers      = [];
+
+  scriptProcessor.onaudioprocess = (e) => {
+    // Clone the buffer — it is recycled by the browser after the callback returns
+    pcmBuffers.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+  };
+
+  source.connect(scriptProcessor);
+  scriptProcessor.connect(audioCtx.destination); // must be connected to run in all browsers
+
+  isRecording = true;
+  recSeconds  = 0;
+  updateRecordBtn();
+  recTimerID  = setInterval(() => { recSeconds++; updateRecordBtn(); }, 1000);
+}
+
+function stopRecording() {
+  if (!isRecording) return;
+  isRecording = false;
+  clearInterval(recTimerID);
+
+  scriptProcessor.disconnect();
+  scriptProcessor.onaudioprocess = null;
+  micStream.getTracks().forEach(t => t.stop());
+  audioCtx.close();
+
+  updateRecordBtn();
+  exportWav();
+}
+
+function updateRecordBtn() {
+  const btn   = document.getElementById("recordBtn");
+  const label = document.getElementById("recordLabel");
+  const timer = document.getElementById("recordTimer");
+  if (!btn) return;
+
+  if (isRecording) {
+    btn.classList.add("recording");
+    label.textContent = "Stop";
+    const m = String(Math.floor(recSeconds / 60)).padStart(2, "0");
+    const s = String(recSeconds % 60).padStart(2, "0");
+    timer.textContent  = `${m}:${s}`;
+    timer.style.display = "inline";
+  } else {
+    btn.classList.remove("recording");
+    label.textContent   = "Record";
+    timer.style.display = "none";
+  }
+  lucide.createIcons();
+}
+
+// Merge PCM chunks → convert to int16 → pack WAV header → download
+function exportWav() {
+  if (pcmBuffers.length === 0) return;
+
+  const totalSamples = pcmBuffers.reduce((n, b) => n + b.length, 0);
+  const merged = new Float32Array(totalSamples);
+  let offset = 0;
+  for (const buf of pcmBuffers) { merged.set(buf, offset); offset += buf.length; }
+
+  // Float32 [-1, 1]  →  Int16 PCM
+  const pcm16 = new Int16Array(totalSamples);
+  for (let i = 0; i < totalSamples; i++) {
+    const s   = Math.max(-1, Math.min(1, merged[i]));
+    pcm16[i]  = s < 0 ? s * 0x8000 : s * 0x7FFF;
+  }
+
+  const wavBuf = buildWavBuffer(pcm16, SAMPLE_RATE, 1);
+  const blob   = new Blob([wavBuf], { type: "audio/wav" });
+  const url    = URL.createObjectURL(blob);
+  const base   = currentFile ? currentFile.name.replace(/\.[^.]+$/, "") : "recording";
+  const a      = document.createElement("a");
+  a.href       = url;
+  a.download   = `${base}_narration.wav`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("WAV saved!");
+}
+
+// Build a valid RIFF/WAV ArrayBuffer from 16-bit PCM samples
+function buildWavBuffer(pcm16, sampleRate, numChannels) {
+  const bitsPerSample  = 16;
+  const bytesPerSample = bitsPerSample / 8;
+  const dataBytes      = pcm16.length * bytesPerSample;
+  const buffer         = new ArrayBuffer(44 + dataBytes);
+  const view           = new DataView(buffer);
+
+  const str = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+
+  str(0,  "RIFF");
+  view.setUint32( 4, 36 + dataBytes,                         true); // ChunkSize
+  str(8,  "WAVE");
+  str(12, "fmt ");
+  view.setUint32(16, 16,                                     true); // Subchunk1Size (PCM)
+  view.setUint16(20, 1,                                      true); // AudioFormat   (PCM = 1)
+  view.setUint16(22, numChannels,                            true);
+  view.setUint32(24, sampleRate,                             true);
+  view.setUint32(28, sampleRate * numChannels * bytesPerSample, true); // ByteRate
+  view.setUint16(32, numChannels * bytesPerSample,           true); // BlockAlign
+  view.setUint16(34, bitsPerSample,                          true);
+  str(36, "data");
+  view.setUint32(40, dataBytes,                              true);
+
+  // Write PCM samples starting at byte 44
+  new Int16Array(buffer, 44).set(pcm16);
+
+  return buffer;
 }
 
 // ============================================================

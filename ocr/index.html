@@ -65,7 +65,7 @@
 <main class="main-container">
   <div class="panel left-panel">
 
-    <!-- Normal toolbar (zoom + pagination + image tools) -->
+    <!-- Normal toolbar -->
     <div id="normalToolbar" class="panel-header">
       <div class="zoom-controls">
         <button onclick="changeZoom(-0.1)"><i data-lucide="minus"></i></button>
@@ -95,7 +95,7 @@
       </div>
     </div>
 
-    <!-- Perspective correction toolbar (shown only in perspective mode) -->
+    <!-- Perspective correction toolbar -->
     <div id="perspectiveToolbar" class="panel-header perspective-header" style="display:none;">
       <div class="perspective-hint">
         <i data-lucide="move"></i>
@@ -119,9 +119,18 @@
   <div class="panel right-panel">
     <div class="panel-header">
       <h3>Extracted Text</h3>
-      <button class="icon-btn" onclick="copyText()" title="Copy to Clipboard">
-        <i data-lucide="copy"></i>
-      </button>
+      <div class="right-panel-actions">
+        <!-- Record button -->
+        <button id="recordBtn" class="record-btn" onclick="toggleRecording()" title="Record audio narration">
+          <i data-lucide="mic"></i>
+          <span id="recordLabel">Record</span>
+          <span id="recordTimer" style="display:none;">00:00</span>
+        </button>
+        <!-- Copy button -->
+        <button id="copyBtn" class="icon-btn" onclick="copyText()" title="Copy to Clipboard">
+          <i data-lucide="copy"></i>
+        </button>
+      </div>
     </div>
     <textarea id="output" placeholder="Text will appear here..."></textarea>
   </div>
