@@ -54,7 +54,7 @@ details[open] .chevron {
   transform: rotate(180deg);
 }
 
-/* --- Aesthetic Controls --- */
+/* --- Controls --- */
 .controls {
   display: flex;
   gap: 20px;
@@ -95,23 +95,19 @@ details[open] .chevron {
   cursor: pointer;
 }
 
-.primary-btn:hover {
-  background: var(--primary-hover);
-}
+.primary-btn:hover { background: var(--primary-hover); }
 
 .secondary-btn {
   background: white;
   cursor: pointer;
 }
 
-.secondary-btn:hover {
-  background: var(--bg-light);
-}
+.secondary-btn:hover { background: var(--bg-light); }
 
-/* --- Progress Bar Styling --- */
+/* --- Progress --- */
 progress {
   width: 150px;
-  height: 10px; /* Slim, modern look */
+  height: 10px;
   accent-color: var(--primary);
   border-radius: 5px;
   overflow: hidden;
@@ -135,6 +131,7 @@ progress::-webkit-progress-value {
   min-width: 35px;
 }
 
+/* --- Layout --- */
 .main-container {
   display: flex;
   flex: 1;
@@ -142,6 +139,55 @@ progress::-webkit-progress-value {
   background: #f1f5f9;
 }
 
+.panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 15px;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  min-height: 40px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.panel-header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.left-panel {
+  border-right: 1px solid var(--border);
+}
+
+/* --- Zoom controls --- */
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+.zoom-controls button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--primary);
+  padding: 0;
+  display: flex;
+}
+
+/* --- Pagination --- */
 .pagination-controls {
   display: flex;
   align-items: center;
@@ -165,32 +211,81 @@ progress::-webkit-progress-value {
   cursor: not-allowed;
 }
 
-.panel {
-  flex: 1;
+/* --- Image Tools (Deskew / Perspective) --- */
+.image-tools {
   display: flex;
-  flex-direction: column;
-  padding: 15px;
-  overflow: hidden;
-  min-width: 0;
+  gap: 6px;
 }
 
-.panel-header {
-  display: flex;
-  justify-content: space-between;
+.tool-btn {
+  display: inline-flex;
   align-items: center;
-  margin-bottom: 12px;
-  height: 40px;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-main);
+  transition: all 0.2s;
+  white-space: nowrap;
 }
 
-.panel-header h3 {
-  margin: 0;
-  font-size: 1rem;
+.tool-btn:hover {
+  background: var(--bg-light);
+  border-color: #94a3b8;
 }
 
-.left-panel {
-  border-right: 1px solid var(--border);
+.tool-btn--perspective {
+  border-color: #818cf8;
+  color: #4338ca;
 }
 
+.tool-btn--perspective:hover {
+  background: #eef2ff;
+}
+
+/* --- Perspective Toolbar --- */
+.perspective-header {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  flex-wrap: nowrap !important;
+}
+
+.perspective-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.82rem;
+  color: #1d4ed8;
+  font-weight: 500;
+}
+
+.perspective-hint svg {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.perspective-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.perspective-actions .secondary-btn,
+.perspective-actions .primary-btn {
+  height: 34px;
+  padding: 0 12px;
+  font-size: 0.82rem;
+}
+
+/* --- Canvas --- */
 .canvas-wrapper {
   flex: 1;
   overflow: auto;
@@ -198,7 +293,7 @@ progress::-webkit-progress-value {
   display: flex;
   border-radius: 8px;
   padding: 20px;
-  justify-content: center; 
+  justify-content: center;
   align-items: flex-start;
 }
 
@@ -210,34 +305,19 @@ canvas {
   background: white;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   display: block;
-  width: 100%; 
+  width: 100%;
   max-width: 100%;
   height: auto !important;
-  margin: 0; 
+  margin: 0;
+}
+
+.canvas-wrapper.perspective-active canvas {
+  cursor: crosshair;
 }
 
 .zoomed canvas {
   width: auto;
   max-width: none;
-}
-
-.zoom-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: white;
-  padding: 6px 12px;
-  border-radius: 20px;
-  border: 1px solid var(--border);
-}
-
-.zoom-controls button {
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--primary);
-  padding: 0;
-  display: flex;
 }
 
 /* --- Right Panel --- */
@@ -271,13 +351,38 @@ textarea {
   box-sizing: border-box;
 }
 
+/* --- Toast --- */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: #1e293b;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  z-index: 9999;
+  white-space: nowrap;
+}
+
+#toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* --- Responsive --- */
 @media (max-width: 768px) {
   .controls {
     flex-wrap: wrap;
     gap: 10px;
   }
 
-  .control-group:has(#lang), 
+  .control-group:has(#lang),
   #lang {
     display: none !important;
   }
@@ -286,49 +391,50 @@ textarea {
     flex: 1;
     justify-content: center;
   }
-  
-  .primary-btn span {
-    display: none;
-  }
+
+  .primary-btn span { display: none; }
 
   .main-container {
     flex-direction: column;
     overflow-y: auto;
   }
-  
+
   .panel {
-	flex: none;
-	height: 50vh;
-	border-right: none;
-	border-bottom: 1px solid var(--border);
-	
+    flex: none;
+    height: 50vh;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
     padding: 10px;
     width: 100%;
     max-width: 100vw;
     box-sizing: border-box;
     overflow-x: hidden;
   }
-  
+
   .panel-header {
     width: 100%;
     box-sizing: border-box;
     padding-right: 5px;
   }
-  
+
   textarea {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
   }
-  
-  .left-panel {
-    order: 1;
-  }
-  
+
+  .left-panel { order: 1; }
+
   .right-panel {
     order: 2;
-	min-width: 0;
-	display: flex;
-	flex-direction: column;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
   }
+
+  .tool-btn span { display: none; }
+
+  .perspective-hint span { display: none; }
+
+  .perspective-header { flex-wrap: nowrap !important; }
 }
