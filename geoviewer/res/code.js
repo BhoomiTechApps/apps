@@ -105,6 +105,24 @@ function makePointIcon(shape, fillColor, strokeColor, weight, size) {
 
 const labelGroups = {};
 
+// ── SMART LABEL DECLUTTER ──
+// Estimates pixel width of a label string given font size (monospace approximation)
+function estimateLabelWidth(text, fontSize) {
+  return text.length * fontSize * 0.62;
+}
+
+// Returns screen pixel position for a latlng at current map state
+function latlngToPixel(latlng) {
+  return map.latLngToContainerPoint(latlng);
+}
+
+// Collision registry shared across all layers for a single rebuild pass
+let _labelCollisionRects = [];
+
+function rectOverlaps(a, b) {
+  return !(a.x2 < b.x1 || a.x1 > b.x2 || a.y2 < b.y1 || a.y1 > b.y2);
+}
+
 function buildLabels(name) {
   const entry = loadedLayers[name];
   if (!entry) return;
@@ -112,7 +130,11 @@ function buildLabels(name) {
   const s = entry.style;
   if (!s.labelAttr || !entry.visible) return;
 
-  const lg = L.layerGroup().addTo(map);
+  const zoom = map.getZoom();
+  const PAD_X = 6, PAD_Y = 3; // padding around each label rect
+
+  // Collect all candidate features with their screen positions
+  const candidates = [];
   entry.layer.eachLayer(fl => {
     const props = (fl.feature && fl.feature.properties) || {};
     const val = props[s.labelAttr];
@@ -126,20 +148,79 @@ function buildLabels(name) {
     } catch(e) { return; }
     if (!latlng) return;
 
+    const pt = latlngToPixel(latlng);
+    const w = estimateLabelWidth(text, s.labelSize);
+    const h = s.labelSize + 4;
+
+    // Bounding rect centered on label's anchor point
+    const rect = {
+      x1: pt.x - w / 2 - PAD_X,
+      y1: pt.y - s.labelOffset - h - PAD_Y,
+      x2: pt.x + w / 2 + PAD_X,
+      y2: pt.y - s.labelOffset + PAD_Y
+    };
+
+    candidates.push({ latlng, text, rect });
+  });
+
+  // Zoom-based density culling: at low zoom keep only the most "spread out" labels.
+  // We grid the screen and allow at most one label per cell.
+  // Cell size shrinks as zoom increases (more labels visible at higher zoom).
+  const cellSize = Math.max(60, 300 - zoom * 14);
+  const gridMap = {};
+  const allowed = [];
+
+  candidates.forEach(c => {
+    const pt = latlngToPixel(c.latlng);
+    const gx = Math.floor(pt.x / cellSize);
+    const gy = Math.floor(pt.y / cellSize);
+    const key = `${gx},${gy}`;
+    if (!gridMap[key]) {
+      gridMap[key] = true;
+      allowed.push(c);
+    }
+  });
+
+  // Collision detection against already-placed labels (this layer + previous layers)
+  const lg = L.layerGroup().addTo(map);
+
+  allowed.forEach(c => {
+    // Check against global collision registry
+    const collides = _labelCollisionRects.some(r => rectOverlaps(r, c.rect));
+    if (collides) return;
+
+    _labelCollisionRects.push(c.rect);
+
     const halo = s.labelHalo > 0
       ? `text-shadow:0 0 ${s.labelHalo}px ${s.labelHaloColor},0 0 ${s.labelHalo*2}px ${s.labelHaloColor}`
       : '';
     const fw = s.labelBold ? 'bold' : 'normal';
-    const labelHtml = `<div class="geo-label-inner" style="font-size:${s.labelSize}px;color:${s.labelColor};font-weight:${fw};${halo};margin-top:${-s.labelOffset}px;">${escapeHtml(text)}</div>`;
+    const labelHtml = `<div class="geo-label-inner" style="font-size:${s.labelSize}px;color:${s.labelColor};font-weight:${fw};${halo};margin-top:${-s.labelOffset}px;">${escapeHtml(c.text)}</div>`;
 
-    const marker = L.marker(latlng, {
+    const marker = L.marker(c.latlng, {
       icon: L.divIcon({ html: labelHtml, className: 'geo-label', iconAnchor: [0, s.labelOffset] }),
       interactive: false
     });
     lg.addLayer(marker);
   });
+
   labelGroups[name] = lg;
 }
+
+// Rebuild all visible labels (resets collision state first)
+function rebuildAllLabels() {
+  _labelCollisionRects = [];
+  layerOrder.forEach(name => buildLabels(name));
+}
+
+// Hook into map move/zoom to redraw labels smartly
+map.on('zoomend moveend', () => {
+  const anyLabels = layerOrder.some(n => {
+    const e = loadedLayers[n];
+    return e && e.visible && e.style.labelAttr;
+  });
+  if (anyLabels) rebuildAllLabels();
+});
 
 function addGeoJSONLayer(name, geojson) {
   let finalName = name;
@@ -202,10 +283,11 @@ function toggleVisibility(name) {
   entry.visible = !entry.visible;
   if (entry.visible) {
     entry.layer.addTo(map);
-    buildLabels(name);
+    rebuildAllLabels();
   } else {
     map.removeLayer(entry.layer);
     if (labelGroups[name]) { map.removeLayer(labelGroups[name]); delete labelGroups[name]; }
+    rebuildAllLabels();
   }
   renderLayerList();
 }
@@ -250,7 +332,7 @@ function applyStyle(name) {
   if (entry.visible) layer.addTo(map);
   entry.layer = layer;
 
-  buildLabels(name);
+  rebuildAllLabels();
   renderLayerList();
 }
 
@@ -454,9 +536,147 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
-document.getElementById('toggle-panel').addEventListener('click', () => {
-  document.getElementById('panel').classList.toggle('collapsed');
+// ── ATTRIBUTE SEARCH ──
+const attrSearch = document.getElementById('attr-search');
+const searchResults = document.getElementById('search-results');
+const searchClear = document.getElementById('search-clear');
+
+let highlightLayer = null;
+
+function clearHighlight() {
+  if (highlightLayer) { map.removeLayer(highlightLayer); highlightLayer = null; }
+}
+
+function doSearch(query) {
+  searchResults.innerHTML = '';
+  searchResults.classList.remove('has-results');
+  clearHighlight();
+
+  const q = query.trim().toLowerCase();
+  if (!q) return;
+
+  const hits = [];
+  layerOrder.forEach(name => {
+    const entry = loadedLayers[name];
+    if (!entry || !entry.visible) return;
+    entry.layer.eachLayer(fl => {
+      if (!fl.feature) return;
+      const props = fl.feature.properties || {};
+      for (const [k, v] of Object.entries(props)) {
+        if (String(v).toLowerCase().includes(q)) {
+          hits.push({ name, feature: fl.feature, leafletLayer: fl, matchKey: k, matchVal: String(v), color: entry.style.fillColor });
+          break;
+        }
+      }
+    });
+  });
+
+  searchResults.classList.add('has-results');
+  if (hits.length === 0) {
+    searchResults.innerHTML = `<div class="search-no-results">No features match "${escapeHtml(query)}"</div>`;
+    return;
+  }
+
+  hits.slice(0, 30).forEach(hit => {
+    const val = hit.matchVal;
+    const idx = val.toLowerCase().indexOf(q);
+    const highlighted = escapeHtml(val.slice(0, idx)) +
+      `<mark>${escapeHtml(val.slice(idx, idx + q.length))}</mark>` +
+      escapeHtml(val.slice(idx + q.length));
+
+    const item = document.createElement('div');
+    item.className = 'search-result-item';
+    item.innerHTML = `
+      <span class="search-result-layer" style="color:${hit.color}">${escapeHtml(hit.name)}</span>
+      <span class="search-result-text"><span style="color:var(--muted)">${escapeHtml(hit.matchKey)}:</span> ${highlighted}</span>
+    `;
+    item.addEventListener('click', () => {
+      zoomAndHighlight(hit);
+      showFeatureInfo(hit.feature, hit.color, hit.name);
+      switchTab('info');
+    });
+    searchResults.appendChild(item);
+  });
+
+  if (hits.length > 30) {
+    const more = document.createElement('div');
+    more.className = 'search-no-results';
+    more.textContent = `…and ${hits.length - 30} more results`;
+    searchResults.appendChild(more);
+  }
+}
+
+function zoomAndHighlight(hit) {
+  clearHighlight();
+  const fl = hit.leafletLayer;
+  let bounds;
+
+  try {
+    if (fl.getBounds) bounds = fl.getBounds();
+    else if (fl.getLatLng) bounds = L.latLngBounds([fl.getLatLng(), fl.getLatLng()]);
+  } catch(e) {}
+
+  if (bounds && bounds.isValid()) {
+    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 16 });
+  } else if (fl.getLatLng) {
+    map.setView(fl.getLatLng(), Math.max(map.getZoom(), 14));
+  }
+
+  // Draw highlight overlay
+  const geom = hit.feature.geometry;
+  highlightLayer = L.geoJSON({ type: 'Feature', geometry: geom, properties: {} }, {
+    style: () => ({ color: '#ffffff', weight: 4, opacity: 1, fillColor: '#ffff00', fillOpacity: 0.35, dashArray: '6 4' }),
+    pointToLayer: (f, latlng) => L.circleMarker(latlng, { radius: 14, color: '#ffffff', weight: 3, fillColor: '#ffff00', fillOpacity: 0.5 })
+  }).addTo(map);
+
+  // Flash animation
+  let visible = true;
+  let flashes = 0;
+  const flashInterval = setInterval(() => {
+    if (!highlightLayer) { clearInterval(flashInterval); return; }
+    visible = !visible;
+    highlightLayer.eachLayer(l => {
+      if (l.setStyle) l.setStyle({ opacity: visible ? 1 : 0, fillOpacity: visible ? 0.35 : 0 });
+      else if (l.setOpacity) l.setOpacity(visible ? 1 : 0);
+    });
+    if (++flashes >= 6) clearInterval(flashInterval);
+  }, 300);
+}
+
+attrSearch.addEventListener('input', () => {
+  const val = attrSearch.value;
+  searchClear.classList.toggle('visible', val.length > 0);
+  doSearch(val);
 });
+
+searchClear.addEventListener('click', () => {
+  attrSearch.value = '';
+  searchClear.classList.remove('visible');
+  searchResults.innerHTML = '';
+  searchResults.classList.remove('has-results');
+  clearHighlight();
+  attrSearch.focus();
+});
+
+
+const headerToggle = document.getElementById('header-toggle');
+const headerExpanded = document.getElementById('header-expanded');
+const appEl = document.querySelector('.app');
+
+function updateAppTop() {
+  const h = document.getElementById('app-header').offsetHeight;
+  appEl.style.top = h + 'px';
+  map.invalidateSize();
+}
+
+headerToggle.addEventListener('click', () => {
+  const isOpen = headerExpanded.classList.toggle('open');
+  headerToggle.classList.toggle('open', isOpen);
+  headerToggle.setAttribute('aria-expanded', isOpen);
+  setTimeout(updateAppTop, 220);
+});
+updateAppTop();
+window.addEventListener('resize', updateAppTop);
 
 function showFeatureInfo(feature, color, layerName) {
   const props = feature.properties || {};
@@ -483,10 +703,6 @@ function showFeatureInfo(feature, color, layerName) {
   }
   html += `</div>`;
   document.getElementById('panel-body').innerHTML = html;
-
-  if (document.getElementById('panel').classList.contains('collapsed')) {
-    document.getElementById('panel').classList.remove('collapsed');
-  }
 }
 
 function escapeHtml(s) {

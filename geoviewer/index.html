@@ -21,33 +21,43 @@
   <div>Drop GeoJSON to load</div>
 </div>
 
-<header>
-  <div class="logo">Geo<span>Viewer</span></div>
-  <div class="header-controls">
-    <select id="basemap-select" title="Choose basemap">
-      <option value="osm">OpenStreetMap</option>
-      <option value="carto-dark" selected>Carto Dark</option>
-      <option value="carto-light">Carto Light</option>
-      <option value="esri-topo">ESRI Topo</option>
-      <option value="esri-imagery">ESRI Imagery</option>
-      <option value="google-terrain">Google Terrain</option>
-      <option value="cycle">OpenCycleMap</option>
-	  <option value="google-street">Google Street</option>
-	  <option value="google-hybrid">Google Hybrid</option>
-      <option value="blank">Blank</option>
-    </select>
-    <label class="btn">
-      ＋ Load GeoJSON
-      <input type="file" accept=".geojson,.json" multiple id="file-input" />
-    </label>
+<header id="app-header">
+  <div class="header-bar">
+    <div class="logo">Geo<span>Viewer</span></div>
+    <div class="header-bar-right">
+      <label class="btn">
+        ＋ Load GeoJSON
+        <input type="file" accept=".geojson,.json" multiple id="file-input" />
+      </label>
+      <button class="accordion-chevron" id="header-toggle" title="More options" aria-expanded="false">›</button>
+    </div>
   </div>
-  <button class="toggle-panel-btn" id="toggle-panel">◧ Panel</button>
+  <div class="header-expanded" id="header-expanded">
+    <div class="header-controls-row">
+      <select id="basemap-select" title="Choose basemap">
+        <option value="osm">OpenStreetMap</option>
+        <option value="carto-dark" selected>Carto Dark</option>
+        <option value="carto-light">Carto Light</option>
+        <option value="esri-topo">ESRI Topo</option>
+        <option value="esri-imagery">ESRI Imagery</option>
+        <option value="google-terrain">Google Terrain</option>
+        <option value="cycle">OpenCycleMap</option>
+        <option value="google-street">Google Street</option>
+        <option value="google-hybrid">Google Hybrid</option>
+        <option value="blank">Blank</option>
+      </select>
+      <div class="search-wrap">
+        <input type="text" id="attr-search" class="attr-search-input" placeholder="Search features…" autocomplete="off" />
+        <button class="search-clear-btn" id="search-clear" title="Clear search">✕</button>
+      </div>
+    </div>
+    <div id="search-results" class="search-results"></div>
+  </div>
 </header>
 
 <div class="app">
   <div id="map"></div>
   <div id="panel">
-
     <div class="panel-tabs">
       <button class="tab-btn active" data-tab="info">Feature Info</button>
       <button class="tab-btn" data-tab="layers">Layers <span class="tab-badge" id="layer-count">0</span></button>
