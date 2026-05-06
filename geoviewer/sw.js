@@ -3,10 +3,11 @@ const CACHE = 'geoviewer-v1';
 const PRECACHE = [
   './',
   './index.html',
+  './manifest.json',
   './res/style.css',
   './res/code.js',
   './res/leaflet.css',
-  './leaflet.js',
+  './res/leaflet.js',
   './favicon.ico',
   './icon-512.png',
   './icon-192.png'
