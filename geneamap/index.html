@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#c9a84c">
+<meta name="description" content="Build and explore family trees visually">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<title>GeneaMap — Family Tree Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.min.css">
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('SW Registered'))
+                .catch(err => console.log('SW Failed', err));
+        });
+    }
+</script>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div class="logo">GeneaMap <span>Family Tree Builder</span></div>
+    <div class="sep"></div>
+    <div class="tbtn-group">
+      <button class="tbtn" id="btn-new" title="New map">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        New
+      </button>
+      <button class="tbtn" id="btn-save" title="Save (right-click for Save As)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save
+      </button>
+      <button class="tbtn" id="btn-load" title="Load map from JSON">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Load
+      </button>
+    </div>
+    <div class="sep"></div>
+    <button class="tbtn" id="btn-import" title="Import another genealogy map and merge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="6" y1="9" x2="6" y2="15"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
+      Import & Merge
+    </button>
+    <div class="sep"></div>
+    <button class="tbtn primary" id="btn-add" title="Add new person">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Add Person
+    </button>
+	<div style="width:6px"></div>
+    <button class="tbtn active" id="btn-connect" title="Toggle connect mode (draw relationship lines)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      Connect
+    </button>
+    <div class="sep"></div>
+    <button class="tbtn danger" id="btn-delete" title="Delete selected">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      Delete
+    </button>
+    <div class="sep"></div>
+    <div id="search-wrap">
+      <span id="search-icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search person…" autocomplete="off" spellcheck="false">
+      <button id="search-clear" title="Clear search">✕</button>
+      <div id="search-dropdown"></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="tbtn" id="btn-fit" title="Fit all nodes in view">⊞ Fit</button>
+    <button class="tbtn" id="btn-sidebar" title="Toggle sidebar">☰</button>
+  </div>
+
+  <!-- WORKSPACE -->
+  <div id="workspace">
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+      <div class="sidebar-section">
+        <div class="section-title">Person Details</div>
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" id="f-name" placeholder="e.g. Eleanor Jane Smith">
+        </div>
+        <div class="field">
+          <label>Gender</label>
+          <div class="gender-row">
+            <button type="button" class="gender-btn" data-g="male">♂ Male</button>
+            <button type="button" class="gender-btn" data-g="female">♀ Female</button>
+            <button type="button" class="gender-btn" data-g="neutral">? Other</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Birth Date</label>
+          <input type="text" id="f-birth" placeholder="e.g. 1920 or 12 Mar 1920">
+        </div>
+        <div class="field">
+          <label>Death Date</label>
+          <input type="text" id="f-death" placeholder="e.g. 1985 or leave blank">
+        </div>
+        <div class="field">
+          <label>Place</label>
+          <input type="text" id="f-place" placeholder="Birthplace / origin">
+        </div>
+        <div class="field">
+          <label>Notes</label>
+          <textarea id="f-notes" placeholder="Occupation, details…"></textarea>
+        </div>
+        <div class="form-actions">
+          <button class="save" id="btn-save-person">Add to Map</button>
+          <button id="btn-clear-form">Clear</button>
+        </div>
+      </div>
+
+      <div class="sidebar-section" id="map-info-section">
+        <div class="section-title">Map Info</div>
+        <div class="field">
+          <label>Map Title</label>
+          <input type="text" id="f-map-title" placeholder="Family name / title">
+        </div>
+        <div class="field" style="font-size:.78rem; color:var(--text-dim); line-height:1.6; margin-top:4px;">
+          <span id="stat-nodes">0</span> people &middot;
+          <span id="stat-conns">0</span> connections
+        </div>
+      </div>
+    </div>
+
+    <!-- CANVAS -->
+    <div id="canvas-wrap">
+      <div id="canvas-transform">
+        <svg id="svg-layer" width="10000" height="10000"></svg>
+        <div id="nodes-layer"></div>
+      </div>
+
+      <!-- Legend -->
+      <div id="legend">
+        <div class="legend-item">
+          <div class="legend-line" style="background:var(--conn-default)"></div> Parent/Child
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background:var(--conn-spouse); background: repeating-linear-gradient(90deg,var(--conn-spouse) 0,var(--conn-spouse) 6px,transparent 6px,transparent 10px)"></div> Spouse
+        </div>
+        <div class="legend-item">
+          <div class="legend-line" style="background: repeating-linear-gradient(90deg,var(--conn-sibling) 0,var(--conn-sibling) 4px,transparent 4px,transparent 8px)"></div> Sibling
+        </div>
+      </div>
+
+      <!-- Zoom Controls -->
+      <div id="zoom-controls">
+        <button class="zoom-btn" id="zoom-in">+</button>
+        <button class="zoom-btn" id="zoom-out">−</button>
+        <button class="zoom-btn" id="zoom-reset" style="font-size:.7rem;">1:1</button>
+      </div>
+
+      <!-- Mini Map -->
+      <div id="minimap">
+        <canvas id="minimap-canvas" width="160" height="100"></canvas>
+        <div id="minimap-viewport"></div>
+      </div>
+
+      <!-- Status -->
+      <div id="statusbar">Select a person or Add a new one</div>
+    </div>
+  </div>
+</div>
+
+<!-- Connection type picker -->
+<div id="conn-picker">
+  <div style="font-size:.72rem; color:var(--text-dim); padding: 0 4px 4px; text-transform:uppercase; letter-spacing:.08em;">Connection Type</div>
+  <button class="conn-type-btn" data-type="parent">
+    <span class="conn-dot" style="background:var(--conn-default)"></span> Parent / Child
+  </button>
+  <button class="conn-type-btn" data-type="spouse">
+    <span class="conn-dot" style="background:var(--conn-spouse)"></span> Spouse / Partner
+  </button>
+  <button class="conn-type-btn" data-type="sibling">
+    <span class="conn-dot" style="background:var(--conn-sibling)"></span> Sibling
+  </button>
+  <button class="conn-type-btn" data-type="other">
+    <span class="conn-dot" style="background:var(--text-dim)"></span> Other / Custom
+  </button>
+</div>
+
+<!-- Context menu -->
+<div id="ctx-menu">
+  <div class="ctx-item" id="ctx-edit">Edit Person</div>
+  <div class="ctx-item" id="ctx-connect">Start Connection</div>
+  <div class="ctx-separator"></div>
+  <div class="ctx-item danger" id="ctx-delete">Delete Person</div>
+</div>
+
+<!-- Modal -->
+<div id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Confirm</div>
+    <div class="modal-body" id="modal-body">Are you sure?</div>
+    <div class="modal-actions">
+      <button class="modal-btn" id="modal-cancel">Cancel</button>
+      <button class="modal-btn confirm" id="modal-confirm">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import Panel -->
+<div id="import-panel">
+  <div class="import-box">
+    <div class="import-header">Import & Merge Genealogy Map</div>
+    <div class="import-body">
+      <p style="color:var(--text-dim); font-size:.85rem; margin-bottom:16px; line-height:1.6;">
+        Import another family tree JSON file. Imported nodes will be placed alongside the current map and visually marked. You can then draw connections between them.
+      </p>
+      <div class="drop-zone" id="drop-zone">
+        <div class="drop-zone-icon">📂</div>
+        <div>Drop a genealogy JSON file here</div>
+        <div style="font-size:.75rem; margin-top:6px; opacity:.6;">or click to browse</div>
+        <input type="file" id="import-file-input" accept=".json" style="display:none">
+      </div>
+      <div class="import-actions">
+        <button class="modal-btn confirm" id="btn-do-import">Import</button>
+        <button class="modal-btn" id="btn-cancel-import">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Hidden file inputs -->
+<input type="file" id="load-file-input" accept=".json" style="display:none">
+
+<script src="code.min.js"></script>
+</body>
+</html>
