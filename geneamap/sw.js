@@ -1,5 +1,15 @@
 const CACHE_NAME = 'genealogy-map-v2';
-const ASSETS = ['/', '/index.html', '/style.css', '/code.js', '/favicon.ico', '/icon-512.png', '/icon-192.png'];
+
+const ASSETS = [
+  '/apps/geneamap/',
+  '/apps/geneamap/manifest.json',
+  '/apps/geneamap/index.html',
+  '/apps/geneamap/style.min.css',
+  '/apps/geneamap/code.min.js',
+  '/apps/geneamap/favicon.ico',
+  '/apps/geneamap/icon-192.png',
+  '/apps/geneamap/icon-512.png'
+];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
