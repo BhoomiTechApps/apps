@@ -6,73 +6,114 @@
 <meta name="theme-color" content="#c9a84c">
 <meta name="description" content="Build and explore family trees visually">
 <link rel="manifest" href="manifest.json">
-<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
 <title>GeneaMap — Family Tree Builder</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.min.css">
-<script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('SW Registered'))
-                .catch(err => console.log('SW Failed', err));
-        });
-    }
-</script>
 </head>
 <body>
 <div id="app">
 
-  <!-- TOP BAR -->
+  <!-- TOP BAR (accordion) -->
   <div id="topbar">
-    <div class="logo">GeneaMap <span>Family Tree Builder</span></div>
-    <div class="sep"></div>
-    <div class="tbtn-group">
-      <button class="tbtn" id="btn-new" title="New map">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        New
+
+    <!-- ── PRIMARY ROW (always visible) ── -->
+    <div id="topbar-primary">
+      <div class="logo">GeneaMap <span>Family Tree Builder</span></div>
+      <div class="sep"></div>
+
+      <!-- File group -->
+      <div class="tbtn-group">
+        <button class="tbtn" id="btn-new" title="New map">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          New
+        </button>
+        <button class="tbtn" id="btn-save" title="Save (right-click for Save As)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Save
+        </button>
+        <button class="tbtn" id="btn-load" title="Load map from JSON">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Load
+        </button>
+      </div>
+
+      <div class="sep"></div>
+
+      <!-- Edit group -->
+      <button class="tbtn primary" id="btn-add" title="Add new person">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Person
       </button>
-      <button class="tbtn" id="btn-save" title="Save (right-click for Save As)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Save
+      <div style="width:6px"></div>
+      <button class="tbtn active" id="btn-connect" title="Toggle connect mode (draw relationship lines)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        Connect
       </button>
-      <button class="tbtn" id="btn-load" title="Load map from JSON">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Load
+
+      <div class="sep"></div>
+
+      <!-- Search -->
+      <div id="search-wrap">
+        <span id="search-icon">🔍</span>
+        <input type="text" id="search-input" placeholder="Search person…" autocomplete="off" spellcheck="false">
+        <button id="search-clear" title="Clear search">✕</button>
+        <div id="search-dropdown"></div>
+      </div>
+
+      <div class="spacer"></div>
+
+      <button class="tbtn" id="btn-fit" title="Fit all nodes in view">⊞ Fit</button>
+      <button class="tbtn" id="btn-sidebar" title="Toggle sidebar">☰</button>
+
+      <div class="sep"></div>
+
+      <!-- Accordion toggle -->
+      <button class="tbtn" id="btn-topbar-expand" title="More tools">
+        <svg id="expand-chevron" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        More
       </button>
     </div>
-    <div class="sep"></div>
-    <button class="tbtn" id="btn-import" title="Import another genealogy map and merge">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="6" y1="9" x2="6" y2="15"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
-      Import & Merge
-    </button>
-    <div class="sep"></div>
-    <button class="tbtn primary" id="btn-add" title="Add new person">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      Add Person
-    </button>
-	<div style="width:6px"></div>
-    <button class="tbtn active" id="btn-connect" title="Toggle connect mode (draw relationship lines)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-      Connect
-    </button>
-    <div class="sep"></div>
-    <button class="tbtn danger" id="btn-delete" title="Delete selected">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-      Delete
-    </button>
-    <div class="sep"></div>
-    <div id="search-wrap">
-      <span id="search-icon">🔍</span>
-      <input type="text" id="search-input" placeholder="Search person…" autocomplete="off" spellcheck="false">
-      <button id="search-clear" title="Clear search">✕</button>
-      <div id="search-dropdown"></div>
+
+    <!-- ── SECONDARY ROW (accordion drawer) ── -->
+    <div id="topbar-secondary">
+      <div id="topbar-secondary-inner">
+
+        <div class="sec-group">
+          <div class="sec-group-label">Manage</div>
+          <button class="tbtn" id="btn-import" title="Import another genealogy map and merge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="6" y1="9" x2="6" y2="15"/><line x1="9" y1="18" x2="15" y2="18"/></svg>
+            Import & Merge
+          </button>
+        </div>
+
+        <div class="sec-sep"></div>
+
+        <div class="sec-group">
+          <div class="sec-group-label">Analyse</div>
+          <button class="tbtn" id="btn-rel-finder" title="Find relationship between two people">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"/><circle cx="17" cy="17" r="4"/><path d="M9 11v2a4 4 0 0 0 4 4h0"/></svg>
+            Relationship Finder
+          </button>
+        </div>
+
+        <div class="sec-sep"></div>
+
+        <div class="sec-group">
+          <div class="sec-group-label">Danger Zone</div>
+          <button class="tbtn danger" id="btn-delete" title="Delete selected person or connection">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            Delete Selected
+          </button>
+        </div>
+
+        <div class="spacer"></div>
+
+        <div class="sec-hint">Select a person or connection on the canvas first, then use these tools.</div>
+      </div>
     </div>
-    <div class="spacer"></div>
-    <button class="tbtn" id="btn-fit" title="Fit all nodes in view">⊞ Fit</button>
-    <button class="tbtn" id="btn-sidebar" title="Toggle sidebar">☰</button>
-  </div>
+
+  </div><!-- /#topbar -->
 
   <!-- WORKSPACE -->
   <div id="workspace">
@@ -222,6 +263,43 @@
         <button class="modal-btn confirm" id="btn-do-import">Import</button>
         <button class="modal-btn" id="btn-cancel-import">Cancel</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Relationship Finder Panel -->
+<div id="rel-panel">
+  <div class="rel-box">
+    <div class="rel-header">
+      <span class="rel-header-icon">⚭</span>
+      <span>Relationship Finder</span>
+      <button class="rel-close" id="rel-close">✕</button>
+    </div>
+    <div class="rel-body">
+      <p class="rel-hint">Select two people to discover how they are related.</p>
+      <div class="rel-pickers">
+        <div class="rel-picker-wrap">
+          <label class="rel-label">Person A</label>
+          <div class="rel-picker-input-wrap">
+            <input type="text" class="rel-picker-input" id="rel-a-input" placeholder="Search name…" autocomplete="off">
+            <div class="rel-picker-dropdown" id="rel-a-dropdown"></div>
+          </div>
+          <div class="rel-selected-badge" id="rel-a-badge"></div>
+        </div>
+        <div class="rel-swap-col">
+          <button class="rel-swap-btn" id="rel-swap" title="Swap">⇄</button>
+        </div>
+        <div class="rel-picker-wrap">
+          <label class="rel-label">Person B</label>
+          <div class="rel-picker-input-wrap">
+            <input type="text" class="rel-picker-input" id="rel-b-input" placeholder="Search name…" autocomplete="off">
+            <div class="rel-picker-dropdown" id="rel-b-dropdown"></div>
+          </div>
+          <div class="rel-selected-badge" id="rel-b-badge"></div>
+        </div>
+      </div>
+      <button class="rel-find-btn" id="rel-find">Find Relationship</button>
+      <div id="rel-result"></div>
     </div>
   </div>
 </div>
