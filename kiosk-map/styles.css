@@ -1,0 +1,220 @@
+/* ==========================================================================
+   MediaMap PWA Overlay — Kiosk Edition
+   Stylesheet
+   ========================================================================== */
+
+#map {
+    height: calc(100vh - 64px);
+    width: 100%;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+/* Kiosk Touch Interface Locks */
+body {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-x pan-y;
+}
+
+/* ==========================================================================
+   Lightbox media states
+   ========================================================================== */
+
+/* Video / audio iframes need an explicit box, since an <iframe> has no
+   intrinsic size and would otherwise collapse to 0 height inside the
+   flex-centered media container. */
+#lightbox-media iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+#lightbox-media video {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+#lightbox-media audio {
+    width: 100%;
+}
+
+/* Shown briefly while an embed URL is being resolved (e.g. before the
+   iframe/video element has been swapped in), and on playback failure. */
+.media-status {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: #94a3b8;
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.media-status .material-icons {
+    font-size: 2.5rem;
+}
+
+.media-status.media-status-error {
+    color: #fca5a5;
+}
+
+.media-status a {
+    color: #818cf8;
+    text-decoration: underline;
+    font-size: 0.75rem;
+    margin-top: 0.25rem;
+}
+
+/* ==========================================================================
+   Map markers — media type pins
+   ========================================================================== */
+
+/* Leaflet wraps divIcon html in an element with its own default border/
+   background; strip that so only our inline SVG pin is visible. */
+.mediamap-marker-icon {
+    background: transparent;
+    border: none;
+}
+
+.mediamap-marker-icon svg {
+    display: block;
+    filter: drop-shadow(0 2px 3px rgba(15, 23, 42, 0.35));
+    transition: transform 0.15s ease;
+}
+
+.mediamap-marker-icon:hover svg {
+    transform: translateY(-2px) scale(1.05);
+}
+
+/* Tooltip styling tuned for the kiosk's light basemap + dark pins. */
+.leaflet-tooltip.mediamap-marker-tooltip,
+.leaflet-tooltip {
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1e293b;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: none;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.18);
+}
+
+/* ==========================================================================
+   Active Saved Layers — reorder buttons
+   ========================================================================== */
+
+/* The up/down buttons render their glyph via the .material-icons font
+   class directly on a <button>; pin a consistent square hit target so
+   they stay easy to tap on a touch kiosk even though their visible icon
+   is small. */
+#layers-list button.material-icons {
+    font-size: 16px;
+    width: 22px;
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+/* ==========================================================================
+   Map shapes — polyline/polygon centroid labels
+   ========================================================================== */
+
+/* Leaflet wraps divIcon html in an element with its own default border/
+   background; strip that so only the label text itself is visible. */
+.mediamap-shape-label-icon {
+    background: transparent;
+    border: none;
+    width: auto !important;
+    height: auto !important;
+}
+
+.mediamap-shape-label {
+    display: inline-block;
+    font-weight: 700;
+    white-space: nowrap;
+    text-shadow:
+        -1px -1px 0 rgba(255, 255, 255, 0.85),
+        1px -1px 0 rgba(255, 255, 255, 0.85),
+        -1px 1px 0 rgba(255, 255, 255, 0.85),
+        1px 1px 0 rgba(255, 255, 255, 0.85);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   Layer Style Modal
+   ========================================================================== */
+
+#layer-style-modal-root input[type="color"] {
+    padding: 2px;
+    appearance: none;
+}
+#layer-style-modal-root input[type="color"]::-webkit-color-swatch {
+    border: none;
+    border-radius: 4px;
+}
+#layer-style-modal-root input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 2px;
+}
+
+#layer-style-modal-root input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: #334155;
+}
+#layer-style-modal-root input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #6366f1;
+    cursor: pointer;
+    border: 2px solid #ffffff;
+}
+#layer-style-modal-root input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #6366f1;
+    cursor: pointer;
+    border: 2px solid #ffffff;
+}
+
+/* ==========================================================================
+   Admin inline status messages (replaces alert()/confirm() feedback)
+   ========================================================================== */
+
+.mediamap-status-line {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+.mediamap-status-line .material-icons {
+    font-size: 14px;
+}
+.mediamap-status-ok { color: #4ade80; }
+.mediamap-status-error { color: #fb7185; }
+.mediamap-status-info { color: #93c5fd; }
+
