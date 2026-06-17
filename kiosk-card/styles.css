@@ -192,7 +192,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #f4ecdc;
+    /*background: #f4ecdc;*/
+    background: #ffff;
     border-radius: 14px;
     overflow: hidden;
     margin-bottom: 20px;
