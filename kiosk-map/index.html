@@ -15,6 +15,7 @@
        works with zero network connectivity — see vendor/README.md. -->
   <link rel="stylesheet" href="vendor/material-icons/material-icons.css">
   <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="vendor/leaflet.markercluster/MarkerCluster.css">
   <link rel="stylesheet" href="kiosk.css">
 </head>
 <body>
@@ -82,7 +83,9 @@
       "enabled": true },
     { "file": "river-course.geojson", "name": "River Course",
       "enabled": true,
-      "shapeStyle": { "fillColor": "#4f46e5", "lineColor": "#4f46e5" } }
+      "shapeStyle": { "fillColor": "#4f46e5", "lineColor": "#4f46e5" } },
+    { "file": "campus-pois.geojson", "name": "Campus POIs",
+      "enabled": true, "cluster": false }
   ],
   "kiosk": {
     "idle_time_seconds": 90,
@@ -97,8 +100,11 @@
           or a GeoJSON FeatureCollection/Feature/geometry. Point/MultiPoint
           geometries become map pins; LineString/Polygon geometries become
           styled shapes. Layers with <code>"enabled": false</code> are
-          skipped. <code>shapeStyle</code> is optional and overrides the
-          default shape colors/label for that layer. A point's
+          skipped. Point pins are grouped into clusters as you zoom out, so
+          dense data stays readable on a kiosk screen — set
+          <code>"cluster": false</code> on a layer to always show its pins
+          individually instead. <code>shapeStyle</code> is optional and
+          overrides the default shape colors/label for that layer. A point's
           <code>media_url</code> can be a remote link, or a plain filename
           relative to the data folder for local images/audio/video.
         </p>
@@ -189,6 +195,7 @@
 <button id="btn-change-source" title="Change data source">⚙ source</button>
 
 <script src="vendor/leaflet/leaflet.js"></script>
+<script src="vendor/leaflet.markercluster/leaflet.markercluster.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

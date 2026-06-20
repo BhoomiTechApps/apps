@@ -13,7 +13,7 @@
 // want to intercept or cache a kiosk page being displayed from someone
 // else's site.
 
-const CACHE_NAME = 'mediamap-kiosk-v2'; // bumped: v1 cached CDN URLs that no longer exist in the app shell
+const CACHE_NAME = 'mediamap-kiosk-v3'; // bumped: v3 adds the vendored leaflet.markercluster plugin
 
 const APP_SHELL = [
     './',
@@ -32,6 +32,8 @@ const APP_SHELL = [
     './vendor/leaflet/images/marker-shadow.png',
     './vendor/leaflet/images/layers.png',
     './vendor/leaflet/images/layers-2x.png',
+    './vendor/leaflet.markercluster/MarkerCluster.css',
+    './vendor/leaflet.markercluster/leaflet.markercluster.js',
 ];
 
 self.addEventListener('install', event => {

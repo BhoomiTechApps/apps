@@ -1019,6 +1019,7 @@ async function getAllLayersFromUsb() {
                 active: true,
                 order: i,
                 shapeStyle: Object.assign({}, DEFAULT_SHAPE_STYLE, entry.shapeStyle || {}),
+                cluster: entry.cluster !== false, // default on; "cluster": false opts a layer's pins out
                 data: resolvedPoints,
                 shapes: shapeFeatures,
             });
@@ -1186,6 +1187,30 @@ const MarkerIconModule = {
     },
 };
 
+// Cluster bubbles, styled to match the indigo kiosk theme rather than
+// leaflet.markercluster's default green/yellow/orange bullseye (we don't
+// load MarkerCluster.Default.css for that reason — see vendor/README.md).
+// Three size/shade tiers give a rough sense of cluster magnitude at a
+// glance, the same way the default theme's color tiers do.
+function buildClusterIcon(cluster) {
+    const count = cluster.getChildCount();
+    let tier = 'mediamap-cluster-small';
+    let diameter = 38;
+    if (count >= 50) {
+        tier = 'mediamap-cluster-large';
+        diameter = 54;
+    } else if (count >= 10) {
+        tier = 'mediamap-cluster-medium';
+        diameter = 46;
+    }
+
+    return L.divIcon({
+        html: `<div class="mediamap-cluster-inner">${count}</div>`,
+        className: `mediamap-cluster-icon ${tier}`,
+        iconSize: L.point(diameter, diameter),
+    });
+}
+
 // ---------------------------------------------------------------------------
 // 9. MAP STATE, IDLE TIMER, HEARTBEAT
 // ---------------------------------------------------------------------------
@@ -1292,7 +1317,9 @@ function initMapResizeHandling() {
 }
 
 // ---------------------------------------------------------------------------
-// 11. LAYER RENDERING (ported from the MediaMap Kiosk plugin's app.js)
+// 11. LAYER RENDERING (ported from the MediaMap Kiosk plugin's app.js;
+//     point clustering added on top via the vendored leaflet.markercluster
+//     plugin — see vendor/README.md)
 // ---------------------------------------------------------------------------
 function renderLayerOnMap(layer) {
     const groupName = layer.groupName;
@@ -1301,8 +1328,25 @@ function renderLayerOnMap(layer) {
     }
 
     const layerGroup = L.featureGroup();
+    const points = layer.data || [];
 
-    (layer.data || []).forEach(item => {
+    // Clustering only makes sense for point pins — shapes (lines/polygons,
+    // handled further below) are added straight to layerGroup and never
+    // pass through this group. A layer can opt out via "cluster": false
+    // in settings.json (e.g. a small, important set of pins you always
+    // want individually visible rather than collapsing into a bubble).
+    const pointsTarget = (layer.cluster !== false)
+        ? L.markerClusterGroup({
+            showCoverageOnHover: false, // kiosk is touch-driven; hover footprints don't apply
+            zoomToBoundsOnClick: true,
+            spiderfyOnMaxZoom: true,    // un-stacks pins still overlapping at max zoom
+            chunkedLoading: true,       // keeps large point layers from blocking the UI thread
+            maxClusterRadius: 60,
+            iconCreateFunction: buildClusterIcon,
+        })
+        : L.featureGroup();
+
+    points.forEach(item => {
         const marker = L.marker([item.lat, item.lng], {
             icon: MarkerIconModule.build(item.media_type),
         });
@@ -1312,8 +1356,12 @@ function renderLayerOnMap(layer) {
         marker.on('click', () => {
             openLightbox(item);
         });
-        layerGroup.addLayer(marker);
+        pointsTarget.addLayer(marker);
     });
+
+    if (points.length > 0) {
+        layerGroup.addLayer(pointsTarget);
+    }
 
     const shapes = layer.shapes || [];
     if (shapes.length > 0) {
