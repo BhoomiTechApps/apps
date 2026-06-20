@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#4f46e5">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>MediaMap Kiosk</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="kiosk.css">
+</head>
+<body>
+
+<!-- =====================================================================
+     SETUP SCREEN
+     Shown on first launch and whenever the user taps "Change source".
+     Hidden once a map source loads successfully.
+     ===================================================================== -->
+<div id="screen-setup" style="display:none;">
+  <div class="setup-card">
+
+    <div class="setup-logo">
+      <span class="material-icons">map</span>
+      <div>
+        <h1>MediaMap</h1>
+        <p>Interactive Map · Kiosk</p>
+      </div>
+    </div>
+
+    <div class="setup-modes">
+      <button class="mode-tab active" data-mode="url">🌐 Remote URL</button>
+      <button class="mode-tab" data-mode="usb">💾 USB Drive</button>
+    </div>
+
+    <!-- URL panel -->
+    <div class="setup-panel active" id="panel-url">
+      <label class="setup-label" for="input-url">Page URL to display</label>
+      <input class="setup-input" id="input-url" type="url"
+             placeholder="https://example.com/?mediamap_kiosk=1"
+             autocomplete="off" spellcheck="false">
+      <p class="setup-hint">
+        Enter the full URL of any kiosk page — for example, a MediaMap Kiosk
+        site's fullscreen URL or shortcode page. The PWA displays that page
+        directly, fullscreen, with auto-reload to recover from connection
+        drops. An internet connection is required.
+      </p>
+      <button class="setup-btn" id="btn-start-url">Display This URL</button>
+    </div>
+
+    <!-- USB panel -->
+    <div class="setup-panel" id="panel-usb">
+      <p class="setup-hint">
+        Plug in your USB drive and click the button below to select the
+        <code>mediamap-kiosk-data</code> folder from it. The folder must
+        contain a <code>settings.json</code> file that lists which layers to
+        show. The map's basemap tiles still load from the internet — only
+        the layer data (points/shapes) works fully offline.
+      </p>
+      <button class="setup-btn" id="btn-start-usb">
+        <span class="material-icons" style="font-size:18px;vertical-align:middle;margin-right:6px;">folder_open</span>
+        Select folder…
+      </button>
+      <details style="margin-top:20px;">
+        <summary style="font-size:0.78rem;color:#a5b4fc;cursor:pointer;font-weight:600;">
+          settings.json format
+        </summary>
+        <pre style="margin-top:10px;background:#1e1e2e;color:#d4d4d4;padding:12px;border-radius:10px;font-size:11px;line-height:1.6;overflow-x:auto;">{
+  "layers": [
+    { "file": "heritage-sites.json", "name": "Heritage Sites",
+      "enabled": true },
+    { "file": "river-course.geojson", "name": "River Course",
+      "enabled": true,
+      "shapeStyle": { "fillColor": "#4f46e5", "lineColor": "#4f46e5" } }
+  ],
+  "kiosk": {
+    "idle_time_seconds": 90,
+    "lock_bounds_to_data": false
+  }
+}</pre>
+        <p style="font-size:0.74rem;color:#a5b4fc;margin-top:8px;line-height:1.5;">
+          Each <code>file</code> is a JSON or GeoJSON file in the same
+          directory, in the same format the MediaMap Kiosk plugin's importer
+          accepts: a plain array of <code>{lat, lng, place_name, media_type,
+          media_url, description}</code> points, <code>{"data": [...]}</code>,
+          or a GeoJSON FeatureCollection/Feature/geometry. Point/MultiPoint
+          geometries become map pins; LineString/Polygon geometries become
+          styled shapes. Layers with <code>"enabled": false</code> are
+          skipped. <code>shapeStyle</code> is optional and overrides the
+          default shape colors/label for that layer. A point's
+          <code>media_url</code> can be a remote link, or a plain filename
+          relative to the data folder for local images/audio/video.
+        </p>
+      </details>
+    </div>
+
+    <div id="setup-status" class="setup-status"></div>
+  </div>
+</div>
+
+
+<!-- =====================================================================
+     IFRAME SCREEN — URL mode
+     Displays a remote kiosk page directly, fullscreen, with reload
+     recovery if the connection drops.
+     ===================================================================== -->
+<div id="screen-iframe" style="display:none;">
+  <iframe id="kiosk-iframe" title="MediaMap Kiosk" allow="autoplay"></iframe>
+  <div id="iframe-error" style="display:none;">
+    <span class="material-icons">wifi_off</span>
+    <h2>Can't reach the page</h2>
+    <p id="iframe-error-msg">Retrying…</p>
+  </div>
+</div>
+
+
+<!-- =====================================================================
+     KIOSK APP — USB mode
+     A native, read-only Leaflet map renderer for layer data loaded from
+     the USB folder. Hidden until data loads. There is no admin/import
+     panel here — managing layers requires the WordPress plugin (or
+     editing the USB files directly); this mirrors what a visitor sees
+     on the live embedded kiosk, not the PIN-gated admin view.
+     ===================================================================== -->
+<div id="kiosk-root">
+
+  <header>
+    <div class="header-inner">
+      <div class="header-logo">
+        <span class="material-icons">map</span>
+        <div class="header-title">
+          <h1>MediaMap</h1>
+          <p>Kiosk</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div id="map"></div>
+    <div id="map-empty" style="display:none;">
+      <span class="material-icons">layers_clear</span>
+      <h2>No layers to show</h2>
+      <p id="map-empty-msg">No active layers were found in the data source.</p>
+    </div>
+  </main>
+
+  <!-- Lightbox: shown on marker click -->
+  <div id="lightbox" class="mm-hidden mm-opacity-0">
+    <button id="close-lightbox" aria-label="Close">
+      <span class="material-icons">close</span>
+    </button>
+    <div class="lightbox-card mm-scale-95" id="lightbox-content-wrapper">
+      <div id="lightbox-media"></div>
+      <div class="lightbox-body">
+        <div class="lightbox-body-top">
+          <div>
+            <h3 id="lightbox-title">Place Name</h3>
+            <p id="lightbox-coords">Lat, Lng</p>
+          </div>
+          <div class="lightbox-badges">
+            <span id="lightbox-countdown" class="badge badge-amber">
+              <span class="material-icons">timer</span>
+              <span>Auto-closes in --s</span>
+            </span>
+            <span id="lightbox-type" class="badge badge-indigo">Type</span>
+          </div>
+        </div>
+        <hr>
+        <p id="lightbox-desc">Description goes here…</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Subtle "change source" escape hatch — visible only when kiosk is active -->
+<button id="btn-change-source" title="Change data source">⚙ source</button>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
