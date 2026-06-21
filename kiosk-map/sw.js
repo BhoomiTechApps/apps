@@ -13,7 +13,7 @@
 // want to intercept or cache a kiosk page being displayed from someone
 // else's site.
 
-const CACHE_NAME = 'mediamap-kiosk-v3'; // bumped: v3 adds the vendored leaflet.markercluster plugin
+const CACHE_NAME = 'mediamap-kiosk-v4'; // v4 adds PDF.js (canvas-based PDF rendering, replacing the iframe approach — see vendor/README.md)
 
 const APP_SHELL = [
     './',
@@ -34,6 +34,28 @@ const APP_SHELL = [
     './vendor/leaflet/images/layers-2x.png',
     './vendor/leaflet.markercluster/MarkerCluster.css',
     './vendor/leaflet.markercluster/leaflet.markercluster.js',
+    './vendor/pdfjs/pdf.min.mjs',
+    './vendor/pdfjs/pdf.worker.min.mjs',
+    './vendor/pdfjs/standard_fonts/FoxitDingbats.pfb',
+    './vendor/pdfjs/standard_fonts/FoxitFixed.pfb',
+    './vendor/pdfjs/standard_fonts/FoxitFixedBold.pfb',
+    './vendor/pdfjs/standard_fonts/FoxitFixedBoldItalic.pfb',
+    './vendor/pdfjs/standard_fonts/FoxitFixedItalic.pfb',
+    './vendor/pdfjs/standard_fonts/FoxitSerif.pfb',
+    './vendor/pdfjs/standard_fonts/FoxitSerifBold.pfb',
+    './vendor/pdfjs/standard_fonts/FoxitSerifBoldItalic.pfb',
+    './vendor/pdfjs/standard_fonts/FoxitSerifItalic.pfb',
+    './vendor/pdfjs/standard_fonts/FoxitSymbol.pfb',
+    './vendor/pdfjs/standard_fonts/LiberationSans-Bold.ttf',
+    './vendor/pdfjs/standard_fonts/LiberationSans-BoldItalic.ttf',
+    './vendor/pdfjs/standard_fonts/LiberationSans-Italic.ttf',
+    './vendor/pdfjs/standard_fonts/LiberationSans-Regular.ttf',
+    './vendor/pdfjs/wasm/jbig2.wasm',
+    './vendor/pdfjs/wasm/jbig2_nowasm_fallback.js',
+    './vendor/pdfjs/wasm/qcms_bg.wasm',
+    './vendor/pdfjs/iccs/CGATS001Compat-v2-micro.icc',
+    // vendor/pdfjs/cmaps/ and vendor/pdfjs/wasm/openjpeg*/quickjs-eval*
+    // are deliberately NOT vendored at all — see vendor/README.md.
 ];
 
 self.addEventListener('install', event => {

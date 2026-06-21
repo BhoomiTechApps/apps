@@ -1136,6 +1136,219 @@ const MediaEmbedModule = {
 };
 
 // ---------------------------------------------------------------------------
+// 7b. PDF VIEWER MODULE (PDF.js — vendored locally, see vendor/README.md)
+// ---------------------------------------------------------------------------
+// Renders PDF points onto a <canvas> instead of embedding them via
+// <iframe src="file.pdf">. The iframe approach depends entirely on the
+// browser having its own inline PDF plugin — desktop browsers do, but
+// most mobile browsers don't reliably: Chrome on Android commonly shows
+// a download prompt instead of rendering inline, and iOS Safari is
+// inconsistent about it too. PDF.js parses + rasterizes the PDF itself,
+// so it looks identical on a kiosk, a phone, or a desktop, fully offline
+// — and works the same whether `url` is a remote http(s) link or a
+// blob: object URL (what resolveMediaUrl() above returns for a local
+// USB-mode file) — PDF.js fetches either transparently.
+//
+// pdfjs-dist no longer ships a plain-global/UMD script (every build is
+// an ES module as of v4+), so the library is loaded via a dynamic
+// import() the first time a PDF is actually opened — not on every
+// kiosk boot — rather than a <script> tag like the other vendored libs.
+//
+// This uses the LEGACY build specifically (vendor/pdfjs/pdf.min.mjs is
+// copied from pdfjs-dist's legacy/build/, not its main build/) — the
+// main build calls a brand-new, not-yet-broadly-supported Map method
+// with no fallback, which silently breaks rendering (blank page, no
+// visible error) on browsers that don't have it yet — including, at
+// the time this was written, a fairly recent desktop Chromium. See
+// vendor/README.md for the full explanation.
+const PdfViewerModule = (() => {
+    let pdfjsLib = null;
+    let pdfjsLoadPromise = null;
+    let pdfDoc = null;
+    let pageNum = 1;
+    let currentRenderTask = null; // the in-flight PDF.js RenderTask, if any — cancelled rather than left to race a newer one
+    let resizeHandler = null;
+    let renderToken = 0; // bumped on every open()/destroy() to invalidate any in-flight load from a previous PDF
+
+    // cancel()/destroy() are best-effort cleanup — if PDF.js's own internal
+    // bookkeeping throws on a particular browser/timing combination, that's
+    // not something the rest of the app should ever see as an error.
+    function safeCancelTask() {
+        if (currentRenderTask) {
+            try { currentRenderTask.cancel(); } catch (err) { /* ignore */ }
+            currentRenderTask = null;
+        }
+    }
+    function safeDestroyDoc(doc) {
+        if (!doc) return;
+        try {
+            const result = doc.destroy();
+            if (result && typeof result.catch === 'function') result.catch(() => {});
+        } catch (err) { /* ignore */ }
+    }
+
+    async function ensureLib() {
+        if (pdfjsLib) return pdfjsLib;
+        if (!pdfjsLoadPromise) {
+            pdfjsLoadPromise = import('./vendor/pdfjs/pdf.min.mjs').then(mod => {
+                mod.GlobalWorkerOptions.workerSrc = './vendor/pdfjs/pdf.worker.min.mjs';
+                pdfjsLib = mod;
+                return mod;
+            });
+        }
+        return pdfjsLoadPromise;
+    }
+
+    function destroy() {
+        renderToken++; // any load still in flight from the old doc becomes a no-op
+        if (resizeHandler) {
+            window.removeEventListener('resize', resizeHandler);
+            resizeHandler = null;
+        }
+        safeCancelTask();
+        if (pdfDoc) {
+            const doc = pdfDoc;
+            pdfDoc = null;
+            safeDestroyDoc(doc);
+        }
+        pageNum = 1;
+    }
+
+    /**
+     * Renders `url` into `mediaBox`. Resolves true on success, 'stale' if
+     * a newer open()/destroy() call superseded this one before it
+     * finished (caller should do nothing), or false if the file
+     * genuinely couldn't be loaded/parsed (caller shows the standard
+     * "can't be displayed" status view).
+     */
+    async function open(mediaBox, url) {
+        destroy(); // tear down whatever PDF (if any) was showing before this one
+        const myToken = renderToken;
+
+        mediaBox.innerHTML = `
+            <div class="pdf-viewer">
+                <div class="pdf-canvas-wrap">
+                    <div class="pdf-loading"><span class="pdf-spinner"></span></div>
+                    <canvas class="pdf-canvas"></canvas>
+                </div>
+                <div class="pdf-toolbar">
+                    <button type="button" class="pdf-nav-btn" data-dir="-1" aria-label="Previous page" disabled>
+                        <span class="material-icons">chevron_left</span>
+                    </button>
+                    <span class="pdf-page-indicator">– / –</span>
+                    <button type="button" class="pdf-nav-btn" data-dir="1" aria-label="Next page" disabled>
+                        <span class="material-icons">chevron_right</span>
+                    </button>
+                </div>
+            </div>`;
+
+        const canvas    = mediaBox.querySelector('.pdf-canvas');
+        const loading   = mediaBox.querySelector('.pdf-loading');
+        const indicator = mediaBox.querySelector('.pdf-page-indicator');
+        const prevBtn   = mediaBox.querySelector('.pdf-nav-btn[data-dir="-1"]');
+        const nextBtn   = mediaBox.querySelector('.pdf-nav-btn[data-dir="1"]');
+
+        let lib, doc;
+        try {
+            lib = await ensureLib();
+            if (myToken !== renderToken) return 'stale'; // a newer open()/destroy() happened while loading the library
+            doc = await lib.getDocument({
+                url,
+                // As of PDF.js v5, these resource paths are no longer bundled
+                // inline and MUST be supplied explicitly — without
+                // standardFontDataUrl specifically, any text using a non-
+                // embedded standard font (extremely common) silently fails
+                // to draw: the page renders as a blank white rectangle with
+                // no error visible to the kiosk visitor.
+                //
+                // cMapUrl is deliberately NOT set: it only covers legacy
+                // CJK (Chinese/Japanese/Korean) CID-keyed font encodings,
+                // which Indic/Latin-script archive content doesn't use —
+                // those scripts render fine via standard embedded Unicode
+                // fonts without it. Omitting it saved ~1.7MB of vendored
+                // cmap files this app would likely never need; see
+                // vendor/README.md if that ever changes.
+                //
+                // wasmUrl/iccUrl cover JBIG2 decoding (common in scanned
+                // document compression — kept) and CMYK colour conversion
+                // (kept, tiny). JPEG2000 decoding and embedded-PDF-
+                // JavaScript execution were trimmed from vendor/pdfjs/wasm/
+                // for the same reason as cmaps — see vendor/README.md.
+                standardFontDataUrl: './vendor/pdfjs/standard_fonts/',
+                wasmUrl: './vendor/pdfjs/wasm/',
+                iccUrl: './vendor/pdfjs/iccs/',
+            }).promise;
+        } catch (err) {
+            if (myToken !== renderToken) return 'stale';
+            console.warn('PDF load failed:', err);
+            return false;
+        }
+        if (myToken !== renderToken) { safeDestroyDoc(doc); return 'stale'; }
+        pdfDoc = doc; // only commit to shared state once we know this call is still the current one
+
+        indicator.textContent = `1 / ${pdfDoc.numPages}`;
+        prevBtn.addEventListener('click', () => renderPage(pageNum - 1));
+        nextBtn.addEventListener('click', () => renderPage(pageNum + 1));
+        resizeHandler = () => renderPage(pageNum); // re-fit on device rotation / window resize
+        window.addEventListener('resize', resizeHandler);
+
+        await renderPage(1);
+        if (myToken !== renderToken) return 'stale';
+        loading.remove();
+        return true;
+
+        async function renderPage(num) {
+            if (!pdfDoc || myToken !== renderToken || num < 1 || num > pdfDoc.numPages) return;
+
+            // Cancel whatever page render is still in flight before starting
+            // a new one — PDF.js doesn't allow two concurrent render() calls
+            // against the same canvas (a nav-button click and the resize
+            // handler can otherwise both try to render at once).
+            safeCancelTask();
+
+            pageNum = num;
+            indicator.textContent = `${pageNum} / ${pdfDoc.numPages}`;
+            prevBtn.disabled = pageNum <= 1;
+            nextBtn.disabled = pageNum >= pdfDoc.numPages;
+
+            const page = await pdfDoc.getPage(pageNum);
+            if (myToken !== renderToken) return;
+
+            const wrap = canvas.parentElement;
+            const unscaled = page.getViewport({ scale: 1 });
+            const fitScale = Math.max(0.1, Math.min(
+                wrap.clientWidth / unscaled.width,
+                wrap.clientHeight / unscaled.height
+            ));
+            // Cap device-pixel-ratio scaling — kiosk hardware is often
+            // lower-powered, and a 3x/4x canvas for a single PDF page is
+            // wasted work the eye won't notice on a touchscreen anyway.
+            const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+            const viewport = page.getViewport({ scale: fitScale * pixelRatio });
+
+            canvas.width  = Math.round(viewport.width);
+            canvas.height = Math.round(viewport.height);
+            canvas.style.width  = Math.round(viewport.width / pixelRatio) + 'px';
+            canvas.style.height = Math.round(viewport.height / pixelRatio) + 'px';
+
+            const ctx = canvas.getContext('2d');
+            const task = page.render({ canvasContext: ctx, viewport });
+            currentRenderTask = task;
+            try {
+                await task.promise;
+            } catch (err) {
+                if (err && err.name === 'RenderingCancelledException') return; // superseded by a newer page/resize — expected
+                console.warn('PDF page render failed:', err);
+            } finally {
+                if (currentRenderTask === task) currentRenderTask = null;
+            }
+        }
+    }
+
+    return { open, destroy };
+})();
+
+// ---------------------------------------------------------------------------
 // 8. MARKER ICON MODULE
 // ---------------------------------------------------------------------------
 const MarkerIconModule = {
@@ -1533,8 +1746,10 @@ function openLightbox(item) {
     document.getElementById('lightbox-type').textContent = MarkerIconModule.labelFor(item.media_type);
 
     mediaBox.innerHTML = '';
-    // Reset from any previous text-only point — re-added below when needed.
+    // Reset from any previous text-only or PDF point — re-added below when needed.
     wrapper.classList.remove('no-media');
+    wrapper.classList.remove('pdf-media');
+    PdfViewerModule.destroy(); // free any previous PDF doc — markers can be tapped one after another without closing the lightbox in between
 
     if (item.media_type === 'video') {
         const embed = MediaEmbedModule.resolve('video', item.media_url);
@@ -1565,11 +1780,24 @@ function openLightbox(item) {
         if (!embed) {
             renderMediaStatus(mediaBox, 'picture_as_pdf', 'This PDF can\u2019t be displayed in the kiosk.', item.media_url, true);
         } else {
-            mediaBox.innerHTML = `
-                <iframe src="${escHtml(embed.src)}" frameborder="0" style="border:0;background:#fff;"></iframe>
-                <a class="media-open-new-tab" href="${escHtml(embed.src)}" target="_blank" rel="noopener" title="Open full PDF in a new tab">
-                    <span class="material-icons">open_in_new</span>
-                </a>`;
+            wrapper.classList.add('pdf-media'); // gives the PDF more vertical room than the 16:9 video/image box
+            const pdfUrl = embed.src;
+            PdfViewerModule.open(mediaBox, pdfUrl).then(result => {
+                if (result === 'stale') return; // a newer item replaced this one before the load finished
+                if (!result) {
+                    wrapper.classList.remove('pdf-media');
+                    renderMediaStatus(mediaBox, 'picture_as_pdf', 'This PDF can\u2019t be displayed in the kiosk.', pdfUrl, true);
+                    return;
+                }
+                const openBtn = document.createElement('a');
+                openBtn.className = 'media-open-new-tab';
+                openBtn.href = pdfUrl;
+                openBtn.target = '_blank';
+                openBtn.rel = 'noopener';
+                openBtn.title = 'Open full PDF in a new tab';
+                openBtn.innerHTML = '<span class="material-icons">open_in_new</span>';
+                mediaBox.appendChild(openBtn);
+            });
         }
     } else if (item.media_type === 'streetview') {
         const embed = MediaEmbedModule.resolve('streetview', item.media_url);
@@ -1601,6 +1829,8 @@ function closeLightbox() {
     wrapper.classList.add('mm-scale-95');
     setTimeout(() => {
         container.classList.add('mm-hidden');
+        PdfViewerModule.destroy();
+        wrapper.classList.remove('pdf-media');
         document.getElementById('lightbox-media').innerHTML = '';
     }, 300);
 }
