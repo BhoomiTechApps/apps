@@ -13,7 +13,7 @@
 // want to intercept or cache a kiosk page being displayed from someone
 // else's site.
 
-const CACHE_NAME = 'mediamap-kiosk-v4'; // v4 adds PDF.js (canvas-based PDF rendering, replacing the iframe approach — see vendor/README.md)
+const CACHE_NAME = 'mediamap-kiosk-v5'; // v5: PDF viewer fits to width; install no longer fails the whole shell on one bad URL
 
 const APP_SHELL = [
     './',
@@ -60,13 +60,28 @@ const APP_SHELL = [
 
 self.addEventListener('install', event => {
     event.waitUntil(
-        // Every entry here is now same-origin (no CDN), so a single
-        // cache.addAll() either fully succeeds or fully fails — no more
-        // "best effort" split between local files and external assets.
-        // If this fails, the browser keeps any PREVIOUSLY installed
-        // service worker active rather than activating a half-cached
-        // one, which is exactly the safe behavior we want here.
-        caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL))
+        caches.open(CACHE_NAME).then(cache =>
+            // cache.addAll() is all-or-nothing and — critically — gives no
+            // indication of WHICH url in APP_SHELL failed when it rejects,
+            // just a generic "Request failed" TypeError. Caching each entry
+            // individually means one bad/blocked URL doesn't sink caching
+            // for everything else, and any failure is logged with the
+            // specific url plus status, so the actual cause shows up in the
+            // browser console instead of needing trial and error.
+            Promise.all(
+                APP_SHELL.map(url =>
+                    fetch(url).then(response => {
+                        if (!response.ok) {
+                            console.warn('[SW] skip caching (HTTP ' + response.status + '):', url);
+                            return;
+                        }
+                        return cache.put(url, response);
+                    }).catch(err => {
+                        console.warn('[SW] skip caching (fetch failed):', url, err);
+                    })
+                )
+            )
+        )
     );
     self.skipWaiting();
 });
