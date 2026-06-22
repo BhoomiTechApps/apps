@@ -1856,7 +1856,59 @@ window.addEventListener('mousemove', () => {
 }, { passive: true, capture: true });
 
 // ---------------------------------------------------------------------------
-// 15. SERVICE WORKER + BOOT
+// 15. RIGHT-CLICK & LONG-PRESS SUPPRESSION
+// ---------------------------------------------------------------------------
+// Kiosks are public-facing, touch-driven displays — the browser context
+// menu and the mobile OS "callout" sheet (save image / copy link / open
+// in new tab) are both confusing and exploitable by curious visitors.
+//
+// The contextmenu event is suppressed globally via capture-phase
+// preventDefault(). This covers desktop right-click and Android long-press
+// on all surfaces including cross-origin iframes (the contextmenu event
+// bubbles up to the host document even across the iframe boundary).
+//
+// The touchstart long-press timer is intentionally NOT applied to iframes:
+// iOS fires the callout from a native gesture that precedes the contextmenu
+// event, so the timer would need to call preventDefault() on touchstart —
+// which also cancels normal taps and breaks iframe player controls.
+// For kiosk use (no text selection needed inside embeds), the contextmenu
+// handler alone is sufficient.
+//
+// CSS (-webkit-touch-callout: none) on non-iframe surfaces handles iOS
+// long-press suppression for images, video, audio, and the map.
+
+document.addEventListener('contextmenu', e => {
+    if (e.target.tagName !== 'IFRAME') e.preventDefault();
+}, { capture: true });
+
+(function () {
+    let longPressTimer = null;
+
+    function clearLongPress() {
+        if (longPressTimer !== null) {
+            clearTimeout(longPressTimer);
+            longPressTimer = null;
+        }
+    }
+
+    // Apply the long-press timer only to non-iframe targets so it doesn't
+    // interfere with player controls inside embedded YouTube/Spotify/etc.
+    document.addEventListener('touchstart', e => {
+        if (e.target.tagName === 'IFRAME') return;
+        clearLongPress();
+        longPressTimer = setTimeout(() => {
+            e.preventDefault();
+            longPressTimer = null;
+        }, 500);
+    }, { passive: false, capture: true });
+
+    document.addEventListener('touchend',   clearLongPress, { passive: true, capture: true });
+    document.addEventListener('touchmove',  clearLongPress, { passive: true, capture: true });
+    document.addEventListener('touchcancel',clearLongPress, { passive: true, capture: true });
+})();
+
+// ---------------------------------------------------------------------------
+// 16. SERVICE WORKER + BOOT
 // ---------------------------------------------------------------------------
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch(err =>
