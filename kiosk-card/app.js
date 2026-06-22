@@ -1049,10 +1049,12 @@ function renderSetsGrid(sets) {
             <div class="lp-set-tile" data-slug="${escHtml(set.slug)}" role="button" tabindex="0" aria-label="Open ${escHtml(set.name)}">
 			  <div class="lp-set-tile-header">
                 <div class="lp-set-tile-icon"><span class="material-icons">menu_book</span></div>
-                <div class="lp-set-tile-name">${escHtml(set.name)}</div>
+                <div class="lp-set-tile-info">
+                    <div class="lp-set-tile-name">${escHtml(set.name)}</div>
+                    <div class="lp-set-tile-meta"><span class="material-icons">translate</span>${escHtml(set.languageLabel || set.language || '')}</div>
+                </div>
 			  </div>
-                <div class="lp-set-tile-meta"><span class="material-icons">translate</span>${escHtml(set.languageLabel || set.language || '')}</div>
-                <div class="lp-set-tile-count"><span class="material-icons">collections_bookmark</span>${count} word${count === 1 ? '' : 's'}</div>
+              <div class="lp-set-tile-count"><span class="material-icons">collections_bookmark</span>${count} word${count === 1 ? '' : 's'}</div>
             </div>`;
         });
     });
@@ -1303,3 +1305,26 @@ if ('serviceWorker' in navigator) {
 window.addEventListener('DOMContentLoaded', () => {
     restoreAndBoot();
 });
+
+// ---------------------------------------------------------------------------
+// 14. RIGHT-CLICK & LONG-PRESS SUPPRESSION
+// ---------------------------------------------------------------------------
+
+document.addEventListener('contextmenu', e => {
+    if (e.target.tagName !== 'IFRAME') e.preventDefault();
+}, { capture: true });
+
+(function () {
+    let longPressTimer = null;
+    function clearLongPress() {
+        if (longPressTimer !== null) { clearTimeout(longPressTimer); longPressTimer = null; }
+    }
+    document.addEventListener('touchstart', e => {
+        if (e.target.tagName === 'IFRAME') return;
+        clearLongPress();
+        longPressTimer = setTimeout(() => { e.preventDefault(); longPressTimer = null; }, 500);
+    }, { passive: false, capture: true });
+    document.addEventListener('touchend',    clearLongPress, { passive: true, capture: true });
+    document.addEventListener('touchmove',   clearLongPress, { passive: true, capture: true });
+    document.addEventListener('touchcancel', clearLongPress, { passive: true, capture: true });
+})();
