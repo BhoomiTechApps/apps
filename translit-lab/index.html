@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transliteration Lab</title>
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<meta name="theme-color" content="#0f1115">
+</head>
+<body>
+
+<div id="app">
+  <header>
+    <h1>Translit<span>Lab</span></h1>
+    <div style="font-size:12px;color:var(--muted);">CompilingAI Engine Test Module</div>
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="test">⚡ Test</button>
+      <button class="tab-btn" data-tab="snippets">✂️ Snippets</button>
+      <button class="tab-btn" data-tab="maps">🗺️ Maps</button>
+      <button class="tab-btn" data-tab="engines">🧩 Engines</button>
+      <button class="tab-btn" data-tab="debug">🐛 Debug</button>
+    </div>
+    <button class="btn btn-sm" id="btn-reset-defaults" title="Reset all to plugin defaults" style="margin-left:8px;">↩ Reset Defaults</button>
+  </header>
+
+  <main>
+
+    <!-- ═══════════════ TEST PANEL ═══════════════ -->
+    <div id="panel-test" class="tab-panel active">
+
+      <!-- Left: active snippet list -->
+      <div class="test-left">
+        <div class="section-hd">
+          Active Snippets
+          <span class="count" id="snip-count">0</span>
+        </div>
+        <div id="snippet-list"></div>
+      </div>
+
+      <!-- Center: IO + engines -->
+      <div class="test-center">
+        <!-- Direction + run -->
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+          <div class="io-label" style="margin:0;">Direction:</div>
+          <div class="dir-toggle">
+            <button class="dir-btn active" data-dir="forward">Forward (Roman → BPM)</button>
+            <button class="dir-btn" data-dir="reverse">Reverse (BPM → Roman)</button>
+          </div>
+          <button class="run-btn" id="btn-run">▶ Run</button>
+        </div>
+
+        <!-- Input -->
+        <div style="flex-shrink:0;display:flex;flex-direction:column;gap:4px;">
+          <div class="io-label">Input</div>
+          <textarea class="io-box" id="input-text" rows="3" placeholder="Type test input here…" spellcheck="false"></textarea>
+        </div>
+
+        <!-- Engine outputs -->
+        <div class="engines-row">
+          <div class="engine-card">
+            <div class="engine-hd">
+              <span class="engine-label js">JS Engine</span>
+              <span style="font-size:11px;color:var(--muted);">frontend / browser</span>
+              <span class="engine-status" id="js-status">—</span>
+            </div>
+            <div class="engine-output" id="js-output" dir="auto"></div>
+            <div class="engine-log" id="js-log"></div>
+          </div>
+          <div class="engine-card">
+            <div class="engine-hd">
+              <span class="engine-label php">PHP Engine</span>
+              <span style="font-size:11px;color:var(--muted);">server / WordPress</span>
+              <span class="engine-status" id="php-status">—</span>
+            </div>
+            <div class="engine-output" id="php-output" dir="auto"></div>
+            <div class="engine-log" id="php-log"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Map Viewer -->
+      <div class="test-right">
+        <div class="section-hd">
+          Map Viewer
+          <div class="actions">
+            <button class="btn btn-sm" id="btn-map-add-entry">+ Add</button>
+            <button class="btn btn-sm btn-primary" id="btn-map-save-changes">💾 Save</button>
+          </div>
+        </div>
+        <div id="map-viewer-panel">
+          <div class="map-viewer-toolbar">
+            <select id="map-view-select">
+              <option value="" disabled selected>— Select a Map —</option>
+              <option value="forward">Forward Map</option>
+              <option value="reverse">Reverse Map</option>
+            </select>
+            <input type="search" id="map-search" placeholder="Filter entries…">
+          </div>
+          <div id="map-grid"><div id="map-no-lexicon-msg" class="map-no-lexicon-msg">No Lexicon Map loaded. Select one to load.</div></div>
+          <div class="map-viewer-status">
+            <span id="map-viewer-count">—</span>
+            <span id="map-dirty-badge" class="map-dirty-badge" style="display:none;">● unsaved changes</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════ SNIPPETS PANEL (redesigned) ═══════════════ -->
+    <div id="panel-snippets" class="tab-panel">
+
+      <!-- Left: snippet list with 2-line rows -->
+      <div class="snip-panel-list">
+        <div class="section-hd" style="padding:10px 12px;">
+          Snippets
+          <span class="count" id="snip-count2">0</span>
+          <div class="actions">
+            <button class="btn btn-sm" id="btn-import-snippets">📥 Import</button>
+            <button class="btn btn-sm" id="btn-export-all-snippets">📤 Export All</button>
+            <button class="btn btn-sm" id="btn-add-snippet2">+ New</button>
+          </div>
+        </div>
+        <!-- Selection action bar -->
+        <div id="sel-action-bar">
+          <span class="sel-count" id="sel-count-label">0 selected</span>
+          <button class="btn btn-sm" id="btn-export-selected">📤 Export Selected</button>
+          <span class="sel-clear" id="btn-sel-clear">Clear</span>
+        </div>
+        <div id="snip-panel-list-body"></div>
+      </div>
+
+      <!-- Right: snippet editor -->
+      <div class="snip-panel-editor">
+        <div class="section-hd" style="padding:10px 14px;">
+          Snippet Editor
+          <div class="actions">
+            <button class="btn btn-sm btn-primary" id="btn-save-snippet-panel">💾 Save Snippet</button>
+          </div>
+        </div>
+        <div class="snip-panel-editor-inner" id="snip-panel-editor-inner">
+          <div class="empty-state">Select a snippet from the list to edit, or click + New to create one.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════ MAPS PANEL ═══════════════ -->
+    <div id="panel-maps" class="tab-panel">
+      <!-- shared toolbar -->
+      <div class="map-tab-toolbar">
+        <div class="map-tab-left">
+          <select id="maps-tab-view-select" class="map-tab-select">
+            <option value="forward">Forward Map (Roman → BPM)</option>
+            <option value="reverse">Reverse Map (BPM → Roman)</option>
+          </select>
+          <span id="maps-tab-total" class="map-tab-total">—</span>
+        </div>
+        <div class="map-tab-right">
+          <input type="search" id="maps-tab-search" class="map-tab-search" placeholder="Search entries…">
+          <button class="btn btn-sm" id="btn-maps-tab-export">📤 Export</button>
+        </div>
+      </div>
+      <!-- two-column body -->
+      <div class="maps-tab-columns">
+        <!-- left: ordering table -->
+        <div class="maps-tab-left-col">
+          <div id="maps-tab-body" class="maps-tab-body"></div>
+        </div>
+        <!-- right: readonly JSON mirror -->
+        <div class="maps-tab-right-col">
+          <div class="map-json-header">JSON Preview <span class="map-json-hint">(read-only · updates on save)</span></div>
+          <textarea id="maps-tab-json" class="maps-tab-json" readonly spellcheck="false"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ ENGINES PANEL ═══════════════ -->
+    <div id="panel-engines" class="tab-panel">
+      <div class="engine-settings-row">
+        <div class="engine-settings-half">
+          <div class="section-hd">
+            🟡 JS Engine Settings <span style="color:var(--muted);font-size:10px;font-weight:400;text-transform:none;">(js-engine-settings.json)</span>
+          </div>
+          <div id="engine-settings-js" class="engine-settings-body"></div>
+        </div>
+        <div class="engine-settings-half">
+          <div class="section-hd">
+            🔵 PHP Engine Settings <span style="color:var(--muted);font-size:10px;font-weight:400;text-transform:none;">(php-engine-settings.json)</span>
+          </div>
+          <div id="engine-settings-php" class="engine-settings-body"></div>
+        </div>
+      </div>
+      <div class="engine-code-row">
+        <div class="engine-code-half">
+          <div class="section-hd">
+            🟡 JS Engine <span style="color:var(--muted);font-size:10px;font-weight:400;text-transform:none;">(engine.js)</span>
+          </div>
+          <div class="engine-img-wrap" id="engine-img-wrap-js" oncontextmenu="return false;" onselectstart="return false;" oncopy="return false;" oncut="return false;">
+            <img src="engine-js-screenshot.png" alt="JS Engine source" id="engine-img-js" class="engine-img" draggable="false" onerror="this.parentElement.innerHTML='<div class=\'engine-img-missing\'>📷 Place <code>engine-js-screenshot.png</code> (or .jpg) in the project root.</div>'">
+            <div class="engine-code-watermark-overlay" id="engine-watermark-js"></div>
+          </div>
+        </div>
+        <div class="engine-code-half">
+          <div class="section-hd">
+            🔵 PHP Engine <span style="color:var(--muted);font-size:10px;font-weight:400;text-transform:none;">(engine.php)</span>
+          </div>
+          <div class="engine-code-wrap" oncontextmenu="return false;" onselectstart="return false;" oncopy="return false;" oncut="return false;">
+            <pre class="engine-code-content" id="engine-code-php"></pre>
+            <div class="engine-code-watermark-overlay" id="engine-watermark-php"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ DEBUG PANEL ═══════════════ -->
+    <div id="panel-debug" class="tab-panel">
+      <div class="debug-half">
+        <div class="section-hd">
+          🟡 JS Engine — Last Run Debug
+          <div class="actions">
+            <button class="btn btn-sm" id="btn-export-debug-js">📄 Export</button>
+          </div>
+        </div>
+        <div class="debug-content" id="debug-js-content">
+          <div class="debug-empty">Run a transliteration in the Test tab to see debug output here.</div>
+        </div>
+      </div>
+      <div class="debug-half">
+        <div class="section-hd">
+          🔵 PHP Engine — Last Run Debug
+          <div class="actions">
+            <button class="btn btn-sm" id="btn-export-debug-php">📄 Export</button>
+          </div>
+        </div>
+        <div class="debug-content" id="debug-php-content">
+          <div class="debug-empty">Run a transliteration in the Test tab to see debug output here.</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<!-- Map entry edit modal -->
+<div id="map-edit-modal-backdrop">
+  <div id="map-edit-modal">
+    <h3 id="map-edit-modal-title">Edit Map Entry</h3>
+    <div class="map-edit-fields">
+      <div class="map-edit-field">
+        <div class="map-edit-label">FROM (key)</div>
+        <input class="map-edit-input" id="map-edit-from" placeholder="Roman key, e.g. ka">
+      </div>
+      <div class="map-edit-field">
+        <div class="map-edit-label">TO (value)</div>
+        <input class="map-edit-input" id="map-edit-to" placeholder="BPM character, e.g. ক">
+      </div>
+      <div class="map-edit-field">
+        <div class="map-edit-label">SECTION</div>
+        <select class="map-edit-input" id="map-edit-section">
+          <option value="consonants">consonants</option>
+          <option value="matras">matras</option>
+          <option value="independent_vowels">independent_vowels</option>
+          <option value="special">special</option>
+          <option value="digits">digits</option>
+          <option value="punctuation">punctuation</option>
+        </select>
+      </div>
+    </div>
+    <div class="map-edit-btns">
+      <button class="btn btn-sm btn-danger" id="btn-map-edit-delete" style="margin-right:auto;">🗑 Delete</button>
+      <button class="btn btn-sm" id="btn-map-edit-cancel">Cancel</button>
+      <button class="btn btn-sm btn-primary" id="btn-map-edit-ok">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirmation modal -->
+<div id="confirm-delete-modal-backdrop">
+  <div id="confirm-delete-modal">
+    <h3>Delete Map Entry?</h3>
+    <p id="confirm-delete-text">Are you sure you want to delete this entry?</p>
+    <div class="map-edit-btns">
+      <button class="btn btn-sm" id="btn-confirm-delete-cancel">Cancel</button>
+      <button class="btn btn-sm btn-danger" id="btn-confirm-delete-ok">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Import modal -->
+<div id="import-modal-backdrop">
+  <div id="import-modal">
+    <h2>📥 Import Snippets</h2>
+    <div id="import-drop-zone">
+      <strong>Drop .json file here</strong>
+      or click to browse
+    </div>
+    <input type="file" id="import-file-input" accept=".json" style="display:none;">
+    <div id="import-preview">No file selected.</div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.5;">
+      Accepts a single snippet object or an array of snippets.<br>
+      Existing snippets with matching <code style="color:var(--accent);">snippet_key</code> will be updated.
+    </div>
+    <div class="import-modal-btns">
+      <button class="btn btn-sm" id="btn-import-cancel">Cancel</button>
+      <button class="btn btn-sm btn-primary" id="btn-import-confirm" disabled>Import</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="engine.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

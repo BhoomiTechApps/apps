@@ -1,0 +1,12 @@
+{
+  "virama": "\u09CD",
+  "zwj": "\u200D",
+  "zwnj": "\u200C",
+  "inherent_vowel": "o",
+  "non_linking_consonants": ["ng", "M", "NG", "Ng", ":", "H", "^", "~"],
+  "hardcode_independent_vowel": true,
+  "hardcode_explicit_zwnj": true,
+  "hardcode_consonant_matra": true,
+  "hardcode_consonant_cluster": true,
+  "section_order": ["special", "consonants", "matras", "independent_vowels", "digits", "punctuation"]
+}

@@ -1,0 +1,149 @@
+{
+  "_meta": {
+    "description": "Reverse map: Bengali-Assamese script → Roman/Latin for Bishnupriya Manipuri (BPM)",
+    "version": "3.0",
+    "source": "Bengali-Assamese Unicode (U+0980–U+09FF)",
+    "target": "Roman (practical BPM convention)",
+
+    "structure": {
+      "warning": "This file's top-level keys are CONTRACT with the engine and REST layer. Do not rename, add, or remove sections without updating all four hardcoded locations: SECTION_ORDER in assets/js/engine.js, both flatten_map() call arrays in includes/class-engine.php (forward and reverse), the $sections array in includes/class-rest.php, and SECTION_LABELS in assets/js/admin.js.",
+      "required_sections": [
+        "independent_vowels",
+        "consonants",
+        "matras",
+        "special",
+        "digits",
+        "punctuation"
+      ],
+      "section_roles": {
+        "independent_vowels": "Stand-alone vowel characters appearing at word/syllable start or after another vowel. Engine emits these directly.",
+        "consonants": "All consonant tokens including pre-formed conjuncts. Conjuncts (multi-codepoint sequences) must appear before their component consonants so longest-match wins. The engine builds consonants_set from this section — do not put diacritics or modifier symbols here.",
+        "matras": "Dependent vowel signs (vowel diacritics) applied after a consonant. The engine builds matras_set from this section.",
+        "special": "Standalone modifier symbols: anusvara (ং), visarga (ঃ), chandrabindu (ঁ), and virama (্). Virama maps to empty string — the engine uses this to suppress its own insertion during reverse transliteration. These must not be in consonants or the engine will misapply cluster logic.",
+        "digits": "Bengali-Assamese digit substitutions ০–৯.",
+        "punctuation": "Sentence-ending and typographic punctuation. Multi-character Unicode sequences (e.g. ॥) must appear before single-character prefixes (।) so longest-match wins. ASCII punctuation (!, ?, etc.) passes through unchanged in reverse and does not need entries here."
+      }
+    },
+
+    "format_rules": {
+      "pair_format": "Each section is an ordered array of [from, to] pairs. Both elements must be strings.",
+      "match_priority": "The engine applies longest-match-first scanning across the entire flattened map. Within the same token length, order of pairs inside each section — and SECTION_ORDER — determines which match wins.",
+      "conjuncts_first": "Multi-codepoint conjunct sequences in consonants (e.g. ক্ষ, জ্ঞ) must appear before their component single-codepoint consonants. If ক appears before ক্ষ, the engine matches ক first and the conjunct is never reached.",
+      "unicode_escapes": "Use actual Unicode characters in 'from' values for readability. \\u09CD (virama ্) is an exception where the escape is clearer."
+    },
+
+    "engine_contract": {
+      "consonants_set": "Built by section_keys(map, 'consonants') in PHP and sectionKeySet(map, 'consonants') in JS. Used to identify consonant clusters during reverse scanning.",
+      "matras_set": "Built by section_keys(map, 'matras') in PHP and sectionKeySet(map, 'matras') in JS. Used to identify dependent vowel signs following a consonant.",
+      "virama_entry": "The ['্', ''] pair in special is required. It tells the engine to consume the virama codepoint and emit nothing, preventing raw ্ from appearing in Roman output.",
+      "context_next_token_in": "Snippet rules may reference section names via this field. Valid values are the six required_sections names above."
+    },
+
+    "design_notes": {
+      "simplified_vowels": "Independent vowels and matras intentionally use simplified Roman targets: ই/ঈ both → 'i', উ/ঊ both → 'u', অ/ও both → 'o', া/ি/ী all use short forms. This reflects practical BPM roman usage where long/short vowel distinctions are not typically marked. Roundtrip fidelity for these pairs is intentionally sacrificed for readability.",
+      "conjuncts": "Common BPM conjuncts are listed explicitly at the top of consonants so they reverse as a single Roman token rather than as two consonants with a virama artifact."
+    },
+
+    "changelog": {
+      "3.0": "Rebuilt from practical BPM usage list. Simplified vowel targets (ই/ঈ→i, উ/ঊ→u, অ/ও→o). Updated consonant targets to match forward map v4.0 (ছ→s, ঞ→ng, ট→t, ড→d, ণ→n, য→z, ৰ→r, ড়→r). Added conjuncts block at top of consonants. Moved ং/ঃ/ঁ from consonants to special with updated targets (ng, :, ^). Removed র (not used in BPM). Deduplicated য়.",
+      "2.0": "Initial structured version with section format."
+    }
+  },
+  "independent_vowels": [
+    ["অ", "o"],
+    ["আ", "a"],
+    ["ই", "i"],
+    ["ঈ", "i"],
+    ["উ", "u"],
+    ["ঊ", "u"],
+    ["ঋ", "ri"],
+    ["এ", "e"],
+    ["ঐ", "oi"],
+    ["ও", "o"],
+    ["ঔ", "ou"]
+  ],
+  "consonants": [
+    ["ক্ষ", "kkh"],
+    ["জ্ঞ", "jng"],
+    ["ষ্ট", "sht"],
+    ["ঞ্চ", "ngc"],
+    ["ঞ্জ", "ngj"],
+    ["ণ্ড", "nd"],
+    ["ন্দ", "nd"],
+    ["ন্ত", "nt"],
+    ["ম্ভ", "mbh"],
+    ["ম্প", "mp"],
+    ["হ্ম", "hm"],
+    ["য়", "y"],
+    ["ক",  "k"],
+    ["খ",  "kh"],
+    ["গ",  "g"],
+    ["ঘ",  "gh"],
+    ["ঙ",  "ng"],
+    ["চ",  "ch"],
+    ["ছ",  "s"],
+    ["জ",  "j"],
+    ["ঝ",  "jh"],
+    ["ঞ",  "ng"],
+    ["ট",  "t"],
+    ["ঠ",  "th"],
+    ["ড",  "d"],
+    ["ঢ",  "dh"],
+    ["ণ",  "n"],
+    ["ত",  "t"],
+    ["থ",  "th"],
+    ["দ",  "d"],
+    ["ধ",  "dh"],
+    ["ন",  "n"],
+    ["প",  "p"],
+    ["ফ",  "ph"],
+    ["ব",  "b"],
+    ["ভ",  "bh"],
+    ["ম",  "m"],
+    ["য",  "z"],
+    ["ৰ",  "r"],
+    ["ল",  "l"],
+    ["শ",  "sh"],
+    ["ষ",  "sh"],
+    ["স",  "s"],
+    ["হ",  "h"],
+    ["ড়", "r"],
+    ["ঢ়", "rh"],
+    ["ৱ",  "w"],
+    ["ৎ",  "t"]
+  ],
+  "matras": [
+    ["া",  "a"],
+    ["ি",  "i"],
+    ["ী",  "i"],
+    ["ু",  "u"],
+    ["ূ",  "u"],
+    ["ৃ",  "ri"],
+    ["ে",  "e"],
+    ["ৈ",  "oi"],
+    ["ো",  "O"],
+    ["ৌ",  "ou"]
+  ],
+  "special": [
+    ["ং",        "ng"],
+    ["ঃ",        ":"],
+    ["ঁ",        "^"],
+    ["\u09CD",   ""]
+  ],
+  "digits": [
+    ["০", "0"],
+    ["১", "1"],
+    ["২", "2"],
+    ["৩", "3"],
+    ["৪", "4"],
+    ["৫", "5"],
+    ["৬", "6"],
+    ["৭", "7"],
+    ["৮", "8"],
+    ["৯", "9"]
+  ],
+  "punctuation": [
+    ["॥", ".."],
+    ["।", "."]
+  ]
+}
