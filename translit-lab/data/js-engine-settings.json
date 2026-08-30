@@ -1,0 +1,28 @@
+{
+    "virama": "্",
+    "zwj": "‍",
+    "zwnj": "‌",
+    "inherent_vowel": "o",
+    "non_linking_consonants": [
+        "ng",
+        "M",
+        "NG",
+        "Ng",
+        ":",
+        "H",
+        "^",
+        "~"
+    ],
+    "section_order": [
+        "special",
+        "consonants",
+        "matras",
+        "independent_vowels",
+        "digits",
+        "punctuation"
+    ],
+    "hardcode_independent_vowel": true,
+    "hardcode_explicit_zwnj": true,
+    "hardcode_consonant_matra": true,
+    "hardcode_consonant_cluster": true
+}
