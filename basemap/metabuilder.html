@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World & Projection to JSON Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="file"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        pre {
+            background: #272822;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            max-height: 400px;
+        }
+        .output-section {
+            margin-top: 30px;
+        }
+        .download-btn {
+            background-color: #2ecc71;
+            margin-top: 10px;
+        }
+        .download-btn:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Georeference Files to JSON Converter</h2>
+    <p>Upload your world file (e.g., <code>.jgw</code>)[cite: 2] and projection file (e.g., <code>.prj</code>)[cite: 3] to generate the JSON configuration[cite: 1].</p>
+    
+    <div class="form-group">
+        <label for="imageName">Image Filename:</label>
+        <input type="text" id="imageName" value="bm-habitats.jpg">
+    </div>
+
+    <div class="form-group">
+        <label for="worldFile">World File (.jgw / .wld):</label>
+        <input type="file" id="worldFile" accept=".jgw,.wld,.txt">
+    </div>
+
+    <div class="form-group">
+        <label for="projFile">Projection File (.prj):</label>
+        <input type="file" id="projFile" accept=".prj,.txt">
+    </div>
+
+    <div class="form-group">
+        <label for="region">Region:</label>
+        <input type="text" id="region" value="India (Biodiversity Monitoring)">
+    </div>
+
+    <div class="form-group">
+        <label for="description">Description:</label>
+        <input type="text" id="description" value="Georeferenced biodiversity monitoring habitats map">
+    </div>
+
+    <button onclick="generateJSON()">Generate JSON</button>
+
+    <div class="output-section" id="outputSection" style="display:none;">
+        <h3>Generated JSON Preview</h3>
+        <pre id="jsonOutput"></pre>
+        <button class="download-btn" onclick="downloadJSON()">Download JSON File</button>
+    </div>
+</div>
+
+<script>
+let generatedData = null;
+
+function parseWKT(wkt) {
+    const getParam = (name) => {
+        const regex = new RegExp(`PARAMETER\\[["']?${name}["']?,\\s*([-\\d.]+)\\]`, 'i');
+        const match = wkt.match(regex);
+        return match ? parseFloat(match[1]) : null;
+    };
+
+    const getValInside = (keyword, text) => {
+        const regex = new RegExp(`${keyword}\\[["']?([^"',]+)["']?`, 'i');
+        const match = text.match(regex);
+        return match ? match[1] : null;
+    };
+
+    const projcsMatch = wkt.match(/^([A-Z]+)\[["']([^"']+)["']/);
+    const projType = projcsMatch ? projcsMatch[1] : "PROJCS";
+    const projName = projcsMatch ? projcsMatch[2] : "Unknown";
+
+    const geogName = getValInside("GEOGCS", wkt) || "GCS_WGS_1984";
+    const datumName = getValInside("DATUM", wkt) || "D_WGS84";
+    
+    const spheroidMatch = wkt.match(/SPHEROID\[["']([^"']+)["'],\s*([0-9.]+),\s*([0-9.]+)\]/);
+    const spheroidName = spheroidMatch ? spheroidMatch[1] : "WGS84";
+    const semiMajorAxis = spheroidMatch ? parseFloat(spheroidMatch[2]) : 6378137;
+    const inverseFlattening = spheroidMatch ? parseFloat(spheroidMatch[3]) : 298.257223563;
+
+    const primeMeridian = getValInside("PRIMEM", wkt) || "Greenwich";
+    const projectionMatch = wkt.match(/PROJECTION\[["']([^"']+)["']\]/);
+    const projectionField = projectionMatch ? projectionMatch[1] : projName;
+
+    return {
+        type: projType,
+        name: projName,
+        geogcs: {
+            name: geogName,
+            datum: datumName,
+            spheroid: {
+                name: spheroidName,
+                semiMajorAxis: semiMajorAxis,
+                inverseFlattening: inverseFlattening
+            },
+            primeMeridian: primeMeridian,
+            primeMeridianLongitude: 0,
+            unit: "Degree"
+        },
+        projection: projectionField,
+        parameters: {
+            scaleFactor: getParam("scale_factor") || 1,
+            standardParallel1: getParam("standard_parallel_1"),
+            standardParallel2: getParam("standard_parallel_2"),
+            centralMeridian: getParam("central_meridian"),
+            latitudeOfOrigin: getParam("latitude_of_origin"),
+            falseEasting: getParam("false_easting"),
+            falseNorthing: getParam("false_northing")
+        },
+        unit: "Meter"
+    };
+}
+
+function generateJSON() {
+    const worldFileInput = document.getElementById('worldFile').files[0];
+    const projFileInput = document.getElementById('projFile').files[0];
+    const imageName = document.getElementById('imageName').value;
+    const region = document.getElementById('region').value;
+    const description = document.getElementById('description').value;
+
+    if (!worldFileInput || !projFileInput) {
+        alert("Please upload both a world file and a projection file.");
+        return;
+    }
+
+    const readerWorld = new FileReader();
+    const readerProj = new FileReader();
+
+    readerWorld.onload = function(e) {
+        const worldText = e.target.result;
+        const lines = worldText.trim().split(/\r?\n/).map(val => parseFloat(val.trim()));
+
+        if (lines.length < 6 || lines.some(isNaN)) {
+            alert("Invalid world file format. Expected 6 numeric lines.");
+            return;
+        }
+
+        const worldFileObj = {
+            pixelWidth: lines[0],
+            pixelHeight: lines[3],
+            rotationX: lines[1],
+            rotationY: lines[2],
+            easting: lines[4],
+            northing: lines[5]
+        };
+
+        readerProj.onload = function(evt) {
+            const projText = evt.target.result;
+            const projectionObj = parseWKT(projText);
+
+            const coordSystem = `${projectionObj.name.replace(/_/g, ' ')} - ${projectionObj.geogcs.name.replace(/GCS_/g, '').replace(/_/g, ' ')}`;
+
+            generatedData = {
+                image: imageName,
+                worldFile: worldFileObj,
+                projection: projectionObj,
+                coordSystem: coordSystem,
+                region: region,
+                description: description
+            };
+
+            document.getElementById('jsonOutput').textContent = JSON.stringify(generatedData, null, 2);
+            document.getElementById('outputSection').style.display = 'block';
+        };
+
+        readerProj.readAsText(projFileInput);
+    };
+
+    readerWorld.readAsText(worldFileInput);
+}
+
+function downloadJSON() {
+    if (!generatedData) return;
+
+    let imageName = document.getElementById('imageName').value.trim();
+    let jsonFileName = imageName.substring(0, imageName.lastIndexOf('.')) + '.json';
+    if (!jsonFileName || jsonFileName === '.json') {
+        jsonFileName = 'sample.json';
+    }
+
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(generatedData, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", jsonFileName);
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+}
+</script>
+
+</body>
+</html>
