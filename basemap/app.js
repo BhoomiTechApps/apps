@@ -291,6 +291,54 @@ class ImageViewer {
     this.zoomFill.style.height = (normalizedZoom * 100) + '%';
     this.zoomLevel.textContent = Math.round(this.zoom * 100) + '%';
   }
+
+  // Add this new method to your ImageViewer class
+  updateCenterCoordinates() {
+    if (this.imageElement.style.display === 'none') return;
+
+    const viewportWidth = this.viewport.clientWidth;
+    const viewportHeight = this.viewport.clientHeight;
+    const scaledWidth = this.imageElement.naturalWidth * this.zoom;
+    const scaledHeight = this.imageElement.naturalHeight * this.zoom;
+
+    const imgLeft = (viewportWidth - scaledWidth) / 2 + this.pan.x;
+    const imgTop = (viewportHeight - scaledHeight) / 2 + this.pan.y;
+
+    // Calculate pixel right underneath the absolute center of the viewport
+    const px = ((viewportWidth / 2) - imgLeft) / this.zoom;
+    const py = ((viewportHeight / 2) - imgTop) / this.zoom;
+
+    if (px >= 0 && px <= this.imageElement.naturalWidth && py >= 0 && py <= this.imageElement.naturalHeight) {
+      this.pixelPos.textContent = `${Math.round(px)}, ${Math.round(py)}`;
+      
+      if (this.metadata && this.projKey) {
+        const wf = this.metadata.worldFile;
+        const easting = wf.easting + (px * wf.pixelWidth) + (py * (wf.rotationX || 0));
+        const northing = wf.northing + (px * (wf.rotationY || 0)) + (py * wf.pixelHeight);
+
+        try {
+          const [lon, lat] = proj4(this.projKey, 'WGS84', [easting, northing]);
+          this.geoCoord.textContent = `${lat.toFixed(4)}°, ${lon.toFixed(4)}°`;
+        } catch (err) {
+          this.geoCoord.textContent = 'Transformation error';
+        }
+      } else {
+        this.geoCoord.textContent = 'No metadata loaded';
+      }
+    } else {
+      this.pixelPos.textContent = '-';
+      this.geoCoord.textContent = this.metadata ? 'Out of bounds' : 'No metadata loaded';
+    }
+  }
+
+  updateTransform() {
+    this.imageWrapper.style.transform = `translate(${this.pan.x}px, ${this.pan.y}px) scale(${this.zoom})`;
+    
+    // Automatically recalculate coordinates based on the center crosshair during pan/zoom movements
+    if (window.innerWidth <= 768) {
+      this.updateCenterCoordinates();
+    }
+  }
 }
 
 // Initialize application and toolbar navigation hooks safely
