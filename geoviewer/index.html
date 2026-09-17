@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f0f4f8" />
+  <meta name="description" content="GeoJSON Map Viewer" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+  <title>GeoViewer</title>
+
+  <link rel="stylesheet" href="res/leaflet.css" />
+  <script src="res/leaflet.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="res/style.css" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then(() => console.log('SW Registered'))
+          .catch(e => console.log('SW Failed', e));
+      });
+    }
+  </script>
+</head>
+<body>
+
+<div id="drop-overlay">
+  <div class="drop-icon">🗺️</div>
+  <div>Drop GeoJSON to load</div>
+</div>
+
+<header id="app-header">
+  <div class="header-bar">
+    <div class="logo">Geo<span>Viewer</span></div>
+    <div class="header-bar-right">
+      <label class="btn">
+        ＋ Load GeoJSON
+        <input type="file" accept=".geojson,.json" multiple id="file-input" />
+      </label>
+      <button class="accordion-chevron" id="header-toggle" title="More options" aria-expanded="false">›</button>
+    </div>
+  </div>
+  <!-- Expanded row: basemap | search | project buttons -->
+  <div class="header-expanded" id="header-expanded">
+    <div class="header-controls-row">
+      <select id="basemap-select" title="Choose basemap">
+        <option value="osm" selected>OpenStreetMap</option>
+        <option value="carto-dark">Carto Dark</option>
+        <option value="carto-light">Carto Light</option>
+        <option value="esri-topo">ESRI Topo</option>
+        <option value="esri-imagery">ESRI Imagery</option>
+        <option value="cycle">OpenCycleMap</option>
+        <option value="blank">Blank</option>
+      </select>
+      <div class="search-wrap">
+        <input type="text" id="attr-search" class="attr-search-input" placeholder="Search features…" autocomplete="off" />
+        <button class="search-clear-btn" id="search-clear" title="Clear search">✕</button>
+      </div>
+
+    </div>
+    <div id="search-results" class="search-results"></div>
+  </div>
+</header>
+
+<div class="app">
+  <div id="map"></div>
+  <div id="panel-wrapper">
+    <!-- Expand button: fixed position, always visible on right side of map -->
+    <button id="panel-expand-btn" class="panel-expand-btn" title="Expand panel to full width" data-expanded="false">⇔</button>
+    <div id="panel">
+
+    <div class="panel-tabs">
+      <button class="tab-btn active" data-tab="info">Feature Info</button>
+      <button class="tab-btn" data-tab="layers">Layers <span class="tab-badge" id="layer-count">0</span></button>
+      <button class="tab-btn" data-tab="table">Attr Table</button>
+    </div>
+
+    <div class="tab-pane active" id="tab-info">
+      <div class="panel-body" id="panel-body">
+        <div class="empty-state">
+          <div class="empty-icon">📍</div>
+          <p>Click any feature on the map to view its properties here.</p>
+          <p style="font-size:.65rem;margin-top:8px;">Load a GeoJSON via the button above or drag & drop.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tab-pane layer-list-pane" id="tab-layers">
+      <div id="layer-list">
+        <div class="layer-list-empty">
+          <div class="empty-icon">🗂️</div>
+          <p>No layers loaded yet. Load a GeoJSON file to get started.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATTRIBUTE TABLE TAB -->
+    <div class="tab-pane" id="tab-table">
+      <div class="attr-table-toolbar">
+        <select id="attr-table-layer-select">
+          <option value="">— select layer —</option>
+        </select>
+        <button class="btn-sm" id="btn-add-column">＋ Col</button>
+        <button class="btn-sm btn-save-file" id="btn-save-geojson" disabled title="Save edits to file (File System Access API)">💾 Save</button>
+      </div>
+      <div id="attr-table-wrap">
+        <div class="empty-state" style="padding:40px 16px">
+          <div class="empty-icon">📋</div>
+          <p>Select a layer to view and edit its attribute table.</p>
+        </div>
+      </div>
+    </div>
+
+
+  </div><!-- #panel-wrapper -->
+</div><!-- .app -->
+
+<!-- ADD COLUMN MODAL -->
+<div id="modal-add-column" class="modal-overlay" style="display:none">
+  <div class="modal">
+    <div class="modal-title">＋ Add Column</div>
+    <input type="text" class="modal-input" id="new-col-name" placeholder="Column name" />
+    <select class="modal-input" id="new-col-type" style="margin-top:6px">
+      <option value="string">String</option>
+      <option value="number">Number</option>
+    </select>
+    <div class="modal-btns">
+      <button class="btn-sm btn-accent" id="btn-confirm-add-col">Add</button>
+      <button class="btn-sm" id="btn-cancel-add-col">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="res/01-config-basemap.js"></script>
+<script src="res/02-styling.js"></script>
+<script src="res/03-layers.js"></script>
+<script src="res/04-ui-layers.js"></script>
+<script src="res/06-map-utilities.js"></script>
+<script src="res/05-tabs-search.js"></script>
+<script src="res/07-attribute-table.js"></script>
+<script src="res/08-utilities.js"></script>
+</body>
+</html>
