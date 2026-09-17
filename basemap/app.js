@@ -85,13 +85,24 @@ class ImageViewer {
   }
 
   initProjection() {
-    if (!this.metadata || !this.metadata.projection) return;
-    const p = this.metadata.projection.parameters;
-    
-    const projStr = `+proj=lcc +lat_1=${p.standardParallel1} +lat_2=${p.standardParallel2} +lat_0=${p.latitudeOfOrigin} +lon_0=${p.centralMeridian} +x_0=${p.falseEasting} +y_0=${p.falseNorthing} +datum=WGS84 +units=m +no_defs`;
+  if (!this.metadata || !this.metadata.projection) return;
+  
+  const metaProj = this.metadata.projection;
+  let projStr;
+
+  // Handle Geographic Coordinate Systems (e.g., GCS WGS 1984)
+  if (metaProj.type === 'GEOGCS' || metaProj.projection === 'GCS_WGS_1984') {
+    projStr = "+proj=longlat +datum=WGS84 +no_defs";
+    this.projKey = 'CUSTOM_GEOG_MAP';
+  } else {
+    // Handle Projected Coordinate Systems (e.g., Lambert Conformal Conic)
+    const p = metaProj.parameters;
+    projStr = `+proj=lcc +lat_1=${p.standardParallel1} +lat_2=${p.standardParallel2} +lat_0=${p.latitudeOfOrigin} +lon_0=${p.centralMeridian} +x_0=${p.falseEasting} +y_0=${p.falseNorthing} +datum=WGS84 +units=m +no_defs`;
     this.projKey = 'CUSTOM_LCC_MAP';
-    proj4.defs(this.projKey, projStr);
   }
+  
+  proj4.defs(this.projKey, projStr);
+}
 
   handleFileSelect(e) {
     const file = e.target.files?.[0];
