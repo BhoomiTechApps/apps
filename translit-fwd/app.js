@@ -11,7 +11,9 @@
 		document.getElementById( 'chart-btn' ).hidden = true;
 		return;
 	}
-	const ip = InPlace.create( TranslitForward.transliterate );
+	// The bundled engine plus the corrections in fixes.js (each one applies only while the bundle still has the defect).
+	const engine = window.Fixes ? Fixes.apply( TranslitForward ) : TranslitForward;
+	const ip = InPlace.create( engine.transliterate );
 
 	// ── restore what was typed last time ──
 	try { ta.value = localStorage.getItem( KEY ) || ''; } catch ( e ) { /* private mode: start empty */ }
@@ -54,7 +56,7 @@
 			focusTarget: ta,
 			anchor: document.querySelector( 'header' ),
 			storageKey: 'translit-pwa:chart-pos',
-			onOpen: () => { if ( ! chartBuilt ) { chartBody.innerHTML = Barnamala.build( TranslitForward ).html; chartBuilt = true; } },
+			onOpen: () => { if ( ! chartBuilt ) { chartBody.innerHTML = Barnamala.build( engine ).html; chartBuilt = true; } },
 		} );
 	} else {
 		chartBtn.hidden = true;

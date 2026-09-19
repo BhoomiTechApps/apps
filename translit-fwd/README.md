@@ -32,29 +32,44 @@ To install: Chrome/Edge show an install icon in the address bar; Android Chrome:
 | `inplace.js` | The "type Roman, get Bengali" logic (pure, no DOM; unit-tested). |
 | `barnamala.js` | Builds the barnamala chart from the map inside the engine (pure, no DOM; unit-tested). Nothing to edit when the map changes. |
 | `panel.js` | The floating window: dragging, staying inside the screen, keeping keyboard focus in the text area. |
-| `vendor/translit-forward.js` | **The transliteration engine, copied from `translit-js-forward/dist/`.** |
+| `vendor/translit-forward.min.js` | **The transliteration engine, copied from `translit-js-forward/dist/translit-forward.min.js`.** The page, `sw.js` and the tests all use this file. |
+| `vendor/translit-forward.js` | The readable (unminified) copy of the same engine, for reference. The app does not use it. |
+| `fixes.js` | Two corrections applied on top of the engine when the app starts (see *Corrections to the engine*). |
 | `sw.js` | Service worker: offline cache + background updates. |
 | `manifest.webmanifest`, `icons/` | What makes it installable. |
-| `serve.js`, `tests/` | Local server and the unit tests (`node tests/inplace.test.js`, `node tests/barnamala.test.js`). |
+| `serve.js`, `tests/` | Local server and the unit tests (`node tests/inplace.test.js`, `node tests/barnamala.test.js`, `node tests/fixes.test.js`). |
 
 ### What is used from `translit-js-forward`
 
-**One file:** `dist/translit-forward.js`. Everything else in that package is for building, testing or reference and is not needed at runtime: `src/`, `scripts/`, `tests/`, `data/` (the map, settings and snippets are already compiled into the bundle), `examples/`, `package.json`, the `.mjs` build and the minified build. If you prefer the smaller `dist/translit-forward.min.js`, save it as `vendor/translit-forward.js` (the name is what the app refers to).
+**One file:** `dist/translit-forward.min.js`. Everything else in that package is for building, testing or reference and is not needed at runtime: `src/`, `scripts/`, `tests/`, `data/` (the map, settings and snippets are already compiled into the bundle), `examples/`, `package.json`, the `.mjs` build and the unminified build.
 
 ## Updating the transliteration
 
-The map, settings and snippets are inside `vendor/translit-forward.js`. When you rebuild the package (for example with the TransLit-Lab Parity add-on), **replace that one file** and upload. Each time the app is opened, the service worker re-checks its code files in the background; a changed file replaces the cached copy and the app shows an **"Update ready – tap to reload"** button. The barnamala chart is rebuilt from the new map automatically. You do not need to change anything in `sw.js`, and a long `Cache-Control` on your server does not delay it (the check bypasses the browser's HTTP cache).
+The map, settings and snippets are inside `vendor/translit-forward.min.js`. When you rebuild the package (for example with the TransLit-Lab Parity add-on), **replace that one file** and upload. Each time the app is opened, the service worker re-checks its code files in the background; a changed file replaces the cached copy and the app shows an **"Update ready – tap to reload"** button. The barnamala chart is rebuilt from the new map automatically. You do not need to change anything in `sw.js`, and a long `Cache-Control` on your server does not delay it (the check bypasses the browser's HTTP cache).
 
 Edit `sw.js` only if you **add, rename or delete files** (update the lists at the top) and bump `VERSION` so old caches are dropped.
+
+## Corrections to the engine
+
+`vendor/translit-forward.min.js` is a generated file, so two defects in it are corrected on top of it by `fixes.js` instead of by editing it:
+
+| Typing | The bundle gave | Now |
+|---|---|---|
+| `ngg` (for example `angga`) | ংগ (the map's `ngg` entry was never reached, because `ng` is matched first) | ঙ্গ |
+| `ngu` | ংু (the ng + vowel substitutions have no `ngu`) | ঙু, like `nga`, `ngi`, `nge`, `ngo` |
+
+Each correction is applied only while the defect is still there. Once you fix them in the package itself and replace the vendor file, `fixes.js` does nothing and can be deleted (also from `index.html` and `sw.js`). `node tests/fixes.test.js` checks all of this.
 
 ## Known limits
 
 * **Undo (Ctrl/Cmd+Z) does nothing.** The app rewrites the text area's content as you type, which clears the browser's undo history (in Chrome, pressing Ctrl+Z leaves the text as it is; typing carries on normally).
 * Once a word is finished (you pressed space), Backspace edits the Bengali text as it stands; it cannot bring the word's Roman letters back.
 * Typing in the middle of a finished word starts a new word at the caret.
+* The map lists both র and ৰ for `r` and `rr`, and the engine keeps the later one, so `r` always gives the Assamese ৰ (U+09F0) and the Bengali র (U+09B0) cannot be typed. The barnamala chart shows this. Which letter `r` should give is a choice for the map, so it has not been changed.
+* `ee` and `oo` only work as independent vowels at the start of a word (`ee` → ই, `oo` → উ). After a consonant they are read as two vowels (`kee` → কেএ); use `i` and `u` there.
 * There is no copy/clear button; use your device's select-all and copy.
 * Tested in headless Chrome (real typing, simulated IME composition, offline, install checks). **Not tested on a real Android or iOS device or in Safari/Firefox.**
 
 ## License
 
-`vendor/translit-forward.js` is GPL-2.0-or-later (see `vendor/LICENSE`); publishing this app distributes it, so publish the app's source under a compatible licence.
+`vendor/translit-forward.min.js` (and the readable `vendor/translit-forward.js`) is GPL-2.0-or-later (see `vendor/LICENSE`); publishing this app distributes it, so publish the app's source under a compatible licence.

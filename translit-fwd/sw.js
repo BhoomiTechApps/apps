@@ -4,18 +4,18 @@
  *  - fetch:    answers from the cache at once (so it works offline and starts instantly).
  *  - freshness: every time the app is opened (a navigation), the code files (see REFRESH) are re-downloaded in the background;
  *              any file whose bytes changed replaces the cached copy and the page is told ("UPDATED"), which
- *              offers a reload. So replacing a file - for example a new vendor/translit-forward.js - reaches
+ *              offers a reload. So replacing a file - for example a new vendor/translit-forward.min.js - reaches
  *              users without touching this file. Files are revalidated with `cache: 'no-cache'`, so a long
  *              Cache-Control max-age on your server does not delay updates.
  *  - Bump VERSION only to force a clean cache (e.g. after deleting or renaming files).
  */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = 'translit-pwa-' + VERSION;
 const BASE = self.registration.scope;                       // works from any sub-folder
 const url = ( p ) => new URL( p, BASE ).href;
 const INDEX = url( 'index.html' );
 
-const CODE = [ 'index.html', 'styles.css', 'app.js', 'inplace.js', 'barnamala.js', 'panel.js', 'manifest.webmanifest', 'vendor/translit-forward.js' ].map( url );
+const CODE = [ 'index.html', 'styles.css', 'app.js', 'inplace.js', 'barnamala.js', 'panel.js', 'fixes.js', 'manifest.webmanifest', 'vendor/translit-forward.min.js' ].map( url );
 const ICONS = [ 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png' ].map( url );
 const SHELL = CODE.concat( ICONS );                          // cached at install
 const REFRESH = CODE;                                        // re-checked on every app open
