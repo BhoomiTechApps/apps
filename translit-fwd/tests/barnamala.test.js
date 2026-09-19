@@ -1,6 +1,7 @@
 // Run:  node tests/barnamala.test.js
 const path = require( 'path' );
-const T = require( path.join( __dirname, '../vendor/translit-forward.js' ) );
+// the engine the app runs: the minified bundle plus the corrections in fixes.js
+const T = require( path.join( __dirname, '../fixes.js' ) ).apply( require( path.join( __dirname, '../vendor/translit-forward.min.js' ) ) );
 const B = require( path.join( __dirname, '../barnamala.js' ) );
 
 let pass = 0, fail = 0;

@@ -1,6 +1,7 @@
 // Run:  node tests/inplace.test.js
 const path = require( 'path' );
-const T = require( path.join( __dirname, '../vendor/translit-forward.js' ) );
+// the engine the app runs: the minified bundle plus the corrections in fixes.js
+const T = require( path.join( __dirname, '../fixes.js' ) ).apply( require( path.join( __dirname, '../vendor/translit-forward.min.js' ) ) );
 const InPlace = require( path.join( __dirname, '../inplace.js' ) );
 
 let pass = 0, fail = 0;
@@ -39,7 +40,7 @@ console.log( `[1] typing ${fixtures.length} fixture strings char by char: ${fixt
 mismatches.slice( 0, 6 ).forEach( m => console.log( '     ', j( m[ 0 ] ), '\n        whole:', j( m[ 1 ] ), '\n        typed:', j( m[ 2 ] ) ) );
 
 // 2. Concrete behaviours
-check( 'typing a phrase', typed( 'ami tomay bhalobashi' ) === 'আমি তমায় ভালবাশি', typed( 'ami tomay bhalobashi' ) );
+check( 'typing a phrase', typed( 'ami tomay bhalobashi' ) === 'আমি তমায় ভালবাসি', typed( 'ami tomay bhalobashi' ) );
 check( 'punctuation converts (danda)', typed( 'ami.' ) === T.transliterate( 'ami.' ) );
 check( 'digits convert', typed( '1947' ) === '১৯৪৭' );
 { // backspace removes ONE ROMAN LETTER and re-converts
