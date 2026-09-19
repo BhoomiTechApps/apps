@@ -1,6 +1,6 @@
 // Run:  node tests/inplace.test.js
 const path = require( 'path' );
-const R = require( path.join( __dirname, '../vendor/translit-reverse.js' ) );
+const R = require( path.join( __dirname, '../vendor/translit-reverse.min.js' ) );
 const InPlace = require( path.join( __dirname, '../inplace.js' ) );
 
 let pass = 0, fail = 0;
