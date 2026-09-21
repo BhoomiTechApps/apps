@@ -74,6 +74,7 @@ const DEFAULT_SNIPPETS = [
     ['ngrri', NGA + getMatra('rri')],
     ['ngai',  NGA + getMatra('ai')],
     ['ngO',   NGA + getMatra('O')],
+	['ngu',   NGA + getMatra('u')],  
     ['nge',   NGA + getMatra('e')],
     ['ngi',   NGA + getMatra('i')],
     ['nga',   NGA + getMatra('a')],
