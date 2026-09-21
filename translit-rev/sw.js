@@ -9,13 +9,13 @@
  *              Cache-Control max-age on your server does not delay updates.
  *  - Bump VERSION only to force a clean cache (e.g. after deleting or renaming files).
  */
-const VERSION = 'v2';
+const VERSION = 'v4';
 const CACHE = 'translit-reverse-pwa-' + VERSION;      // its own name: the forward app may live on the same origin
 const BASE = self.registration.scope;                       // works from any sub-folder
 const url = ( p ) => new URL( p, BASE ).href;
 const INDEX = url( 'index.html' );
 
-const CODE = [ 'index.html', 'styles.css', 'app.js', 'inplace.js', 'manifest.webmanifest', 'vendor/translit-reverse.min.js' ].map( url );
+const CODE = [ 'index.html', 'styles.css', 'app.js', 'inplace.js', 'mapping.js', 'rules.js', 'manifest.webmanifest', 'vendor/translit-reverse.min.js' ].map( url );
 const ICONS = [ 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png' ].map( url );
 const SHELL = CODE.concat( ICONS );                          // cached at install
 const REFRESH = CODE;                                        // re-checked on every app open

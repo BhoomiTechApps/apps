@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Eastern Nagari to Roman</title>
-<meta name="description" content="Type or paste Eastern Nagari (Assamese / Bengali) script and get Roman letters. Works offline.">
+<meta name="description" content="Type or paste Eastern Nagari script and get Roman letters. Works offline.">
 <meta name="theme-color" content="#7a2e4d">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
@@ -16,21 +16,23 @@
 </head>
 <body>
 <header>
-  <h1>&#x09AA;&#x09C2;&#x09B0;&#x09CD;&#x09AC;&#x09CD;&#x0020;&#x09A8;&#x09BE;&#x0997;&#x09F0;&#x09C0; <span aria-hidden="true">&rarr;</span> Roman</h1>
+  <h1>&#x09AA;&#x09C2;&#x09B0;&#x09CD;&#x09AC;&#x09CD;&#x09AC; &#x09A8;&#x09BE;&#x0997;&#x09F0;&#x09C0; <span aria-hidden="true">&rarr;</span> Roman</h1>
   <div class="tools">
     <button id="status" type="button" hidden></button>
     <button id="ocr-btn" type="button" title="Open the OCR tool in a separate small window">OCR</button>
   </div>
 </header>
 <main>
-  <textarea id="text" aria-label="Type or paste Eastern Nagari (Assamese / Bengali) script; the text becomes Roman letters"
-            placeholder="Type or paste Eastern Nagari (Assamese / Bengali), e.g. আমাৰ লিপি পূর্ব্ব নাগৰী"
+  <textarea id="text" aria-label="Type or paste Bishnupriya Manipuri (Bengali) script; the text becomes Roman letters"
+            placeholder="Type or Eastern Nagari (Assamese / Bengali) script, e.g. আমাৰ লিপি পূর্ব্ব নাগৰী"
             autofocus autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
 </main>
 <noscript><p class="nojs">This app needs JavaScript.</p></noscript>
 
-<!-- Only one file from translit-js-reverse is used at runtime: its dist bundle. -->
+<!-- One file from translit-js-reverse is used at runtime (its dist bundle); mapping.js (the data) and rules.js (the glue) add the Bishnupriya mapping on top of it. -->
 <script src="vendor/translit-reverse.min.js"></script>
+<script src="mapping.js"></script>
+<script src="rules.js"></script>
 <script src="inplace.js"></script>
 <script src="app.js"></script>
 </body>

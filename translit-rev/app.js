@@ -57,7 +57,8 @@
 	// Only words that contain Bengali script are converted (the danda U+0964/U+0965 counts). The engine lower-cases and trims
 	// everything it sees, so Roman words the user types or pastes are left exactly as they are.
 	const BENGALI = /[\u0964\u0965\u0980-\u09FF]/;
-	const convert = ( word ) => ( BENGALI.test( word ) ? TranslitReverse.transliterate( word ) : word );
+	const engine = window.TranslitEngine || TranslitReverse;   // TranslitEngine = bundle + rules.js
+	const convert = ( word ) => ( BENGALI.test( word ) ? engine.transliterate( word ) : word );
 	// perWord: pasted / committed chunks are converted one word at a time so every space and newline is kept (the engine trims).
 	const ip = InPlace.create( convert, { perWord: true } );
 
