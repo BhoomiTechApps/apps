@@ -3,14 +3,26 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0f172a">
 <title>Feature Mapper</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
-<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
-<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-<link rel="stylesheet" href="style.css" />
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="stylesheet" href="leaflet/leaflet.css" />
+<script src="leaflet/leaflet.js"></script>
+<link rel="stylesheet" href="leaflet/leaflet.draw.css" />
+<script src="leaflet/leaflet.draw.js"></script>
+<link rel="stylesheet" href="leaflet/Control.Geocoder.css" />
+<script src="leaflet/Control.Geocoder.js"></script>
+<link rel="stylesheet" href="style-mnf.css" />
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW Registered'))
+                    .catch(err => console.log('SW Failed', err));
+            });
+        }
+    </script>
 </head>
 <body>
 <div id="map"></div>
@@ -23,13 +35,6 @@
     <li><b>Polyline</b> — click to add vertices, double-click or click the finish icon to end</li>
     <li><b>Polygon</b> — draw closed areas</li>
     <li><b>Marker</b> — small circular points</li>
-  </ul>
-  <p><b>Pen tip</b> (button under the draw toolbar) — for precise marking on phones:</p>
-  <ul>
-    <li>Tap it to switch Off → Ballpoint → Pencil</li>
-    <li>With a draw tool active, touch the map: a pen appears with its point above your finger</li>
-    <li>Slide to aim (coordinates show at the bottom), lift to mark the point</li>
-    <li>Lift on the last point (line) or first point (area) to finish; two fingers pan/zoom</li>
   </ul>
   <p>Use the project control (under draw toolbar) for:</p>
   <ul>
@@ -52,9 +57,8 @@
   </div>
 </div>
 <div id="topright-buttons"></div>
-<script src="main.js"></script>
+<script src="main-obf.js"></script>
 </body>
 </html>
-
 
 
