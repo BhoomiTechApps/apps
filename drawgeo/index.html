@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="theme-color" content="#0f172a">
+<meta name="description" content="Draw lines, areas and points on a map and export them as GeoJSON.">
+<title>DrawGeo</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="stylesheet" href="leaflet/leaflet.css" />
+<link rel="stylesheet" href="leaflet/leaflet.draw.css" />
+<link rel="stylesheet" href="app.min.css" />
+<script defer src="leaflet/leaflet.js"></script>
+<script defer src="leaflet/leaflet.draw.js"></script>
+<script defer src="app.min.js"></script>
+</head>
+<body>
+<div id="map"></div>
+<div id="statusBar" role="status" aria-live="polite"></div>
+<div id="helpPanel" aria-hidden="true">
+  <button id="helpClose" aria-label="Close help">&times;</button>
+  <h2>Instructions &amp; Guide</h2>
+  <p>Use the draw toolbar (top-left) to create:</p>
+  <ul>
+    <li><b>Line</b>: click to add vertices; click the last point or Finish to end</li>
+    <li><b>Area</b>: draw closed polygons; click the first point to close</li>
+    <li><b>Point</b>: small circular markers</li>
+  </ul>
+  <p>Each new feature gets a suggested unique name, which you can change.</p>
+  <p><b>Pen tip</b> (button under the draw toolbar), for precise marking on phones:</p>
+  <ul>
+    <li>Tap it to switch Off → Ballpoint → Pencil</li>
+    <li>With a draw tool active, touch the map: a pen appears with its point above your finger</li>
+    <li>Slide to aim (coordinates show at the bottom), lift to mark the point</li>
+    <li>Lift on the last point (line) or first point (area) to finish; two fingers pan/zoom</li>
+  </ul>
+  <p><b>Menu</b> (bottom-left):</p>
+  <ul>
+    <li><b>New / Load / Save Project</b>: one project is saved in this browser</li>
+    <li><b>Save GeoJSON</b>: export to a file</li>
+    <li><b>Restore Previous</b>: bring back the map from before your last New Project or Load</li>
+    <li><b>Resume Line</b>, <b>Stop Editing</b>, <b>Zoom to Data</b></li>
+  </ul>
+  <p>Your work is autosaved as you draw. The autosave is cleared once you save the project or export all layers.</p>
+</div>
+<div id="exportModal" class="modal">
+  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="exportTitle">
+    <h3 id="exportTitle">Select layers to export</h3>
+    <div class="modal-options">
+      <label><input type="checkbox" id="chkLines" checked> Lines</label>
+      <label><input type="checkbox" id="chkPolygons" checked> Areas</label>
+      <label><input type="checkbox" id="chkPoints" checked> Points</label>
+    </div>
+    <div class="modal-actions">
+      <button id="exportConfirmBtn" type="button">Export</button>
+      <button id="exportCancelBtn" type="button" class="secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>
