@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://tile.openstreetmap.org https://server.arcgisonline.com https://mt0.google.com https://mt1.google.com https://mt2.google.com https://mt3.google.com; connect-src 'self' https://nominatim.openstreetmap.org https://tile.openstreetmap.org https://server.arcgisonline.com https://mt0.google.com https://mt1.google.com https://mt2.google.com https://mt3.google.com; media-src 'self' blob:; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'">
+  <title>GeoTag</title>
+  <meta name="description" content="Capture site photos with GPS coordinates, keep them offline, and export them as photos, CSV, GeoJSON and KML.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#1d4ed8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0e1826" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="GeoTag">
+  <link rel="icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="leaflet.css">
+  <link rel="stylesheet" href="Control.Geocoder.css">
+  <link rel="stylesheet" href="styles.min.css">
+  <script defer src="leaflet.js"></script>
+  <script defer src="Control.Geocoder.js"></script>
+  <script defer src="scripts.min.js"></script>
+</head>
+<body>
+<div id="app">
+  <div id="map" role="application" aria-label="Map. Tap to place the pin, drag the pin to adjust it."></div>
+
+  <button id="status" class="status" type="button" aria-label="Current pin location. Tap to copy the coordinates.">
+    <span class="status-dot" data-state="wait" aria-hidden="true"></span>
+    <span class="status-body" aria-live="polite">
+      <span id="status-main" class="status-main">Finding your location…</span>
+      <span id="status-sub" class="status-sub"></span>
+    </span>
+  </button>
+
+  <nav class="dock" aria-label="Main actions">
+    <button id="btn-queue" class="dock-btn" type="button">
+      <span class="dock-icon" data-icon="inbox"></span>
+      <span class="dock-label">Captures</span>
+      <span id="queue-badge" class="badge" hidden>0</span>
+    </button>
+    <button id="btn-capture" class="capture-fab" type="button" aria-label="New capture">
+      <span data-icon="camera"></span>
+    </button>
+    <button id="btn-settings" class="dock-btn" type="button">
+      <span class="dock-icon" data-icon="settings"></span>
+      <span class="dock-label">Settings</span>
+    </button>
+  </nav>
+</div>
+
+<!-- New capture -->
+<dialog id="capture-sheet" class="sheet" aria-labelledby="capture-title">
+  <div class="sheet-inner">
+    <header class="sheet-head">
+      <h2 id="capture-title">New capture</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Close"><span data-icon="x"></span></button>
+    </header>
+
+    <div class="segmented" role="tablist" aria-label="Photo source">
+      <button id="tab-camera" role="tab" type="button" aria-selected="true">Camera</button>
+      <button id="tab-gallery" role="tab" type="button" aria-selected="false">Gallery</button>
+    </div>
+
+    <div id="viewer" class="viewer" data-state="loading">
+      <video id="video" autoplay playsinline muted aria-label="Camera preview"></video>
+      <img id="still" alt="Photo to be saved" hidden>
+      <div id="viewer-msg" class="viewer-msg" hidden>
+        <p id="viewer-msg-text"></p>
+        <div class="viewer-msg-actions" id="viewer-msg-actions"></div>
+      </div>
+      <div id="flash" class="flash" aria-hidden="true"></div>
+
+      <div id="cam-controls" class="viewer-controls">
+        <button id="btn-native" class="pill-btn" type="button">Phone camera</button>
+        <button id="btn-shutter" class="shutter" type="button" aria-label="Take photo" disabled></button>
+        <button id="btn-flip" class="round-btn" type="button" aria-label="Switch to front camera" hidden><span data-icon="flip"></span></button>
+      </div>
+      <div id="still-controls" class="viewer-controls viewer-controls--still" hidden>
+        <button id="btn-retake" class="pill-btn" type="button">Retake</button>
+      </div>
+    </div>
+
+    <div id="loc-card" class="loc-card" data-state="wait">
+      <span class="loc-dot" aria-hidden="true"></span>
+      <div class="loc-text" aria-live="polite">
+        <strong id="loc-title">Waiting for GPS…</strong>
+        <span id="loc-sub"></span>
+      </div>
+      <div id="loc-actions" class="loc-actions"></div>
+    </div>
+
+    <div class="fields">
+      <label class="field">
+        <span>Phone number</span>
+        <input id="f-phone" type="tel" inputmode="tel" autocomplete="tel" enterkeyhint="next">
+      </label>
+      <label class="field">
+        <span>Observations</span>
+        <textarea id="f-desc" rows="3" placeholder="What is at this site?"></textarea>
+      </label>
+    </div>
+
+    <p id="inbox-note" class="note" hidden></p>
+    <button id="btn-save" class="primary-btn" type="button" disabled>Save capture</button>
+  </div>
+</dialog>
+
+<!-- Captures list -->
+<dialog id="queue-sheet" class="sheet" aria-labelledby="queue-title">
+  <div class="sheet-inner">
+    <header class="sheet-head">
+      <h2 id="queue-title">Captures</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Close"><span data-icon="x"></span></button>
+    </header>
+    <p id="queue-summary" class="summary"></p>
+    <div id="queue-toolbar" class="toolbar">
+      <button id="btn-export" class="primary-btn" type="button">Export captures</button>
+      <button id="btn-clear-exported" class="ghost-btn" type="button">Clear exported</button>
+    </div>
+    <ul id="queue-list" class="queue-list"></ul>
+  </div>
+</dialog>
+
+<!-- Export -->
+<dialog id="export-sheet" class="sheet" aria-labelledby="export-title">
+  <div class="sheet-inner">
+    <header class="sheet-head">
+      <h2 id="export-title">Export captures</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Close"><span data-icon="x"></span></button>
+    </header>
+    <fieldset class="scope">
+      <legend>Include</legend>
+      <label class="radio"><input type="radio" name="scope" value="pending" checked> <span id="scope-pending">Not yet exported</span></label>
+      <label class="radio"><input type="radio" name="scope" value="all"> <span id="scope-all">All captures</span></label>
+    </fieldset>
+    <p class="note">Each export has the photos plus <b>captures.csv</b>, <b>captures.geojson</b> and <b>captures.kml</b> for Excel, QGIS and Google Earth.</p>
+    <div class="export-options">
+      <button id="exp-folder" class="option-btn" type="button" hidden>
+        <span data-icon="folder"></span>
+        <span><strong>Save to a folder</strong><small>Pick a folder on this device</small></span>
+      </button>
+      <button id="exp-zip" class="option-btn" type="button">
+        <span data-icon="archive"></span>
+        <span><strong>Download ZIP</strong><small>One file with everything, works everywhere</small></span>
+      </button>
+      <button id="exp-share" class="option-btn" type="button" hidden>
+        <span data-icon="share"></span>
+        <span><strong>Share</strong><small>Send photos and CSV to WhatsApp, Drive, email…</small></span>
+      </button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Settings -->
+<dialog id="settings-sheet" class="sheet" aria-labelledby="settings-title">
+  <div class="sheet-inner">
+    <header class="sheet-head">
+      <h2 id="settings-title">Settings</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Close"><span data-icon="x"></span></button>
+    </header>
+
+    <div class="setting">
+      <label for="s-accuracy">Required GPS accuracy</label>
+      <select id="s-accuracy">
+        <option value="10">±10 m (strict)</option>
+        <option value="30">±30 m</option>
+        <option value="100">±100 m</option>
+        <option value="0">Any accuracy</option>
+      </select>
+      <small>Save stays disabled until live GPS is at least this accurate. You can still choose “Use anyway”.</small>
+    </div>
+
+    <div class="setting">
+      <label for="s-camera">Camera to open first</label>
+      <select id="s-camera">
+        <option value="environment">Back camera</option>
+        <option value="user">Front camera</option>
+      </select>
+    </div>
+
+    <div class="setting">
+      <label for="s-size">Photo size</label>
+      <select id="s-size">
+        <option value="1600">Small (1600 px)</option>
+        <option value="2048">Standard (2048 px)</option>
+        <option value="3072">Large (3072 px)</option>
+        <option value="0">Original</option>
+      </select>
+      <small>Smaller photos save faster and use less storage.</small>
+    </div>
+
+    <label class="setting setting--switch">
+      <span>
+        <span class="setting-title">Stamp location on photos</span>
+        <small>Adds coordinates, time and your note along the bottom of each photo.</small>
+      </span>
+      <input id="s-watermark" type="checkbox" role="switch">
+    </label>
+
+    <div class="setting">
+      <span class="setting-title">Storage</span>
+      <p id="storage-info" class="storage-info">Checking…</p>
+      <button id="btn-persist" class="ghost-btn" type="button" hidden>Protect saved captures</button>
+    </div>
+
+    <p id="version" class="version"></p>
+  </div>
+</dialog>
+
+<input id="file-gallery" type="file" accept="image/*" multiple hidden>
+<input id="file-native" type="file" accept="image/*" capture="environment" hidden>
+
+<div id="toasts" class="toasts" aria-live="polite" aria-atomic="false"></div>
+</body>
+</html>
