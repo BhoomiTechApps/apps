@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DynaForm PDF</title>
+<meta name="description" content="Build survey forms and collect responses offline. Every submission becomes a PDF on the respondent's own device; nothing is uploaded.">
+<meta name="theme-color" content="#1f5c46">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DynaForm">
+<link rel="stylesheet" href="css/dynaform-frontend.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<header class="appbar">
+	<div class="appbar-inner">
+		<a class="brand" href="#/"><img src="icons/icon-192.png" alt="">DynaForm PDF</a>
+		<span class="appbar-spacer"></span>
+		<span class="net-status" id="net-status" role="status">Online</span>
+		<button type="button" class="install-btn" id="install-btn" hidden>Install app</button>
+	</div>
+</header>
+
+<div class="banner" id="update-banner" hidden>
+	<p>A new version of DynaForm is ready.</p>
+	<button type="button" class="dfb-btn dfb-btn-primary dfb-btn-small" id="update-btn">Update now</button>
+</div>
+
+<div class="banner" id="ios-install-banner" hidden>
+	<p>To install on iPhone or iPad: tap the Share button in Safari, then <strong>Add to Home Screen</strong>.</p>
+	<button type="button" class="dfb-btn dfb-btn-small" id="ios-install-dismiss">Got it</button>
+</div>
+
+<main id="app" tabindex="-1">
+	<noscript><p>DynaForm needs JavaScript to run.</p></noscript>
+</main>
+
+<input type="file" id="import-input" accept=".json,application/json" hidden>
+
+<dialog id="share-dialog">
+	<h3>Share this form</h3>
+	<p class="dfb-description">Anyone who opens this link can fill in the form, offline too once the app has loaded. The link contains only the questions. Answers never leave the respondent's device.</p>
+	<textarea class="share-link" id="share-link" readonly></textarea>
+	<div class="dialog-actions">
+		<button type="button" class="dfb-btn" id="share-close">Close</button>
+		<button type="button" class="dfb-btn" id="share-native" hidden>Share…</button>
+		<button type="button" class="dfb-btn dfb-btn-primary" id="share-copy">Copy link</button>
+	</div>
+</dialog>
+
+<script src="js/vendor/jspdf.umd.min.js" defer></script>
+<script src="js/vendor/noto-sans-bengali-normal.js" defer></script>
+<script src="js/dynaform-frontend.js" defer></script>
+<script src="js/app.js" defer></script>
+</body>
+</html>
