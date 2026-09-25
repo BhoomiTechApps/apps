@@ -1,0 +1,158 @@
+.dynaform-embed {
+	max-width: 760px;
+	margin: 0 auto;
+	font-size: 15px;
+	line-height: 1.5;
+}
+.dynaform-embed * {
+	box-sizing: border-box;
+}
+.dynaform-title {
+	font-size: 1.5em;
+	margin: 0 0 1em;
+}
+.dynaform-form.dynaform-two-column {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 0 24px;
+}
+.dynaform-question {
+	margin-bottom: 1.25em;
+}
+.dynaform-question.dynaform-pagebreak {
+	grid-column: 1 / -1;
+	border-top: 2px dashed #c7ccd4;
+	margin: 1.5em 0;
+}
+.dynaform-question label.dynaform-q-label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 0.4em;
+}
+.dynaform-required {
+	color: #c0392b;
+}
+.dynaform-question input[type="text"],
+.dynaform-question input[type="email"],
+.dynaform-question input[type="number"],
+.dynaform-question input[type="date"],
+.dynaform-question input[type="tel"],
+.dynaform-question textarea,
+.dynaform-question select {
+	width: 100%;
+	padding: 8px 10px;
+	border: 1px solid #ccd0d5;
+	border-radius: 6px;
+	font-size: 1em;
+	font-family: inherit;
+}
+.dynaform-question textarea {
+	min-height: 90px;
+	resize: vertical;
+}
+.dynaform-hint {
+	display: block;
+	font-size: 0.85em;
+	color: #666;
+	margin-top: 0.3em;
+}
+.dynaform-error {
+	display: block;
+	color: #c0392b;
+	font-size: 0.85em;
+	margin-top: 0.3em;
+}
+.dynaform-question.dynaform-invalid input,
+.dynaform-question.dynaform-invalid select,
+.dynaform-question.dynaform-invalid textarea {
+	border-color: #c0392b;
+}
+.dynaform-choice-group label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: normal;
+	margin-bottom: 0.35em;
+}
+.dynaform-gps-row {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	align-items: center;
+}
+.dynaform-gps-row input {
+	max-width: 140px;
+}
+.dynaform-image-preview {
+	margin-top: 0.5em;
+	max-width: 220px;
+	max-height: 220px;
+	border-radius: 6px;
+	display: none;
+	border: 1px solid #ccd0d5;
+}
+.dynaform-btn {
+	padding: 10px 18px;
+	border-radius: 6px;
+	border: none;
+	background: #1f5c46;
+	color: #fff;
+	font-size: 1em;
+	cursor: pointer;
+}
+.dynaform-btn:hover {
+	background: #174a38;
+}
+.dynaform-btn:disabled {
+	background: #9fb8ad;
+	cursor: not-allowed;
+}
+.dynaform-btn-secondary {
+	background: #eef1f5;
+	color: #333;
+}
+.dynaform-btn-secondary:hover {
+	background: #dfe3e8;
+}
+.dynaform-actions {
+	grid-column: 1 / -1;
+	margin-top: 1em;
+}
+.dynaform-notice {
+	grid-column: 1 / -1;
+	padding: 12px 14px;
+	border-radius: 6px;
+	margin-top: 1em;
+	display: none;
+}
+.dynaform-notice.dynaform-notice-success {
+	background: #e6f4ea;
+	color: #1e7b34;
+	border: 1px solid #b7e1c2;
+}
+.dynaform-notice.dynaform-notice-error {
+	background: #fdecea;
+	color: #a52a1f;
+	border: 1px solid #f5c6c1;
+}
+.dynaform-pdf-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin-top: 10px;
+}
+.dynaform-pdf-actions [hidden] {
+	display: none;
+}
+.dynaform-question input[type="file"] {
+	max-width: 100%;
+}
+@media (max-width: 640px) {
+	.dynaform-form.dynaform-two-column {
+		grid-template-columns: 1fr;
+	}
+	.dynaform-gps-row input {
+		max-width: none;
+		flex: 1 1 30%;
+	}
+}
