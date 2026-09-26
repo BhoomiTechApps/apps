@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>OCR Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
+
+  <script src="cdn/pdf.min.js"></script>
+  <script src="cdn/tesseract.min.js"></script>
+  <script src="cdn/lucide.min.js"></script>
+  <script src="js/ime/engine.js"></script>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "cdn/pdf.worker.min.js";
+  </script>
+</head>
+
+<body>
+<header>
+  <details open>
+    <summary>
+      <div class="summary-content">
+        <h1>OCR Studio &amp; Controls</h1>
+        <span id="offlineStatus" class="offline-status" title="Offline readiness"></span>
+        <i data-lucide="chevron-down" class="chevron"></i>
+      </div>
+    </summary>
+    <div class="controls">
+      <div class="control-group">
+        <label for="lang">Language</label>
+        <select id="lang" class="custom-select">
+          <option value="ben+asm+eng" selected>BN/AS/EN</option>
+          <option value="ben+asm">BN/AS</option>
+          <option value="ben">BN</option>
+          <option value="asm">AS</option>
+          <option value="eng">EN</option>
+        </select>
+        <button class="icon-btn" onclick="openModels()" title="Language models"><i data-lucide="brain-circuit"></i></button>
+      </div>
+      <div class="control-group">
+        <input type="file" id="fileInput" accept="application/pdf,image/*" hidden onchange="handleFileSelect(this)">
+        <button class="secondary-btn" onclick="document.getElementById('fileInput').click()">
+          <i data-lucide="file-up"></i> Choose File
+        </button>
+        <span id="fileNameDisplay" class="file-name">No file chosen</span>
+        <button class="primary-btn" id="startBtn" onclick="startOCR()">
+          <i data-lucide="play"></i> <span>Start OCR</span>
+        </button>
+      </div>
+      <div class="control-group">
+        <progress id="ocrProgress" value="0" max="100" style="display: none;"></progress>
+        <span id="progressText" style="display: none;">0%</span>
+      </div>
+      <div class="control-group control-group--end">
+        <button class="secondary-btn" onclick="openCollection()">
+          <i data-lucide="library"></i> Collection <span id="collectionCount" class="count-badge">0</span>
+        </button>
+      </div>
+    </div>
+  </details>
+</header>
+
+<main class="main-container">
+  <div class="panel left-panel">
+
+    <!-- Normal toolbar -->
+    <div id="normalToolbar" class="panel-header">
+      <div class="zoom-controls">
+        <button onclick="changeZoom(-0.1)" title="Zoom out"><i data-lucide="minus"></i></button>
+        <span id="zoomLevel">100%</span>
+        <button onclick="changeZoom(0.1)" title="Zoom in"><i data-lucide="plus"></i></button>
+      </div>
+
+      <div class="pagination-controls" style="display:none;">
+        <button id="prevPage" onclick="changePage(-1)" class="icon-btn"><i data-lucide="chevron-left"></i></button>
+        <span id="pageInfo">
+          Page <input type="number" id="pageJump" value="1" min="1" onchange="jumpToPage()"
+            style="width:40px;text-align:center;border:1px solid var(--border);border-radius:4px;">
+          of <span id="pageCount">-</span>
+        </span>
+        <button id="nextPage" onclick="changePage(1)" class="icon-btn"><i data-lucide="chevron-right"></i></button>
+      </div>
+
+      <div class="image-tools">
+        <button class="tool-btn" onclick="deskewCanvas()" title="Auto-correct skew">
+          <i data-lucide="rotate-ccw"></i>
+          <span>Deskew</span>
+        </button>
+        <button class="tool-btn tool-btn--perspective" onclick="enterPerspectiveMode()" title="Correct perspective warp">
+          <i data-lucide="scan"></i>
+          <span>Perspective</span>
+        </button>
+        <button class="tool-btn" onclick="enhanceCanvas(false)" title="Greyscale and stretch contrast (faded print, yellowed paper)">
+          <i data-lucide="sun-medium"></i>
+          <span>Enhance</span>
+        </button>
+        <button class="tool-btn" onclick="enhanceCanvas(true)" title="Convert to black and white (stains, show-through)">
+          <i data-lucide="contrast"></i>
+          <span>B/W</span>
+        </button>
+        <button class="tool-btn" onclick="resetImage()" title="Undo all image corrections">
+          <i data-lucide="undo-2"></i>
+          <span>Reset</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Perspective correction toolbar -->
+    <div id="perspectiveToolbar" class="panel-header perspective-header" style="display:none;">
+      <div class="perspective-hint">
+        <i data-lucide="move"></i>
+        <span>Drag the 4 corner handles to the document edges</span>
+      </div>
+      <div class="perspective-actions">
+        <button class="secondary-btn" onclick="exitPerspectiveMode(true)">
+          <i data-lucide="x"></i> Cancel
+        </button>
+        <button class="primary-btn" onclick="applyPerspectiveCorrection()">
+          <i data-lucide="check"></i> Apply
+        </button>
+      </div>
+    </div>
+
+    <div class="canvas-wrapper" id="canvasWrapper">
+      <canvas id="canvas"></canvas>
+    </div>
+  </div>
+
+  <div class="panel right-panel">
+    <div class="panel-header">
+      <h3>Extracted Text</h3>
+      <div class="right-panel-actions">
+        <button id="recordBtn" class="record-btn" onclick="toggleRecording()" title="Record a reading of this text">
+          <i data-lucide="mic"></i>
+          <span id="recordLabel">Record</span>
+          <span id="recordTimer" style="display:none;">00:00</span>
+        </button>
+        <button id="keyboardBtn" class="icon-btn" onclick="toggleKeyboard()" title="Eastern Nagari keyboard (for typing handwritten pages)" aria-pressed="false">
+          <i data-lucide="keyboard"></i>
+        </button>
+        <button class="icon-btn" onclick="openSource()" title="Source details">
+          <i data-lucide="info"></i>
+        </button>
+        <button id="copyBtn" class="icon-btn" onclick="copyText()" title="Copy to Clipboard">
+          <i data-lucide="copy"></i>
+        </button>
+        <button class="icon-btn" onclick="openSave()" title="Save / export">
+          <i data-lucide="download"></i>
+        </button>
+        <button class="secondary-btn secondary-btn--small" onclick="addToCollection()" title="Add this page to the collection">
+          <i data-lucide="library-big"></i> Add
+        </button>
+      </div>
+    </div>
+
+    <div id="sourceSummary" class="source-summary" onclick="openSource()" title="Edit source details"></div>
+
+    <div id="audioBar" class="audio-bar" style="display:none;">
+      <i data-lucide="audio-lines"></i>
+      <audio id="audioPreview" controls></audio>
+      <button class="icon-btn" onclick="downloadAudio()" title="Save recording (WAV)"><i data-lucide="download"></i></button>
+      <button class="icon-btn" onclick="discardAudio()" title="Discard recording"><i data-lucide="trash-2"></i></button>
+    </div>
+
+    <textarea id="output" lang="bn" placeholder="Text will appear here… You can also type or correct it yourself." spellcheck="false"></textarea>
+
+    <div id="keyboardBar" class="keyboard-bar" style="display:none;">
+      <div class="keyboard-row">
+        <input type="text" id="kbRoman" placeholder="Type in Roman letters, e.g. bishnupriya" autocomplete="off" autocapitalize="off" spellcheck="false">
+        <button class="primary-btn" onclick="insertFromKeyboard()"><i data-lucide="corner-down-left"></i> Insert</button>
+      </div>
+      <div id="kbPreview" class="kb-preview" aria-live="polite"></div>
+      <div class="kb-hint">Enter inserts the word at the cursor. Shift+Enter starts a new line. For handwritten pages, zoom the image on the left and type what you read.</div>
+    </div>
+
+    <div id="textStatus" class="text-status"></div>
+  </div>
+</main>
+
+<!-- Source details -->
+<dialog id="sourceDialog" class="sheet">
+  <form method="dialog" id="sourceForm">
+    <div class="sheet-head">
+      <h2>Source details</h2>
+      <button class="icon-btn" value="cancel" formnovalidate aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <p class="sheet-hint">Saved with every page of this file in all exports, so the text can be cited, credited and used with the right permissions. The page number is added automatically.</p>
+    <div class="form-grid">
+      <label class="span-2">Title <input name="title" type="text" placeholder="Book, magazine or document title"></label>
+      <label>Author / creator <input name="author" type="text"></label>
+      <label>Year <input name="year" type="text" inputmode="numeric" placeholder="e.g. 1978"></label>
+      <label>Publisher / source <input name="publisher" type="text" placeholder="Publisher, library, family collection…"></label>
+      <label>Edition / volume <input name="edition" type="text" placeholder="e.g. 2nd edition, Vol. 3"></label>
+      <label>Language
+        <select name="language">
+          <option value="">Choose…</option>
+          <option value="bpy">Bishnupriya Manipuri</option>
+          <option value="asm">Assamese</option>
+          <option value="ben">Bengali</option>
+          <option value="syl">Sylheti</option>
+          <option value="eng">English</option>
+          <option value="other">Other (add in notes)</option>
+        </select>
+      </label>
+      <label>Script
+        <select name="script">
+          <option value="Beng">Eastern Nagari (Bengali–Assamese)</option>
+          <option value="Latn">Latin</option>
+          <option value="Mtei">Meetei Mayek</option>
+          <option value="other">Other (add in notes)</option>
+        </select>
+      </label>
+      <label class="span-2">Permission
+        <select name="rights">
+          <option value="unknown">Not yet known: check before sharing</option>
+          <option value="public-domain">Public domain / copyright expired</option>
+          <option value="permission">Permission given by the rights holder</option>
+          <option value="open-licence">Published under an open licence (add in notes)</option>
+          <option value="community-only">Community use only: do not publish</option>
+        </select>
+      </label>
+      <label>Digitised by <input name="contributor" type="text" placeholder="Your name or group"></label>
+      <label>Place <input name="place" type="text" placeholder="Where the original is kept"></label>
+      <label class="span-2">Notes <textarea name="notes" rows="2"></textarea></label>
+    </div>
+    <div class="sheet-actions">
+      <button class="primary-btn" value="save">Save details</button>
+      <button class="secondary-btn" value="cancel" formnovalidate>Cancel</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Save / export -->
+<dialog id="saveDialog" class="sheet">
+  <div class="sheet-head">
+    <h2>Save this page</h2>
+    <button class="icon-btn" onclick="this.closest('dialog').close()" aria-label="Close"><i data-lucide="x"></i></button>
+  </div>
+  <div class="save-list">
+    <button class="save-option" onclick="saveText()">
+      <i data-lucide="file-text"></i>
+      <span><strong>Text file (.txt)</strong><small>Your corrected Unicode text.</small></span>
+    </button>
+    <button class="save-option" id="savePdfBtn" onclick="savePdf()">
+      <i data-lucide="file-search"></i>
+      <span><strong>Searchable PDF</strong><small id="savePdfNote">The page image with a hidden, searchable text layer. The layer holds the machine-recognised text, before your corrections.</small></span>
+    </button>
+    <button class="save-option" onclick="saveBundle()">
+      <i data-lucide="package"></i>
+      <span><strong>Page bundle (.zip)</strong><small>Page image, corrected and raw text, the recording (if any), source details and training lines, all together.</small></span>
+    </button>
+    <button class="save-option" id="saveLinesBtn" onclick="saveTrainingLines()">
+      <i data-lucide="graduation-cap"></i>
+      <span><strong>Training lines (.zip)</strong><small id="saveLinesNote">Line images paired with your corrected text, for training a recognition model.</small></span>
+    </button>
+  </div>
+</dialog>
+
+<!-- Collection -->
+<dialog id="collectionDialog" class="sheet sheet--wide">
+  <div class="sheet-head">
+    <h2>Collection</h2>
+    <button class="icon-btn" onclick="this.closest('dialog').close()" aria-label="Close"><i data-lucide="x"></i></button>
+  </div>
+  <p class="sheet-hint">Pages you add are kept on this device. Export them together as one corpus: every page's text, images, recordings, source details and training lines, plus a combined <code>corpus.txt</code>.</p>
+  <ul id="collectionList" class="collection-list"></ul>
+  <p id="collectionEmpty" class="sheet-hint">No pages yet. Recognise and correct a page, then press <strong>Add</strong>.</p>
+  <div class="sheet-actions">
+    <button class="primary-btn" id="exportCollectionBtn" onclick="exportCollection()"><i data-lucide="package"></i> Export collection (.zip)</button>
+    <button class="secondary-btn" onclick="clearCollection()"><i data-lucide="trash-2"></i> Clear</button>
+  </div>
+</dialog>
+
+<!-- Language models -->
+<dialog id="modelsDialog" class="sheet">
+  <div class="sheet-head">
+    <h2>Language models</h2>
+    <button class="icon-btn" onclick="this.closest('dialog').close()" aria-label="Close"><i data-lucide="x"></i></button>
+  </div>
+  <p class="sheet-hint">Bengali, Assamese and English are built in and work offline. You can add a model trained for your own language (a Tesseract <code>.traineddata</code> file, optionally <code>.gz</code>), for example one trained from the training lines this app exports.</p>
+  <ul id="modelList" class="collection-list"></ul>
+  <div class="form-grid">
+    <label>Code <input id="modelCode" type="text" placeholder="e.g. bpy" autocapitalize="off" spellcheck="false"></label>
+    <label>Name <input id="modelLabel" type="text" placeholder="e.g. Bishnupriya Manipuri"></label>
+    <label class="span-2">Model file <input id="modelFile" type="file" accept=".traineddata,.gz,application/octet-stream,application/gzip"></label>
+  </div>
+  <div class="sheet-actions">
+    <button class="primary-btn" onclick="addModel()"><i data-lucide="plus"></i> Add model</button>
+  </div>
+</dialog>
+
+<script src="js/zip.js"></script>
+<script src="app.js"></script>
+<script src="js/studio.js"></script>
+<script>lucide.createIcons();</script>
+</body>
+</html>
