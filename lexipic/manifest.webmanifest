@@ -1,0 +1,23 @@
+{
+  "name": "LexiPic — Heritage Language Archive",
+  "short_name": "LexiPic",
+  "description": "Record photo, voice, native script and Roman transliteration for heritage language words. Works offline.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#EEF2EF",
+  "theme_color": "#1E4D3A",
+  "lang": "en",
+  "categories": ["education", "reference", "productivity"],
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Add a word", "short_name": "Add", "url": "./?tab=add", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

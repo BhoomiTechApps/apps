@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; manifest-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'self'">
+<title>LexiPic — Heritage Language Archive</title>
+<meta name="description" content="Record photo, voice, native script and Roman transliteration for heritage language words. Works offline.">
+<meta name="theme-color" content="#1E4D3A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LexiPic">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600&family=Noto+Serif+Bengali:wght@500;700&display=swap">
+<link rel="stylesheet" href="css/app.css">
+<script src="js/engine.js" defer></script>
+<script type="module" src="js/app.js"></script>
+</head>
+<body>
+
+<!-- Icon sprite -->
+<svg class="sprite" width="0" height="0" aria-hidden="true">
+	<defs>
+		<symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><circle cx="9" cy="9.5" r="1.8"/><path d="M21 15l-5-5-8 8"/></symbol>
+		<symbol id="i-plus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></symbol>
+		<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+		<symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></symbol>
+		<symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" stroke="none"/></symbol>
+		<symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor" stroke="none"/></symbol>
+		<symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></symbol>
+		<symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+		<symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9.5" r="1.5"/><path d="M21 16l-5-5-9 9"/></symbol>
+		<symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+		<symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></symbol>
+		<symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+		<symbol id="i-up" viewBox="0 0 24 24"><path d="M12 15V4M7 9l5-5 5 5M5 20h14"/></symbol>
+		<symbol id="i-share" viewBox="0 0 24 24"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6"/></symbol>
+		<symbol id="i-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+		<symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+		<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+		<symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+		<symbol id="i-restore" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.5M4 4v4.5h4.5"/></symbol>
+		<symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1"/><rect x="13" y="4" width="7" height="7" rx="1"/><rect x="4" y="13" width="7" height="7" rx="1"/><rect x="13" y="13" width="7" height="7" rx="1"/></symbol>
+		<symbol id="i-cards" viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M3 6v12M21 6v12"/></symbol>
+	</defs>
+</svg>
+
+<div class="app" id="app">
+
+	<header class="bar">
+		<div class="bar-brand">
+			<span class="brand-mark" aria-hidden="true">ল</span>
+			<span class="brand-name">LexiPic</span>
+		</div>
+		<label class="set-picker">
+			<span class="visually-hidden">Word set</span>
+			<select id="set-select">
+				<option value="">Choose a set</option>
+			</select>
+		</label>
+	</header>
+
+	<div class="offline-pill" id="offline-pill" hidden>Offline — everything still works except dictation</div>
+
+	<main class="panels">
+
+		<!-- ── Archive ─────────────────────────────────────────── -->
+		<section class="panel" id="panel-archive" data-panel="archive" aria-labelledby="tab-archive">
+			<div class="archive-tools" id="archive-tools" hidden>
+				<label class="search">
+					<svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
+					<span class="visually-hidden">Filter words</span>
+					<input type="search" id="archive-filter" placeholder="Filter words" autocomplete="off">
+				</label>
+				<button type="button" class="icon-btn" id="view-toggle" aria-pressed="false" title="Show as grid">
+					<svg class="ic" aria-hidden="true"><use href="#i-grid"/></svg>
+					<span class="visually-hidden">Toggle grid view</span>
+				</button>
+			</div>
+
+			<div class="empty" id="archive-empty">
+				<p class="empty-title" id="archive-empty-title">No set chosen</p>
+				<p class="empty-body" id="archive-empty-body">Pick a set above, or create one under Sets.</p>
+				<button type="button" class="btn btn-quiet" id="archive-empty-action" hidden></button>
+			</div>
+
+			<div class="deck" id="deck" hidden>
+				<button type="button" class="deck-nav prev" id="prev-btn" aria-label="Previous word">
+					<svg class="ic" aria-hidden="true"><use href="#i-left"/></svg>
+				</button>
+				<div class="slider" id="slider" role="list" aria-label="Word cards" tabindex="0"></div>
+				<button type="button" class="deck-nav next" id="next-btn" aria-label="Next word">
+					<svg class="ic" aria-hidden="true"><use href="#i-right"/></svg>
+				</button>
+			</div>
+			<p class="deck-count" id="deck-count" aria-live="polite"></p>
+		</section>
+
+		<!-- ── Add / edit entry ───────────────────────────────── -->
+		<section class="panel" id="panel-add" data-panel="add" hidden>
+			<div class="form-head">
+				<h2 id="add-title">New word</h2>
+				<p class="form-sub" id="add-sub">Adding to —</p>
+			</div>
+
+			<div class="field">
+				<span class="field-label">Photo</span>
+				<div class="photo-drop" id="photo-drop">
+					<img id="photo-preview" alt="" hidden>
+					<div class="photo-actions">
+						<button type="button" class="btn btn-quiet" id="take-photo-btn">
+							<svg class="ic" aria-hidden="true"><use href="#i-camera"/></svg> Take photo
+						</button>
+						<input type="file" id="photo-camera" accept="image/*" capture="environment" hidden>
+						<label class="btn btn-quiet">
+							<svg class="ic" aria-hidden="true"><use href="#i-image"/></svg> Choose image
+							<input type="file" id="photo-file" accept="image/*" hidden>
+						</label>
+					</div>
+					<p class="hint drop-hint">You can also drop or paste an image here.</p>
+				</div>
+			</div>
+
+			<div class="field">
+				<span class="field-label">Pronunciation</span>
+				<div class="recorder" id="recorder">
+					<button type="button" class="rec-btn" id="rec-btn" aria-pressed="false">
+						<span class="rec-dot" aria-hidden="true"></span>
+						<span class="rec-label" id="rec-label">Record</span>
+					</button>
+					<span class="rec-time" id="rec-time" aria-live="polite">0:00</span>
+					<audio id="rec-preview" controls hidden></audio>
+				</div>
+				<p class="hint" id="rec-hint">Say the word clearly, then tap Stop. Recording stops by itself after 30 seconds.</p>
+			</div>
+
+			<div class="field">
+				<label class="field-label" for="roman-input">Roman spelling</label>
+				<input type="text" id="roman-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="e.g. gorur">
+				<p class="hint">Type in Roman letters and the script appears below.</p>
+			</div>
+
+			<div class="field">
+				<label class="field-label" for="script-input">Word in script</label>
+				<div class="with-action">
+					<input type="text" id="script-input" class="script-text" dir="auto" autocomplete="off" spellcheck="false">
+					<button type="button" class="icon-btn" id="dictate-btn" hidden title="Dictate (needs internet)">
+						<svg class="ic" aria-hidden="true"><use href="#i-mic"/></svg>
+						<span class="visually-hidden">Dictate the word</span>
+					</button>
+				</div>
+				<p class="hint">Or type or dictate the script and the Roman spelling fills in.</p>
+			</div>
+
+			<div class="field">
+				<label class="field-label" for="desc-input">Note <span class="optional">optional</span></label>
+				<textarea id="desc-input" rows="2" placeholder="Meaning, usage, who said it"></textarea>
+			</div>
+
+			<p class="status" id="entry-status" role="status" aria-live="polite"></p>
+
+			<div class="form-actions">
+				<button type="button" class="btn btn-primary" id="save-entry-btn">Add to archive</button>
+				<button type="button" class="btn btn-quiet" id="cancel-edit-btn" hidden>Cancel edit</button>
+			</div>
+		</section>
+
+		<!-- ── Sets ───────────────────────────────────────────── -->
+		<section class="panel" id="panel-sets" data-panel="sets" hidden>
+			<div class="block">
+				<h2>New set</h2>
+				<div class="field">
+					<label class="field-label" for="set-name">Name</label>
+					<input type="text" id="set-name" placeholder="e.g. Domestic animals">
+				</div>
+				<div class="field">
+					<label class="field-label" for="set-language">Language</label>
+					<select id="set-language"></select>
+				</div>
+				<button type="button" class="btn btn-primary" id="create-set-btn">Create set</button>
+			</div>
+
+			<div class="block">
+				<h2>Your sets</h2>
+				<ul class="set-list" id="set-list"></ul>
+				<p class="empty-body" id="set-list-empty">No sets yet.</p>
+			</div>
+
+			<div class="block">
+				<h2>Import and back up</h2>
+				<p class="hint">Imports files exported from this app or from the LexiPic WordPress plugin. Each import becomes a new set.</p>
+				<div class="row-actions">
+					<label class="btn btn-quiet">
+						<svg class="ic" aria-hidden="true"><use href="#i-up"/></svg> Import file
+						<input type="file" id="import-input" accept=".json,application/json" hidden>
+					</label>
+					<button type="button" class="btn btn-quiet" id="backup-btn">
+						<svg class="ic" aria-hidden="true"><use href="#i-down"/></svg> Back up everything
+					</button>
+				</div>
+			</div>
+		</section>
+
+		<!-- ── Settings ───────────────────────────────────────── -->
+		<section class="panel" id="panel-settings" data-panel="settings" hidden>
+
+			<div class="block" id="install-block" hidden>
+				<h2>Install</h2>
+				<p class="hint" id="install-hint">Install LexiPic to use it like an app, with or without a connection.</p>
+				<button type="button" class="btn btn-primary" id="install-btn" hidden>Install LexiPic</button>
+			</div>
+
+			<div class="block">
+				<h2>Storage</h2>
+				<p class="hint" id="storage-info">Checking…</p>
+				<button type="button" class="btn btn-quiet" id="persist-btn" hidden>Keep my data safe from cleanup</button>
+			</div>
+
+			<div class="block">
+				<h2>Languages</h2>
+				<p class="hint">Each language has its own keyboard files. A language without custom files uses the bundled Bishnupriya Manipuri files.</p>
+				<ul class="lang-list" id="lang-list"></ul>
+
+				<details class="subform">
+					<summary>Add a language</summary>
+					<div class="field">
+						<label class="field-label" for="lang-code">Code</label>
+						<input type="text" id="lang-code" placeholder="e.g. mni" autocapitalize="off" spellcheck="false">
+					</div>
+					<div class="field">
+						<label class="field-label" for="lang-label">Name</label>
+						<input type="text" id="lang-label" placeholder="e.g. Meitei (মৈতৈলোন্)">
+					</div>
+					<div class="field">
+						<label class="field-label" for="lang-locale">Dictation locale</label>
+						<input type="text" id="lang-locale" placeholder="e.g. bn-IN" autocapitalize="off" spellcheck="false">
+					</div>
+					<div class="field">
+						<label class="field-label" for="lang-clone">Start from</label>
+						<select id="lang-clone"><option value="">Bundled default files</option></select>
+					</div>
+					<button type="button" class="btn btn-primary" id="add-lang-btn">Add language</button>
+				</details>
+			</div>
+
+			<div class="block">
+				<h2>Try the keyboard</h2>
+				<div class="field">
+					<label class="field-label" for="try-lang">Language</label>
+					<select id="try-lang"></select>
+				</div>
+				<div class="field">
+					<label class="field-label" for="try-input">Roman</label>
+					<input type="text" id="try-input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="bishnupriya">
+				</div>
+				<p class="try-out script-text" id="try-out" aria-live="polite"></p>
+				<p class="hint" id="try-back"></p>
+			</div>
+
+			<p class="version" id="version"></p>
+		</section>
+	</main>
+
+	<nav class="tabs" role="tablist" aria-label="Sections">
+		<button type="button" class="tab active" role="tab" id="tab-archive" data-tab="archive" aria-selected="true" aria-controls="panel-archive">
+			<svg class="ic" aria-hidden="true"><use href="#i-cards"/></svg><span>Archive</span>
+		</button>
+		<button type="button" class="tab" role="tab" id="tab-add" data-tab="add" aria-selected="false" aria-controls="panel-add">
+			<svg class="ic" aria-hidden="true"><use href="#i-plus"/></svg><span>Add</span>
+		</button>
+		<button type="button" class="tab" role="tab" id="tab-sets" data-tab="sets" aria-selected="false" aria-controls="panel-sets">
+			<svg class="ic" aria-hidden="true"><use href="#i-folder"/></svg><span>Sets</span>
+		</button>
+		<button type="button" class="tab" role="tab" id="tab-settings" data-tab="settings" aria-selected="false" aria-controls="panel-settings">
+			<svg class="ic" aria-hidden="true"><use href="#i-gear"/></svg><span>Settings</span>
+		</button>
+	</nav>
+
+	<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+		<span id="toast-msg"></span>
+		<button type="button" class="toast-action" id="toast-action" hidden></button>
+	</div>
+</div>
+
+<!-- Language file manager dialog -->
+<dialog class="sheet" id="lang-dialog" aria-labelledby="lang-dialog-title">
+	<form method="dialog" class="sheet-head">
+		<h2 id="lang-dialog-title">Keyboard files</h2>
+		<button class="icon-btn" value="close" aria-label="Close"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+	</form>
+	<p class="hint warn">Snippet hook files contain code that runs in this app. Only load files from people you trust.</p>
+	<div id="lang-files"></div>
+</dialog>
+
+<!-- In-app camera (used on computers, where the capture attribute is ignored) -->
+<dialog class="sheet camera-sheet" id="camera-dialog" aria-labelledby="camera-title">
+	<div class="sheet-head">
+		<h2 id="camera-title">Take photo</h2>
+		<button type="button" class="icon-btn" id="camera-close" aria-label="Close camera"><svg class="ic" aria-hidden="true"><use href="#i-x"/></svg></button>
+	</div>
+	<div class="camera-view">
+		<video id="camera-video" playsinline muted autoplay></video>
+		<p class="camera-msg" id="camera-msg" aria-live="polite">Starting camera…</p>
+	</div>
+	<div class="camera-actions">
+		<button type="button" class="btn btn-quiet" id="camera-switch" hidden>
+			<svg class="ic" aria-hidden="true"><use href="#i-restore"/></svg> Switch camera
+		</button>
+		<button type="button" class="shutter" id="camera-shutter" aria-label="Take the photo" disabled></button>
+		<span class="camera-spacer"></span>
+	</div>
+</dialog>
+
+<!-- Rename set dialog -->
+<dialog class="sheet" id="set-dialog" aria-labelledby="set-dialog-title">
+	<form method="dialog" id="set-dialog-form">
+		<div class="sheet-head">
+			<h2 id="set-dialog-title">Edit set</h2>
+		</div>
+		<div class="field">
+			<label class="field-label" for="set-edit-name">Name</label>
+			<input type="text" id="set-edit-name" required>
+		</div>
+		<div class="field">
+			<label class="field-label" for="set-edit-language">Language</label>
+			<select id="set-edit-language"></select>
+		</div>
+		<div class="form-actions">
+			<button class="btn btn-primary" value="save">Save set</button>
+			<button class="btn btn-quiet" value="cancel" formnovalidate>Cancel</button>
+		</div>
+	</form>
+</dialog>
+
+<noscript><p class="noscript">LexiPic needs JavaScript to run.</p></noscript>
+</body>
+</html>
