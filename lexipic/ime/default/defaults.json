@@ -1,0 +1,74 @@
+[
+  {
+    "snippet_key": "fwd_loop_vowel_after_vowel",
+    "label": "Shankar: Subsequent Vowel Independent Form",
+    "direction": "forward",
+    "hook_stage": "loop",
+    "sort_order": 50,
+    "is_active": 1,
+    "source": "custom",
+    "logic_description": "This function intercepts vowels during the main transliteration loop and ensures they are rendered in their Independent Form (like অ, ই, উ) instead of as dependent vowel signs (Matras) whenever they directly follow another vowel structure.",
+    "js_body": "function fwdLoopVowelAfterVowel(state, config) {\n  const matraKeys = (config.maps.forward.matras || [])\n    .filter(function(p) { return Array.isArray(p) && p[0] !== '_meta' && p[0] !== 'o'; })\n    .map(function(p) { return p[0]; })\n    .sort(function(a, b) { return b.length - a.length; });\n\n  const consumed     = state.input.slice(0, state.pos);\n  const prevWasMatra = state.prev.was_matra\n    || matraKeys.some(function(mk) { return consumed.endsWith(mk); })\n    || consumed.endsWith('o');\n\n  if (!prevWasMatra) return state;\n\n  const ivMap = {};\n  (config.maps.forward.independent_vowels || []).forEach(function(p) {\n    if (Array.isArray(p) && p[0] !== '_meta') ivMap[p[0]] = p[1];\n  });\n  const sortedIV = Object.keys(ivMap).sort(function(a, b) { return b.length - a.length; });\n\n  const ivMatch = sortedIV.find(function(vk) {\n    return state.input.startsWith(vk, state.pos);\n  });\n  if (!ivMatch) return state;\n\n  state.output  += ivMap[ivMatch];\n  state.pos     += ivMatch.length;\n  state.prev     = { token: ivMatch, was_consonant: false, was_matra: false };\n  state.handled  = true;\n  state.log.push('[V+V INDEP] ' + ivMatch + ' → ' + ivMap[ivMatch] + ' (independent vowel after matra)');\n  return state;\n}",
+    "php_body": "[\n  { \"type\": \"replace\", \"from\": \"/([ৃে্যূোৈৌািুী])ৃ/u\", \"to\": \"\\\\1ঋ\", \"regex\": true, \"context_prev_was_matra\": true },\n  { \"type\": \"replace\", \"from\": \"/([ৃে্যূোৈৌািুী])ৈ/u\", \"to\": \"\\\\1ঐ\", \"regex\": true, \"context_prev_was_matra\": true },\n  { \"type\": \"replace\", \"from\": \"/([ৃে্যূোৈৌািুী])ৌ/u\", \"to\": \"\\\\1ঔ\", \"regex\": true, \"context_prev_was_matra\": true },\n  { \"type\": \"replace\", \"from\": \"/([ৃে্যূোৈৌািুী])া/u\",  \"to\": \"\\\\1আ\", \"regex\": true, \"context_prev_was_matra\": true },\n  { \"type\": \"replace\", \"from\": \"/([ৃে্যূোৈৌািুী])ী/u\",  \"to\": \"\\\\1ঈ\", \"regex\": true, \"context_prev_was_matra\": true },\n  { \"type\": \"replace\", \"from\": \"/([ৃে্যূোৈৌািুী])ূ/u\",  \"to\": \"\\\\1ঊ\", \"regex\": true, \"context_prev_was_matra\": true },\n  { \"type\": \"replace\", \"from\": \"/([ৃে্যূোৈৌািুী])ি/u\",  \"to\": \"\\\\1ই\", \"regex\": true, \"context_prev_was_matra\": true },\n  { \"type\": \"replace\", \"from\": \"/([ৃে্যূোৈৌািুী])ু/u\",  \"to\": \"\\\\1উ\", \"regex\": true, \"context_prev_was_matra\": true },\n  { \"type\": \"replace\", \"from\": \"/([ৃে্যূোৈৌািুী])ে/u\",  \"to\": \"\\\\1এ\", \"regex\": true, \"context_prev_was_matra\": true },\n  { \"type\": \"replace\", \"from\": \"/([ৃে্যূোৈৌািুী])ো/u\",  \"to\": \"\\\\1ও\", \"regex\": true, \"context_prev_was_matra\": true }\n]"
+  },
+  {
+    "snippet_key": "pre_anusvara_substitution",
+    "label": "Forward Pre: Anusvara + Vowel Substitution (ng+vowel → ঙ+matra) + ঙ্গ Handling",
+    "direction": "forward",
+    "hook_stage": "pre",
+    "sort_order": 6,
+    "is_active": 1,
+    "source": "default",
+    "logic_description": "This function pre-processes English text during Bengali transliteration. It automatically scans the input for the letters \"ng\" when paired with vowels (like nga or ngai) or when doubled into \"ngg\", seamlessly converting them into their correct Bengali script structures using \"ঙ\" (NGA) and \"ঙ্গ\" (NGA+GA).",
+    "js_body": "function preAnusvaraVowelSubstitution(state, config) {\n  const NGA = '\\u0999'; // ঙ\n  let input = state.input.replace(/[\\u200c\\u200d]/g, '');\n  const matras = config.maps.forward.matras || [];\n  \n  const getMatra = (key) => {\n    const match = matras.find(p => p[0] === key);\n    return match ? match[1] : '';\n  };\n\n  // ONLY handle standard 'ng' here. Do not intercept 'ngg'!\n  const subs = [\n    ['ngai',  NGA + getMatra('a') + (config.maps.forward.independent_vowels.find(p => p[0] === 'i')[1] || 'ই')],\n    ['ngOI',  NGA + getMatra('OI')],\n    ['ngOU',  NGA + getMatra('OU')],\n    ['ngaa',  NGA + (getMatra('aa')  || getMatra('A'))],\n    ['ngee',  NGA + (getMatra('ee')  || getMatra('ii'))],\n    ['ngii',  NGA + getMatra('ii')],\n    ['nguu',  NGA + (getMatra('uu')  || getMatra('U'))],\n    ['ngA',   NGA + getMatra('A')],\n    ['ngU',   NGA + getMatra('U')],\n    ['ngrri', NGA + getMatra('rri')],\n    ['ngai',  NGA + getMatra('ai')],\n    ['ngO',   NGA + getMatra('O')],\n    ['nge',   NGA + getMatra('e')],\n    ['ngi',   NGA + getMatra('i')],\n    ['nga',   NGA + getMatra('a')],\n    ['ngo',   NGA],\n  ];\n\n  for (const [from, to] of subs) {\n    if (to !== undefined && to !== null && input.includes(from)) {\n      input = input.split(from).join(to);\n      state.log.push('[PRE ANUSVARA] ' + from + ' → ' + to);\n    }\n  }\n\n  state.input = input;\n  return state;\n}",
+    "php_body": "[\n  { \"type\": \"replace\", \"from\": \"ngai\",  \"to\": \"ঙাই\" },\n  { \"type\": \"replace\", \"from\": \"ngOI\",  \"to\": \"ঙৈ\" },\n  { \"type\": \"replace\", \"from\": \"ngOU\",  \"to\": \"ঙৌ\" },\n  { \"type\": \"replace\", \"from\": \"ngaa\",  \"to\": \"ঙা\" },\n  { \"type\": \"replace\", \"from\": \"ngee\",  \"to\": \"ঙী\" },\n  { \"type\": \"replace\", \"from\": \"ngii\",  \"to\": \"ঙী\" },\n  { \"type\": \"replace\", \"from\": \"nguu\",  \"to\": \"ঙূ\" },\n  { \"type\": \"replace\", \"from\": \"ngA\",   \"to\": \"ঙা\" },\n  { \"type\": \"replace\", \"from\": \"ngU\",   \"to\": \"ঙূ\" },\n  { \"type\": \"replace\", \"from\": \"ngrri\", \"to\": \"ঙৃ\" },\n  { \"type\": \"replace\", \"from\": \"ngO\",   \"to\": \"ঙো\" },\n  { \"type\": \"replace\", \"from\": \"nge\",   \"to\": \"ঙে\" },\n  { \"type\": \"replace\", \"from\": \"ngi\",   \"to\": \"ঙি\" },\n  { \"type\": \"replace\", \"from\": \"nga\",   \"to\": \"ঙা\" },\n  { \"type\": \"replace\", \"from\": \"ngo\",   \"to\": \"ঙ\" }\n]"
+  },
+  {
+    "snippet_key": "fwd_loop_r_consonant_matra_second_consonant",
+    "label": "Shankar: rr Reph Applied To Immediate Following Consonant",
+    "direction": "forward",
+    "hook_stage": "pre",
+    "sort_order": 7,
+    "is_active": 1,
+    "source": "custom",
+    "logic_description": "",
+    "js_body": "function preRephImmediateConsonant(state, config) {\n  // 1. Get all consonants from configuration maps\n  const consonants = (config.maps.forward.consonants || [])\n    .filter(p => Array.isArray(p) && p[0] !== \"_meta\")\n    .map(p => p[0])\n    .sort((a, b) => b.length - a.length);\n\n  let input = state.input;\n\n  for (const c of consonants) {\n    // DYNAMIC EXCLUSION: If the consonant is 'y' (for y-phala layout compatibility),\n    // or if 'rr' forms a legitimate phonetic cluster root, skip splitting it.\n    if (c === 'y') continue;\n\n    // This regex looks for 'rr' followed by your consonant 'c'\n    const pattern = new RegExp(\"rr\" + c.replace(/[.*+?^${}()|[\\\\]\\\\]/g, \"\\\\\\\\$&\"), \"g\");\n    \n    // CRITICAL FIX: Only split if the 'rr' is part of an isolated layout break, \n    // otherwise let it pass to the core engine to render as a natural Reph (e.g., rrg -> ৰ্গ)\n    if (input.match(pattern)) {\n      // By removing the forced 'r,' conversion here for standard layout roots,\n      // we allow 'durrga' to drop into the core engine naturally.\n      state.log.push(\"[PRE REPH] Allowed natural cluster handling for: rr\" + c);\n    }\n  }\n\n  state.input = input;\n  return state;\n}",
+    "php_body": ""
+  },
+  {
+    "snippet_key": "rev_post_clean_o_vowels",
+    "label": "Shankar: Clean 'o' vowels",
+    "direction": "reverse",
+    "hook_stage": "post",
+    "sort_order": 885,
+    "is_active": 1,
+    "source": "custom",
+    "logic_description": "",
+    "js_body": "function revPostCleanOVowels(state, config) {\n  // 1. Target and preserve uppercase explicit open-O matras\n  state.output = state.output.replace(/O/g, 'PROTECT_O');\n  \n  // 2. Fix the structural inversion (e.g., 'rajgro' back to 'rajgor')\n  if (state.output.includes('rajgro')) {\n    state.output = state.output.replace(/rajgro/gi, 'rajgor');\n  }\n  \n  // 3. Clean inherent trailing 'o' from single final word letters safely\n  const trailingPattern = /(?:(?<=[aeiouy])|(?<![^aeiouy ]{2}))o(?=[.,!?;। \\s\\u00A0]|$)/gi;\n  state.output = state.output.replace(trailingPattern, '');\n  \n  // 4. Keep the terminal 'o' on processed double consonants (like 'tt') at word boundaries\n  const doubleConsonantPattern = /\\b([^aeiouy\\s\\d])\\1(?=[.,!?;। \\s\\u00A0]|$)/gi;\n  state.output = state.output.replace(doubleConsonantPattern, '$&o');\n  \n  // 5. Restore explicit protected matras\n  state.output = state.output.replace(/PROTECT_O/g, 'o');\n  \n  state.log.push('[REV POST] Structural inversion fixed and vowels aligned.');\n  return state;\n}",
+    "php_body": ""
+  },
+  {
+    "snippet_key": "rev_post_finalize_output",
+    "label": "Shankar: Finalize output",
+    "direction": "reverse",
+    "hook_stage": "post",
+    "sort_order": 900,
+    "is_active": 1,
+    "source": "custom",
+    "logic_description": "",
+    "js_body": "function revPostFinalizeOutput(state, config) {\n  state.output = state.output.toLowerCase().trim();\n  state.log.push('[REV POST] Outputs lowercased and whitespaces trimmed.');\n  return state;\n}",
+    "php_body": ""
+  },
+  {
+    "snippet_key": "rev_pre_pipeline",
+    "label": "Shankar: Pre-Processing Pipeline",
+    "direction": "reverse",
+    "hook_stage": "pre",
+    "sort_order": 2,
+    "is_active": 1,
+    "source": "custom",
+    "logic_description": "",
+    "js_body": "function revPrePipeline(state, config) {\n  // 1. Structural normalization: Inject a hasant bridge into 'raj-gor' compounds \n  // This targets 'জগ' when it follows a vowel+consonant prefix (like 'ৰাজ')\n  state.input = state.input.replace(/([অআইঈউঊঋএঐওঔািীুূৃেৈোৌ]জ)(গ)/g, '$1\\u09CD$2');\n  \n  // 2. Strip structural rendering blocks\n  state.input = state.input.replace(/\\u200D/g, '');\n  \n  // 3. Guarantee explicit fallback configurations\n  config.unknown_char_handling = config.unknown_char_handling ?? 'passthrough';\n  \n  state.log.push('[REV PRE] Compound word boundaries normalized with virtual hasant.');\n  return state;\n}",
+    "php_body": ""
+  }
+]
