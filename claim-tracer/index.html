@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>History Tracer</title>
+  <meta name="description" content="Build sourced arguments for or against a claim, using only sources you trust.">
+  <meta name="theme-color" content="#EDEFEA" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161B20" media="(prefers-color-scheme: dark)">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="masthead">
+    <a class="wordmark" href="#trace">History Tracer</a>
+    <nav aria-label="Main">
+      <a href="#trace" data-nav="trace">Trace</a>
+      <a href="#settings" data-nav="settings">Settings</a>
+    </nav>
+  </header>
+
+  <div id="offline-banner" class="banner" hidden>You're offline. Past traces are still readable; new traces need a connection.</div>
+
+  <main>
+    <!-- TRACE -->
+    <section id="view-trace" class="view" aria-labelledby="trace-heading">
+      <h1 id="trace-heading" class="lede">Test a claim against sources you trust</h1>
+
+      <form id="trace-form" class="composer" novalidate>
+        <div class="topic-row">
+          <label for="topic-select" class="field-label">Topic</label>
+          <select id="topic-select"></select>
+          <p class="hint" id="topic-note"></p>
+        </div>
+        <label for="statement" class="field-label">Statement or question</label>
+        <textarea id="statement" name="statement" rows="4" maxlength="2000" autocomplete="off"
+          placeholder="The Permanent Settlement of 1793 impoverished the peasantry of Bengal."></textarea>
+        <div class="ledger" role="group" aria-label="Choose a direction">
+          <button type="submit" class="ledger-btn support" value="support">Trace support</button>
+          <button type="submit" class="ledger-btn contest" value="contest">Trace challenges</button>
+        </div>
+        <p class="scope" id="scope-line">Loading sources…</p>
+      </form>
+
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+      <button type="button" class="btn quiet" id="stop-btn" hidden>Stop</button>
+      <article id="result" class="result" hidden></article>
+
+      <section id="history" class="history" hidden aria-labelledby="history-heading">
+        <div class="list-head">
+          <h2 id="history-heading">Recent traces</h2>
+          <button type="button" class="btn quiet" id="clear-history">Clear all</button>
+        </div>
+        <ul id="history-list"></ul>
+      </section>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="view-settings" class="view" hidden aria-labelledby="settings-heading">
+      <h1 id="settings-heading" class="lede">Settings</h1>
+
+      <details class="acc" id="acc-model" data-acc="model">
+        <summary class="acc-head">
+          <h2 class="acc-title">AI model and search</h2>
+          <span class="acc-meta" id="meta-model"></span>
+        </summary>
+        <div class="acc-body">
+          <form id="key-form" class="source-form" novalidate>
+            <h3 class="acc-sub">Model</h3>
+            <p class="intro small">The model reads what the search finds and builds the argument. Keys are kept only in this browser and sent only to the provider you choose.</p>
+            <div class="grid">
+              <label class="wide">Provider
+                <select name="provider" id="provider-select">
+                  <option value="gemini">Google Gemini (free tier)</option>
+                  <option value="groq">Groq (free tier)</option>
+                  <option value="openrouter">OpenRouter (free models)</option>
+                  <option value="mistral">Mistral (free tier)</option>
+                  <option value="openai">OpenAI / ChatGPT (paid)</option>
+                  <option value="anthropic">Anthropic Claude (paid)</option>
+                </select>
+              </label>
+              <label class="wide"><span id="key-label-text">API key</span>
+                <input name="apiKey" type="password" autocomplete="off" spellcheck="false">
+              </label>
+              <p class="hint wide"><a id="key-link" href="#" target="_blank" rel="noopener">Get a key</a></p>
+              <div class="wide field">
+                <label for="model-select">Model</label>
+                <div class="inline-field">
+                  <select id="model-select"></select>
+                  <button type="button" class="btn quiet" id="load-models">Load models</button>
+                </div>
+                <input id="model-custom" name="model" autocomplete="off" spellcheck="false" placeholder="Type the exact model name" aria-label="Model name" hidden>
+              </div>
+              <p class="hint wide" id="models-msg" role="status"></p>
+            </div>
+
+            <h3 class="acc-sub">Search</h3>
+            <p class="intro small">Only the search is limited to your trusted sources, so it has to support a domain list.</p>
+            <div class="choices">
+              <label class="choice">
+                <input type="radio" name="search" value="tavily" id="search-tavily">
+                <span><strong>Tavily search</strong><br><span class="hint">Works with every model. Free plan: 1,000 searches a month, no card needed.</span></span>
+              </label>
+              <label class="choice" id="search-builtin-label">
+                <input type="radio" name="search" value="builtin" id="search-builtin">
+                <span><strong id="search-builtin-name">The model's own web search</strong><br><span class="hint" id="search-builtin-note"></span></span>
+              </label>
+            </div>
+            <div class="grid" id="tavily-fields">
+              <label class="wide">Tavily API key
+                <input name="tavilyKey" type="password" autocomplete="off" spellcheck="false" placeholder="tvly-...">
+              </label>
+              <p class="hint wide"><a href="https://app.tavily.com" target="_blank" rel="noopener">Get a free Tavily key</a></p>
+            </div>
+            <div class="grid">
+              <label>Searches per trace
+                <select name="maxSearches">
+                  <option value="3">3 (uses the fewest credits)</option>
+                  <option value="4">4</option>
+                  <option value="6">6</option>
+                  <option value="8">8 (most thorough)</option>
+                </select>
+              </label>
+            </div>
+
+            <p class="form-error" id="key-msg" role="status"></p>
+            <div class="form-actions">
+              <button type="submit" class="btn primary">Save settings</button>
+              <button type="button" class="btn quiet danger" id="forget-key">Remove this key</button>
+            </div>
+          </form>
+
+        </div>
+      </details>
+
+      <details class="acc" id="acc-topics" data-acc="topics">
+        <summary class="acc-head">
+          <h2 class="acc-title">Topics</h2>
+          <span class="acc-meta" id="meta-topics"></span>
+        </summary>
+        <div class="acc-body">
+          <p class="intro small">Group your sources by subject. On the Trace page, choose a topic and only its sources are searched.</p>
+          <details class="sub-acc" id="topic-form-wrap">
+            <summary id="topic-form-title">Add a topic</summary>
+            <form id="topic-form" class="source-form" novalidate>
+              <div class="grid">
+                <label>Name
+                  <input name="topicName" maxlength="60" placeholder="Indian history" autocomplete="off">
+                </label>
+                <label>Description
+                  <input name="topicDescription" maxlength="200" placeholder="Optional: what this topic covers" autocomplete="off">
+                </label>
+              </div>
+              <fieldset class="checks">
+                <legend>Sources in this topic</legend>
+                <div id="topic-source-checks" class="check-list"></div>
+              </fieldset>
+              <p class="form-error" id="topic-error" role="alert"></p>
+              <div class="form-actions">
+                <button type="submit" class="btn primary" id="topic-submit">Add topic</button>
+                <button type="button" class="btn quiet" id="topic-cancel" hidden>Cancel</button>
+              </div>
+            </form>
+          </details>
+          <ul id="topic-list" class="topic-list"></ul>
+        </div>
+      </details>
+
+      <details class="acc" id="acc-sources" data-acc="sources">
+        <summary class="acc-head">
+          <h2 class="acc-title">Trusted sources</h2>
+          <span class="acc-meta" id="meta-sources"></span>
+        </summary>
+        <div class="acc-body">
+          <p class="intro small">Traces search only the sites switched on below. Switch a site off to leave it out without deleting it.
+            Add a path to narrow a site, for example <code>loc.gov/collections</code>.</p>
+          <details class="sub-acc" id="source-form-wrap">
+            <summary id="source-form-title">Add a source</summary>
+            <form id="source-form" class="source-form" novalidate>
+              <div class="grid">
+                <label>Domain
+                  <input name="domain" required placeholder="archive.org" autocomplete="off" spellcheck="false">
+                </label>
+                <label>Name
+                  <input name="label" placeholder="Internet Archive" autocomplete="off">
+                </label>
+                <label>Type
+                  <select name="category">
+                    <option value="primary">Primary sources</option>
+                    <option value="academic">Academic journal</option>
+                    <option value="reference">Reference work</option>
+                    <option value="archive">Archive or library</option>
+                    <option value="journalism">Journalism</option>
+                    <option value="other">Other</option>
+                  </select>
+                </label>
+                <label class="wide">Notes
+                  <input name="notes" placeholder="Why you trust it, and any caveats" autocomplete="off">
+                </label>
+              </div>
+              <fieldset class="checks">
+                <legend>Topics</legend>
+                <div id="source-topic-checks" class="check-list"></div>
+              </fieldset>
+              <p class="form-error" id="source-error" role="alert"></p>
+              <div class="form-actions">
+                <button type="submit" class="btn primary" id="source-submit">Add source</button>
+                <button type="button" class="btn quiet" id="source-cancel" hidden>Cancel</button>
+              </div>
+            </form>
+
+          </details>
+          <div class="list-head">
+            <h2>Your list</h2>
+            <p id="source-count"></p>
+          </div>
+          <div class="filter-row">
+            <label for="source-filter">Show</label>
+            <select id="source-filter"></select>
+          </div>
+          <ul id="source-list" class="source-list"></ul>
+
+          <div class="io">
+            <button type="button" class="btn quiet" id="export-btn">Export JSON</button>
+            <label class="btn quiet file-btn">Import JSON
+              <input type="file" id="import-input" accept="application/json,.json">
+            </label>
+            <button type="button" class="btn quiet" id="reset-btn">Restore default list</button>
+            <p class="hint">Importing or restoring replaces all sources and topics.</p>
+          </div>
+        </div>
+      </details>
+    </section>
+  </main>
+
+  <template id="source-row">
+    <li class="source-row">
+      <label class="switch">
+        <input type="checkbox" class="toggle">
+        <span class="track" aria-hidden="true"></span>
+        <span class="visually-hidden toggle-label"></span>
+      </label>
+      <div class="source-main">
+        <p class="source-label"></p>
+        <p class="source-domain"></p>
+        <p class="source-notes"></p>
+        <p class="source-topics"></p>
+      </div>
+      <span class="tag"></span>
+      <div class="row-actions">
+        <button type="button" class="btn quiet edit">Edit</button>
+        <button type="button" class="btn quiet danger delete">Delete</button>
+      </div>
+    </li>
+  </template>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
