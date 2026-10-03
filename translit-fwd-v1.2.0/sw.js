@@ -1,0 +1,96 @@
+/* Service worker: makes the app work offline and keeps it fresh.
+ *
+ *  - install:  downloads the whole app shell into a cache (bypassing the browser's HTTP cache).
+ *  - fetch:    answers from the cache at once (so it works offline and starts instantly).
+ *  - freshness: every time the app is opened (a navigation), the code files (see REFRESH) are re-downloaded in the background;
+ *              any file whose bytes changed replaces the cached copy and the page is told ("UPDATED"), which
+ *              offers a reload. So replacing a file - for example a new vendor/translit-forward.min.js - reaches
+ *              users without touching this file. Files are revalidated with `cache: 'no-cache'`, so a long
+ *              Cache-Control max-age on your server does not delay updates.
+ *  - The cache is named after APP_VERSION (set in version.js), so bumping the app version also gives a clean cache.
+ *  - Opening a code file (.js, .css, .map) directly in the address bar - typed, from a link, or from the console with
+ *    location = 'app.js' - is redirected to index.html. The page's own <script>/<link> loads are not navigations and are
+ *    served as usual.
+ */
+importScripts( 'version.js' );
+const CACHE = 'translit-pwa-v' + self.APP_VERSION;
+const BASE = self.registration.scope;                       // works from any sub-folder
+const url = ( p ) => new URL( p, BASE ).href;
+const INDEX = url( 'index.html' );
+
+const CODE = [ 'index.html', 'styles.css', 'guard.js', 'version.js', 'app.js', 'inplace.js', 'barnamala.js', 'panel.js', 'fixes.js', 'manifest.webmanifest', 'vendor/translit-forward.min.js' ].map( url );
+const ICONS = [ 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon-32.png' ].map( url );
+const FONTS = [ 'vendor/onest/onest-latin-wght-normal.woff2', 'vendor/onest/onest-latin-ext-wght-normal.woff2' ].map( url );
+const SHELL = CODE.concat( ICONS, FONTS );                          // cached at install
+const REFRESH = CODE;                                        // re-checked on every app open
+
+self.addEventListener( 'install', ( event ) => {
+	event.waitUntil(
+		caches.open( CACHE )
+			.then( ( c ) => c.addAll( SHELL.map( ( u ) => new Request( u, { cache: 'reload' } ) ) ) )
+			.then( () => self.skipWaiting() )
+	);
+} );
+
+self.addEventListener( 'activate', ( event ) => {
+	event.waitUntil(
+		caches.keys()
+			.then( ( keys ) => Promise.all( keys.filter( ( k ) => k.startsWith( 'translit-pwa-' ) && k !== CACHE ).map( ( k ) => caches.delete( k ) ) ) )
+			.then( () => self.clients.claim() )
+	);
+} );
+
+async function sameBytes( a, b ) {
+	const [ x, y ] = await Promise.all( [ a.clone().arrayBuffer(), b.clone().arrayBuffer() ] );
+	if ( x.byteLength !== y.byteLength ) return false;
+	const p = new Uint8Array( x ), q = new Uint8Array( y );
+	for ( let i = 0; i < p.length; i++ ) if ( p[ i ] !== q[ i ] ) return false;
+	return true;
+}
+
+async function notify( file ) {
+	for ( const c of await self.clients.matchAll( { type: 'window' } ) ) c.postMessage( { type: 'UPDATED', url: file } );
+}
+
+/** Re-download one file; if it differs from the cached copy, store it and tell the page. */
+async function revalidate( cache, request ) {
+	const res = await fetch( request, { cache: 'no-cache' } );
+	if ( res && res.ok && res.type === 'basic' ) {
+		const old = await cache.match( request, { ignoreSearch: true } );     // a fresh, unread Response every time
+		const changed = old ? ! ( await sameBytes( old, res ) ) : false;
+		await cache.put( request, res.clone() );
+		if ( changed ) await notify( request.url );
+	}
+	return res;
+}
+
+async function respond( event ) {
+	const req = event.request;
+	const cache = await caches.open( CACHE );
+	const isNav = req.mode === 'navigate';
+	const target = isNav ? new Request( INDEX ) : req;                        // every page load gets the app shell
+	const cached = await cache.match( target, { ignoreSearch: true } );
+
+	// Opening the app re-checks every code file, whatever the browser then does with its own memory cache.
+	if ( isNav ) event.waitUntil( Promise.all( REFRESH.map( ( u ) => revalidate( cache, new Request( u ) ).catch( () => null ) ) ) );
+
+	if ( cached ) return cached;
+	// Not cached (a file that is not in the lists above): fetch it and remember it.
+	try {
+		const res = await fetch( req );
+		if ( res.ok && res.type === 'basic' ) await cache.put( req, res.clone() );
+		return res;
+	} catch ( e ) {
+		return Response.error();
+	}
+}
+
+const CODE_FILE = /\.(?:m?js|css|map)$/i;
+
+self.addEventListener( 'fetch', ( event ) => {
+	const req = event.request;
+	const u = new URL( req.url );
+	if ( req.method !== 'GET' || u.origin !== self.location.origin ) return;
+	if ( req.mode === 'navigate' && CODE_FILE.test( u.pathname ) ) { event.respondWith( Response.redirect( INDEX, 302 ) ); return; }
+	event.respondWith( respond( event ) );
+} );
