@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#d8d5ce">
+<meta name="description" content="Draw lines, areas and points on a map and export them as GeoJSON.">
+<title>DrawGeo</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="preload" href="fonts/onest-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="leaflet/leaflet.css" />
+<link rel="stylesheet" href="leaflet/leaflet.draw.css" />
+<link rel="stylesheet" href="app.min.css" />
+<script defer src="leaflet/leaflet.js"></script>
+<script defer src="leaflet/leaflet.draw.js"></script>
+<script defer src="app.min.js"></script>
+</head>
+<body class="dg-body">
+<div class="dg-frame dg-theme-light" id="dgFrame">
+<script>try{var t=JSON.parse(localStorage.getItem("drawgeo_ui_v1")||"{}").theme;if(t==="dark"){var f=document.currentScript.parentNode;f.classList.remove("dg-theme-light");f.classList.add("dg-theme-dark");document.querySelector('meta[name="theme-color"]').content="#1d1e20"}}catch(e){}</script>
+  <header class="dg-frame-head">
+    <span class="dg-frame-brand">DrawGeo <span class="dg-frame-ver" id="dgVer"></span></span>
+  </header>
+
+  <main class="dg-stage">
+    <div class="dg-app">
+      <section class="dg-mapcol" aria-label="Map">
+        <div id="map"></div>
+        <div id="statusBar" class="dg-status" role="status" aria-live="polite" hidden></div>
+      </section>
+
+      <aside class="dg-side" aria-label="Controls">
+        <div class="dg-side-inner">
+
+          <details class="dg-acc" data-acc="draw" open>
+            <summary><span class="dg-acc-title" data-icon="pen">Draw</span><span class="dg-acc-meta" id="drawMeta">Idle</span><span class="dg-chev" data-icon="chev"></span></summary>
+            <div class="dg-acc-body">
+              <div class="dg-label">New shape</div>
+              <div class="dg-seg dg-seg-3" role="group" aria-label="Draw a new shape">
+                <button type="button" class="dg-btn dg-tool" data-draw="polyline" aria-pressed="false" data-icon="line">Line</button>
+                <button type="button" class="dg-btn dg-tool" data-draw="polygon" aria-pressed="false" data-icon="area">Area</button>
+                <button type="button" class="dg-btn dg-tool" data-draw="circlemarker" aria-pressed="false" data-icon="point">Point</button>
+              </div>
+              <div class="dg-actions" id="drawActions" hidden>
+                <button type="button" class="dg-btn dg-primary" data-act="finish" data-icon="check">Finish</button>
+                <button type="button" class="dg-btn" data-act="undo" data-icon="undo">Undo point</button>
+                <button type="button" class="dg-btn dg-ghost" data-act="cancel" data-icon="x">Cancel</button>
+              </div>
+
+              <div class="dg-label">Change shapes</div>
+              <div class="dg-seg dg-seg-2" role="group" aria-label="Change existing shapes">
+                <button type="button" class="dg-btn dg-tool" data-mode="edit" aria-pressed="false" data-icon="edit">Move points</button>
+                <button type="button" class="dg-btn dg-tool" data-mode="delete" aria-pressed="false" data-icon="trash">Remove</button>
+              </div>
+              <p class="dg-hint" id="modeHint" hidden></p>
+              <div class="dg-actions" id="modeActions" hidden>
+                <button type="button" class="dg-btn dg-primary" data-mact="save" data-icon="check">Save changes</button>
+                <button type="button" class="dg-btn dg-danger" data-mact="clear" data-icon="trash">Remove all</button>
+                <button type="button" class="dg-btn dg-ghost" data-mact="cancel" data-icon="x">Cancel</button>
+              </div>
+
+              <div class="dg-label">Lines</div>
+              <div class="dg-row">
+                <button type="button" class="dg-btn dg-tool" id="btnResume" aria-pressed="false" data-icon="play">Continue last line</button>
+                <button type="button" class="dg-btn" id="btnStop" data-icon="stop">Stop editing</button>
+              </div>
+
+              <div class="dg-label">Pen tip <span class="dg-faint">for precise marking on touch screens</span></div>
+              <div class="dg-seg dg-seg-3" role="group" aria-label="Pen tip" id="penSeg">
+                <button type="button" class="dg-btn dg-tool" data-pen="off" aria-pressed="true" data-icon="penoff">Off</button>
+                <button type="button" class="dg-btn dg-tool" data-pen="pen" aria-pressed="false" data-icon="ballpoint">Ballpoint</button>
+                <button type="button" class="dg-btn dg-tool" data-pen="pencil" aria-pressed="false" data-icon="pencil">Pencil</button>
+              </div>
+            </div>
+          </details>
+
+          <details class="dg-acc" data-acc="features" open>
+            <summary><span class="dg-acc-title" data-icon="list">Features</span><span class="dg-acc-meta"><span class="dg-count" id="featCount">0</span></span><span class="dg-chev" data-icon="chev"></span></summary>
+            <div class="dg-acc-body">
+              <div class="dg-field" id="featFilterWrap" hidden>
+                <input type="text" class="dg-input" id="featFilter" placeholder="Filter by name" aria-label="Filter features by name" autocomplete="off" spellcheck="false">
+              </div>
+              <ul class="dg-feats" id="featList" aria-label="Features on the map"></ul>
+              <p class="dg-empty" id="featEmpty">Nothing drawn yet. Pick Line, Area or Point above and mark it on the map.</p>
+            </div>
+          </details>
+
+          <details class="dg-acc" data-acc="project">
+            <summary><span class="dg-acc-title" data-icon="folder">Project and files</span><span class="dg-acc-meta" id="projMeta"></span><span class="dg-chev" data-icon="chev"></span></summary>
+            <div class="dg-acc-body">
+              <div class="dg-label">Project in this browser</div>
+              <div class="dg-grid2">
+                <button type="button" class="dg-btn" data-proj="new" data-icon="fileplus">New project</button>
+                <button type="button" class="dg-btn" data-proj="load" data-icon="folder">Open saved</button>
+                <button type="button" class="dg-btn dg-primary" data-proj="save" data-icon="save">Save project</button>
+                <button type="button" class="dg-btn" data-proj="restore" data-icon="history">Restore previous</button>
+              </div>
+              <div class="dg-label">GeoJSON file</div>
+              <div class="dg-chips" role="group" aria-label="Layers to export">
+                <label class="dg-chip"><input type="checkbox" id="chkLines" checked><span>Lines</span></label>
+                <label class="dg-chip"><input type="checkbox" id="chkPolygons" checked><span>Areas</span></label>
+                <label class="dg-chip"><input type="checkbox" id="chkPoints" checked><span>Points</span></label>
+              </div>
+              <div class="dg-row">
+                <button type="button" class="dg-btn dg-primary" data-proj="export" data-icon="download">Export GeoJSON</button>
+                <button type="button" class="dg-btn" data-proj="import" data-icon="upload">Import file</button>
+              </div>
+              <input type="file" id="importInput" accept=".geojson,.json,application/geo+json,application/json" hidden>
+              <p class="dg-hint">Your work is autosaved as you draw. The autosave is cleared when you save the project or export all three layers.</p>
+            </div>
+          </details>
+
+          <details class="dg-acc" data-acc="search">
+            <summary><span class="dg-acc-title" data-icon="search">Find a place</span><span class="dg-acc-meta"></span><span class="dg-chev" data-icon="chev"></span></summary>
+            <div class="dg-acc-body">
+              <div class="dg-searchrow">
+                <input type="text" class="dg-input" id="searchInput" placeholder="Town, village, landmark" aria-label="Place name" autocomplete="off" spellcheck="false" maxlength="200">
+                <button type="button" class="dg-btn dg-primary dg-iconbtn" id="searchBtn" aria-label="Search" data-icon="search"></button>
+              </div>
+              <ul class="dg-results" id="searchResults" aria-label="Search results"></ul>
+              <p class="dg-hint">Press Enter to search. Results from OpenStreetMap Nominatim.</p>
+            </div>
+          </details>
+
+          <details class="dg-acc" data-acc="view">
+            <summary><span class="dg-acc-title" data-icon="layers">Map view</span><span class="dg-acc-meta" id="viewMeta"></span><span class="dg-chev" data-icon="chev"></span></summary>
+            <div class="dg-acc-body">
+              <div class="dg-label">Basemap</div>
+              <div class="dg-radios" id="basemapList" role="radiogroup" aria-label="Basemap"></div>
+              <p class="dg-hint">Google basemaps are offered for viewing; check Google's terms before relying on them for published work.</p>
+              <div class="dg-row">
+                <button type="button" class="dg-btn" id="btnZoomData" data-icon="frame">Zoom to data</button>
+                <button type="button" class="dg-btn" id="btnLocate" data-icon="locate">My location</button>
+              </div>
+            </div>
+          </details>
+
+          <details class="dg-acc" data-acc="appearance">
+            <summary><span class="dg-acc-title" data-icon="sun">Appearance</span><span class="dg-acc-meta" id="themeMeta">Light</span><span class="dg-chev" data-icon="chev"></span></summary>
+            <div class="dg-acc-body">
+              <div class="dg-label">Interface theme</div>
+              <div class="dg-seg dg-seg-2" role="group" aria-label="Interface theme">
+                <button type="button" class="dg-btn dg-tool" data-theme="light" aria-pressed="true" data-icon="sun">Light (stone)</button>
+                <button type="button" class="dg-btn dg-tool" data-theme="dark" aria-pressed="false" data-icon="moon">Dark (graphite)</button>
+              </div>
+              <p class="dg-hint">Remembered on this device. Map tiles are never recoloured.</p>
+            </div>
+          </details>
+
+          <details class="dg-acc" data-acc="help">
+            <summary><span class="dg-acc-title" data-icon="help">Help</span><span class="dg-acc-meta"></span><span class="dg-chev" data-icon="chev"></span></summary>
+            <div class="dg-acc-body dg-prose">
+              <p><b>Line</b>: click to add points; click the last point or press Finish to end.</p>
+              <p><b>Area</b>: click to add corners; click the first point or press Finish to close it.</p>
+              <p><b>Point</b>: click once where it belongs.</p>
+              <p>Each new shape gets a suggested unique name. Rename it later from the Features list.</p>
+              <p><b>Pen tip</b> helps on phones: with a draw tool active, touch the map and a pen appears with its point above your finger. Slide to aim (coordinates show on the map), lift to mark. Lift on the last point (line) or first point (area) to finish. Two fingers pan and zoom.</p>
+              <p><b>Project</b>: one project is kept in this browser. <b>Restore previous</b> brings back the map from before your last New project or Open saved.</p>
+              <p>Keyboard: <kbd>Esc</kbd> cancels drawing, <kbd>Ctrl</kbd>+<kbd>S</kbd> saves the project.</p>
+            </div>
+          </details>
+
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <footer class="dg-frame-foot">Developed by <strong>Shankar Sinha</strong> for <strong>BhoomiTech Heritage and Development Foundation</strong> under <strong>CDEP</strong></footer>
+</div>
+</body>
+</html>
