@@ -1,0 +1,24 @@
+{
+  "name": "Evaluator",
+  "short_name": "Evaluator",
+  "description": "Build sourced arguments for or against a claim, searching only sources you trust.",
+  "id": "./",
+  "start_url": "./#trace",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "any",
+  "background_color": "#c9c6be",
+  "theme_color": "#d8d5ce",
+  "categories": ["education", "productivity", "utilities"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Settings", "url": "./#settings" },
+    { "name": "Help", "url": "./#help" }
+  ]
+}
