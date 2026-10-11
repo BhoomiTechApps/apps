@@ -1,8 +1,15 @@
 /* OCR Studio service worker.
  * Precaches the whole app, including the recognition engine and the
  * Bengali, Assamese and English models, so OCR works fully offline after
- * the first visit. Bump CACHE on every release. */
-const CACHE = "ocr-studio-v2.1.1";
+ * the first visit. Bump CACHE on every release. Machine voices are cached
+ * separately, on first use (see VOICE_CACHE). */
+const CACHE = "ocr-studio-v2.3.0";
+
+// Machine voices and the speech engine (vendor/tts/) are large, so they are
+// not precached. They are downloaded the first time someone presses Listen
+// and kept in their own cache, which survives app updates.
+const VOICE_CACHE = "ocr-studio-voices-v1";
+const TTS_PATH = /\/vendor\/tts\//;
 
 const SHELL = [
   "./",
@@ -16,6 +23,8 @@ const SHELL = [
   "./js/studio.js",
   "./js/theme.js",
   "./js/protect.js",
+  "./js/voice.js",
+  "./js/tts-worker.js",
   "./vendor/onest/onest-latin-wght-normal.woff2",
   "./vendor/onest/onest-latin-ext-wght-normal.woff2",
   "./js/zip.js",
@@ -45,7 +54,7 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
-    await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));
+    await Promise.all(keys.filter(k => k !== CACHE && k !== VOICE_CACHE).map(k => caches.delete(k)));
     await self.clients.claim();
   })());
 });
@@ -53,6 +62,19 @@ self.addEventListener("activate", event => {
 self.addEventListener("message", event => {
   if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
 });
+
+// Cross-origin isolation. GitHub Pages cannot send these headers, so the
+// service worker adds them to everything it serves. They let the machine
+// voice use several processor cores (shared memory). Every file of the app
+// comes from this site, so nothing else is affected.
+function isolate(res) {
+  if (!res || res.type === "opaque" || res.type === "opaqueredirect" || res.status === 0) return res;
+  const headers = new Headers(res.headers);
+  headers.set("Cross-Origin-Opener-Policy", "same-origin");
+  headers.set("Cross-Origin-Embedder-Policy", "require-corp");
+  headers.set("Cross-Origin-Resource-Policy", "same-origin");
+  return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+}
 
 // Script and style files may only be loaded by the app itself (as a script,
 // stylesheet or worker), never opened as a page or fetched from the console.
@@ -72,7 +94,31 @@ self.addEventListener("fetch", event => {
       event.respondWith(Response.redirect(new URL("index.html", scope).href, 302));
       return;
     }
-    event.respondWith(caches.match("./index.html").then(r => r || fetch(req)));
+    event.respondWith(caches.match("./index.html").then(r => r || fetch(req)).then(isolate));
+    return;
+  }
+
+  // Machine voice and speech engine (fetched by js/tts-worker.js).
+  if (TTS_PATH.test(url.pathname)) {
+    event.respondWith(caches.open(VOICE_CACHE).then(async cache => {
+      // Voice lists and descriptions: newest first, the copy on this device when offline.
+      if (/\.json$/i.test(url.pathname)) {
+        try {
+          const res = await fetch(req, { cache: "no-cache" });
+          if (res.ok) cache.put(req, res.clone()).catch(() => {});
+          return res;
+        } catch (e) {
+          const hit = await cache.match(req, { ignoreSearch: true });
+          if (hit) return hit;
+          throw e;
+        }
+      }
+      const hit = await cache.match(req, { ignoreSearch: true });
+      if (hit) return hit;
+      const res = await fetch(req);
+      if (res.ok) cache.put(req, res.clone()).catch(() => {});
+      return res;
+    }).then(isolate));
     return;
   }
 
@@ -87,6 +133,6 @@ self.addEventListener("fetch", event => {
         caches.open(CACHE).then(c => c.put(req, copy));
       }
       return res;
-    }))
+    })).then(isolate)
   );
 });

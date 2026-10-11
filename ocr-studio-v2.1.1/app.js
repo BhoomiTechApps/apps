@@ -1,6 +1,6 @@
 // Version shown in the frame header and written into exports. Bump it with
 // CACHE in service-worker.js on every release.
-const OCR_STUDIO_VERSION = '2.1.1';
+const OCR_STUDIO_VERSION = '2.3.0';
 
 let pdfDoc = null;
 let currentZoom = 1.0;

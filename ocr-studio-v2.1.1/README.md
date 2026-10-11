@@ -1,8 +1,37 @@
-# OCR Studio 2.1
+# OCR Studio 2.3
 
-Version: 2.1.1
+Version: 2.3.0
 
 Offline OCR for printed Eastern Nagari (Bengali–Assamese script) and English, for community heritage and corpus work. Everything runs in the browser; nothing is uploaded.
+
+## What's new in 2.3.0
+
+- **Female voice.** OCR Studio can now use voices made with Coqui TTS, starting with the **Bengali female voice from the SYSPIN project** (IISc Bengaluru). It reads Eastern Nagari text directly, at 22 kHz, and its licence (MIT) has no non-commercial restriction. It is listed first, so it is the default when installed.
+- **Voice menu shows only installed voices.** `voices.json` lists both voices; the menu next to Listen shows the ones whose folders are present (or already on the device, when offline), and appears only when there is more than one. The choice is remembered on each device.
+- The voice converter (`voice-tools/convert_voice.py`) handles both Hugging Face and Coqui TTS voices, and the Colab notebook makes both voices in one run.
+- Service worker cache renamed to `ocr-studio-v2.3.0`.
+
+## What's new in 2.2.1
+
+### Bug fix
+
+- Listen failed with "no available backend found … Failed to fetch dynamically imported module" on web servers that do not send the right file type for `.mjs` files (common with Apache/XAMPP and other local servers). The speech engine's files are now fetched by the app itself, so the server's file types no longer matter. The included `.htaccess` also declares the `.mjs` and `.wasm` types for Apache.
+- Service worker cache renamed to `ocr-studio-v2.2.1`, so returning visitors get the fix.
+
+## What's new in 2.2.0
+
+### New feature: Listen (machine voice)
+
+- **Listen** (next to Record) reads the text aloud with a machine voice that runs on the device. Select part of the text to hear only that part. Press again to stop.
+- The first time, the app asks before downloading the voice and the speech engine (about 70 MB with the Bengali voice). After that, Listen works offline, and the voice stays on the device across app updates.
+- Reading starts after the first short phrase is ready; the rest is prepared while it plays. Pauses fall at sentence ends (। ৷ ? !) and commas. Line breaks inside a paragraph are read as spaces.
+- When a reading is finished, a **Machine voice** bar lets you replay it or save it as `…_machine-voice.wav`. Machine readings are never added to page bundles or the collection, so they cannot be mistaken for human recordings in the corpus.
+- The voice uses several processor cores where the browser allows it. To make that possible, the service worker marks the app as cross-origin isolated (see "Deploy").
+- Several voices can be installed; a voice menu appears next to Listen when there is more than one. See "Machine voice" below.
+
+### Other changes
+
+- Service worker cache renamed to `ocr-studio-v2.2.0`. Voices are kept in a separate cache, `ocr-studio-voices-v1`.
 
 ## What's new in 2.1.1
 
@@ -74,10 +103,46 @@ Offline OCR for printed Eastern Nagari (Bengali–Assamese script) and English, 
 3. Train with [tesstrain](https://github.com/tesseract-ocr/tesstrain), fine-tuning from `ben` or `asm`.
 4. Load the resulting `.traineddata` under **Language models** and select it.
 
+## Machine voice
+
+Voices are not included in this folder, because they are large and have their own licences. Two are prepared for OCR Studio:
+
+| Folder | Voice | Size | Licence |
+|---|---|---|---|
+| `ben-syspin-f` | Bengali female, SYSPIN project, IISc Bengaluru (`SYSPIN/vits_Bengali_Female`), 22 kHz | about 60 MB | MIT; trained on the SYSPIN corpus (CC-BY 4.0) |
+| `ben-mms` | Bengali, Meta MMS (`facebook/mms-tts-ben`), 16 kHz | about 60 MB | CC-BY-NC 4.0, non-commercial only |
+
+Install them once:
+
+1. Open `voice-tools/convert_voice.ipynb` in Google Colab and choose *Runtime → Run all* (about 10 minutes; no Hugging Face account is needed). It plays a test sentence for each voice and downloads `ben-syspin-f.zip` and `ben-mms.zip`. To make only one, set the other to `False` in the second cell. On a computer, the commands are at the top of `convert_voice.py`.
+2. Unzip them into `vendor/tts/voices/`, so that you have `vendor/tts/voices/ben-syspin-f/voice.json` (and `model.onnx.part1`, `model.onnx.part2`), and the same for `ben-mms`.
+3. `vendor/tts/voices/voices.json` already lists both. The first one installed in that list is the default; reorder the list to change it.
+4. Upload the folder as usual.
+
+**What it sounds like.** The Bengali voices read Eastern Nagari text with Bengali pronunciation, so Bishnupriya Manipuri words will not always sound right. Letters it does not know are replaced (ৰ → র, ৱ → ব) or skipped, and so are digits and punctuation. The app says this when it asks to download a voice, and shows the voice's credit and licence there and on the Machine voice bar.
+
+**A Bishnupriya Manipuri voice.** Recordings made with Record, together with their corrected text, are the training data for a voice of your own: a few hours from one steady reader is a good start. Fine-tune one of the Bengali voices on them (VITS fine-tuning, for example with Hugging Face's `finetune-hf-vits` for the MMS voice, or Coqui TTS for the SYSPIN voice; a female reader suits the SYSPIN voice), convert the result with the same script and `--language bpy`, put it in a new folder such as `vendor/tts/voices/bpy-1/`, and add it to `voices.json`:
+
+```json
+{ "voices": [
+  { "id": "bpy-1",        "name": "Bishnupriya Manipuri" },
+  { "id": "ben-syspin-f", "name": "Bengali female (SYSPIN)" },
+  { "id": "ben-mms",      "name": "Bengali (Meta MMS)" }
+] }
+```
+
+Give a changed voice a new folder name rather than replacing files in an old one, so devices that already have the old voice download the new one.
+
+**Speed.** On a recent phone or laptop, speech is usually made about as fast as it plays or faster. On older devices there may be short gaps between sentences. The first visit after installing or updating uses one processor core; from the next visit the service worker allows several.
+
 ## Deploy
 
-Upload the folder to any HTTPS static host, such as GitHub Pages. Change `CACHE` in `service-worker.js` on each release.
+Upload the folder to any HTTPS static host, such as GitHub Pages. Change `CACHE` in `service-worker.js` on each release. Keep every file below 100 MB (GitHub Pages' limit); the voice converter already splits the voice into parts.
+
+The service worker adds the cross-origin isolation headers (`Cross-Origin-Opener-Policy: same-origin`, `Cross-Origin-Embedder-Policy: require-corp`) to everything it serves, which GitHub Pages cannot do itself. This lets the voice use several cores. All of the app's files come from its own site, so nothing else is affected. If you ever load a script, font or image from another site, that site must allow it (CORS or `Cross-Origin-Resource-Policy`), or it will be blocked.
 
 ## Licences
 
-Tesseract.js and tesseract.js-core are Apache-2.0 (see `vendor/tesseract/`). The tessdata models are Apache-2.0. PDF.js is Apache-2.0 and Lucide is ISC. Onest is SIL OFL 1.1 (`vendor/onest/OFL.txt`).
+Tesseract.js and tesseract.js-core are Apache-2.0 (see `vendor/tesseract/`). The tessdata models are Apache-2.0. PDF.js is Apache-2.0 and Lucide is ISC. Onest is SIL OFL 1.1 (`vendor/onest/OFL.txt`). ONNX Runtime Web 1.29.0 is MIT (`vendor/tts/ort/LICENSE-onnxruntime-web.txt`).
+
+Meta's MMS text-to-speech voices are CC-BY-NC 4.0: free to use with credit, for non-commercial purposes only. The SYSPIN Bengali female voice is MIT-licensed and was trained on the SYSPIN corpus (IISc Bengaluru, CC-BY 4.0); please credit SYSPIN when you publish its readings. The app shows the credit and licence when it asks to download the voice and on the Machine voice bar.

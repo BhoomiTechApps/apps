@@ -156,6 +156,11 @@
           <span id="recordLabel">Record</span>
           <span id="recordTimer" class="os-num" style="display:none;">00:00</span>
         </button>
+        <button id="listenBtn" class="record-btn listen-btn" onclick="toggleListen()" title="Listen with a machine voice. Select some text to hear only that part." aria-label="Listen with a machine voice">
+          <i data-lucide="volume-2"></i>
+          <span>Listen</span>
+        </button>
+        <select id="voiceSelect" class="custom-select voice-select" aria-label="Machine voice" style="display:none;"></select>
         <button id="keyboardBtn" class="icon-btn" onclick="toggleKeyboard()" title="Eastern Nagari keyboard (for typing handwritten pages)" aria-label="Eastern Nagari keyboard" aria-pressed="false">
           <i data-lucide="keyboard"></i>
         </button>
@@ -181,6 +186,14 @@
       <audio id="audioPreview" controls></audio>
       <button class="icon-btn" onclick="downloadAudio()" title="Save recording (WAV)" aria-label="Save recording"><i data-lucide="download"></i></button>
       <button class="icon-btn os-danger" onclick="discardAudio()" title="Discard recording" aria-label="Discard recording"><i data-lucide="trash-2"></i></button>
+    </div>
+
+    <div id="voiceBar" class="audio-bar voice-bar" style="display:none;">
+      <i data-lucide="bot"></i>
+      <span id="voiceBarLabel" class="voice-bar-label">Machine voice</span>
+      <audio id="voicePreview" controls></audio>
+      <button class="icon-btn" onclick="downloadVoice()" title="Save the machine reading (WAV). It is kept apart from human recordings." aria-label="Save machine reading"><i data-lucide="download"></i></button>
+      <button class="icon-btn" onclick="closeVoiceBar()" title="Close" aria-label="Close machine reading"><i data-lucide="x"></i></button>
     </div>
 
     <textarea id="output" lang="bn" placeholder="Text will appear here… You can also type or correct it yourself." spellcheck="false"></textarea>
@@ -313,6 +326,23 @@
   </div>
 </dialog>
 
+<!-- Machine voice: one-time download -->
+<dialog id="voiceDialog" class="sheet">
+  <form method="dialog">
+    <div class="sheet-head">
+      <h2>Machine voice</h2>
+      <button class="icon-btn" value="cancel" formnovalidate aria-label="Close"><i data-lucide="x"></i></button>
+    </div>
+    <p class="sheet-hint" id="voiceDialogText"></p>
+    <p class="sheet-hint" id="voiceDialogNote"></p>
+    <p class="sheet-hint voice-credit" id="voiceDialogCredit"></p>
+    <div class="sheet-actions">
+      <button class="primary-btn" value="ok"><i data-lucide="download"></i> Download and listen</button>
+      <button class="secondary-btn" value="cancel" formnovalidate>Cancel</button>
+    </div>
+  </form>
+</dialog>
+
 <!-- Text field menu (the only right-click menu in the app) -->
 <div id="osCtxMenu" class="os-ctx" role="menu" aria-label="Text" hidden>
   <button type="button" role="menuitem" data-act="copy"><i data-lucide="copy"></i><span>Copy</span></button>
@@ -324,6 +354,7 @@
 <script src="js/zip.js"></script>
 <script src="app.js"></script>
 <script src="js/studio.js"></script>
+<script src="js/voice.js"></script>
 <script>lucide.createIcons();</script>
 </body>
 </html>
