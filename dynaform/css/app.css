@@ -1,0 +1,475 @@
+/* DynaForm PDF — app shell, inside the BhoomiTech frame. */
+html {
+	background: #d8d5ce;
+	box-sizing: border-box;
+	padding-top: env(safe-area-inset-top, 0px);
+	padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+html.df-html-dark { background: #1d1e20; }
+html, body { height: 100%; overflow: hidden; }
+body { margin: 0; }
+
+/*
+ * The app fills the window (or the iframe it's embedded in) and never
+ * grows past it: the frame lines and app bar stay put, and each section
+ * scrolls on its own when its content is taller than the space it has.
+ */
+.df-frame.df-app {
+	margin: 0;
+	height: 100%;
+	border-radius: 0;
+	box-shadow: none;
+	display: flex;
+	flex-direction: column;
+}
+.df-app .df-frame-head, .df-app .df-frame-foot { flex: 0 0 auto; }
+.df-app .df-stage {
+	flex: 1 1 auto;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+.df-app .appbar, .df-app .banner { flex: 0 0 auto; }
+
+/* Scroll areas */
+.df-frame .df-scroll-y {
+	overflow-x: hidden;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: thin;
+	scrollbar-color: var(--df-scroll) transparent;
+	scroll-padding: 12px 0;
+}
+.df-frame textarea, .df-frame .menu-list, .df-frame dialog, .df-frame .df-ctx {
+	scrollbar-width: thin;
+	scrollbar-color: var(--df-scroll) transparent;
+}
+
+/* ---------- App bar ---------- */
+.df-frame .appbar {
+	position: relative;
+	z-index: 20;
+	background-color: var(--df-body);
+	background-image: var(--df-grain);
+	border-radius: var(--df-r) var(--df-r) 0 0;
+	box-shadow: var(--df-groove-bot);
+}
+.df-frame .appbar-inner {
+	max-width: 980px;
+	margin: 0 auto;
+	padding: 10px 16px 12px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+.df-frame .brand {
+	display: flex;
+	align-items: center;
+	gap: 9px;
+	color: var(--df-text);
+	text-decoration: none;
+	font-weight: 640;
+	font-size: 1.05rem;
+	letter-spacing: -.01em;
+}
+.df-frame .brand .df-ico { width: 22px; height: 22px; color: var(--df-accent-text); }
+.appbar-spacer { flex: 1; }
+.df-frame .net-status {
+	font-size: .78rem;
+	padding: 3px 9px;
+	border-radius: 2px;
+	background: var(--df-ok-bg);
+	color: var(--df-ok);
+	white-space: nowrap;
+	font-weight: 500;
+}
+.df-frame .net-status::before {
+	content: "";
+	display: inline-block;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: currentColor;
+	margin-right: 6px;
+	vertical-align: 1px;
+}
+.df-frame .net-status.is-offline { background: var(--df-accent-wash); color: var(--df-warn); }
+
+/* Theme switch: two icon toggles in a well */
+.df-frame .theme-switch {
+	display: inline-flex;
+	gap: 2px;
+	padding: 3px;
+	background: var(--df-sunk);
+	box-shadow: var(--df-well);
+	border-radius: var(--df-r-sm);
+}
+.df-frame .theme-switch button {
+	display: inline-flex; align-items: center; justify-content: center;
+	width: 30px; height: 28px;
+	padding: 0;
+	background: transparent;
+	color: var(--df-muted);
+	border-radius: 2px;
+	cursor: pointer;
+}
+.df-frame .theme-switch button:hover { color: var(--df-accent-text); }
+.df-frame .theme-switch button[aria-pressed="true"] {
+	background: var(--df-accent);
+	color: var(--df-accent-ink);
+	box-shadow: var(--df-btn-primary-shadow);
+}
+
+/* ---------- Banners ---------- */
+.df-frame .banner {
+	max-width: 948px;
+	margin: 14px auto 0;
+	padding: 10px 14px;
+	border-radius: var(--df-r-sm);
+	background: var(--df-raised);
+	box-shadow: var(--df-plate), inset 3px 0 0 var(--df-accent);
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+.df-frame .banner p { margin: 0; flex: 1 1 240px; }
+.df-frame #update-banner, .df-frame #ios-install-banner { width: calc(100% - 32px); }
+
+/* main is the content scroll area: full width so its scrollbar sits at
+   the stage edge, content centred to 948px by the side padding. */
+.df-frame main {
+	width: 100%;
+	margin: 0;
+	padding: 22px max(16px, calc((100% - 948px) / 2)) 40px;
+	flex: 1 1 auto;
+	min-height: 0;
+	scrollbar-gutter: stable;
+}
+.df-frame main:focus { box-shadow: none; }
+.df-frame h1 { font-size: 1.55rem; margin: 0; }
+.df-frame h3 { font-size: 1.02rem; margin: 0 0 12px; }
+
+/* ---------- Buttons ---------- */
+.df-frame .dfb-btn,
+.df-frame .install-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 9px 15px;
+	min-height: 40px;
+	border: 0;
+	border-radius: var(--df-r-sm);
+	background: var(--df-raised);
+	box-shadow: var(--df-plate);
+	color: var(--df-text);
+	font-size: .94em;
+	font-weight: 500;
+	cursor: pointer;
+	text-decoration: none;
+	line-height: 1.3;
+	transition: background-color .12s, color .12s;
+}
+.df-frame .dfb-btn:hover { background: var(--df-hover); }
+.df-frame .dfb-btn-primary,
+.df-frame .install-btn { background: var(--df-accent); color: var(--df-accent-ink); box-shadow: var(--df-btn-primary-shadow); font-weight: 600; }
+.df-frame .dfb-btn-primary:hover,
+.df-frame .install-btn:hover { background: var(--df-accent-hi); color: var(--df-accent-ink); }
+.df-frame .install-btn { min-height: 34px; padding: 6px 12px; font-size: .88em; }
+.df-frame .dfb-btn-danger { color: var(--df-bad); background: transparent; box-shadow: none; }
+.df-frame .dfb-btn-danger:hover { background: var(--df-bad-bg); }
+.df-frame .dfb-btn-small { padding: 5px 10px; min-height: 32px; font-size: .85em; }
+.df-frame .dfb-btn:disabled { opacity: .5; cursor: not-allowed; }
+.df-frame .dfb-btn:disabled:hover { background: var(--df-raised); }
+.df-frame .dfb-btn-icon { padding: 5px 8px; min-width: 34px; }
+.df-frame .dfb-btn-small.dfb-btn-icon { min-width: 32px; }
+
+/* ---------- Dashboard ---------- */
+.df-frame .dash-head {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 14px;
+	align-items: flex-end;
+	justify-content: space-between;
+	margin-bottom: 18px;
+}
+.df-frame .dash-sub { margin: 4px 0 0; color: var(--df-muted); max-width: 60ch; }
+.df-frame .dfb-new-form {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+	background: var(--df-raised);
+	box-shadow: var(--df-plate);
+	border-radius: var(--df-r);
+	padding: 12px;
+	margin: 0 0 20px;
+}
+.df-frame .dfb-new-form input[type="text"] { flex: 1 1 240px; width: auto; }
+.df-frame .dash-tools { display: flex; gap: 8px; flex-wrap: wrap; }
+.df-frame .dfb-empty {
+	color: var(--df-muted);
+	padding: 36px 20px;
+	text-align: center;
+	background: var(--df-well-tint);
+	box-shadow: var(--df-well);
+	border-radius: var(--df-r);
+	margin: 0;
+}
+.df-frame .dfb-empty strong { display: block; color: var(--df-text); font-size: 1.05rem; margin-bottom: 4px; font-weight: 620; }
+.df-frame .dfb-list { display: flex; flex-direction: column; gap: 8px; }
+.df-frame .dfb-card {
+	background: var(--df-raised);
+	box-shadow: var(--df-plate);
+	border-radius: var(--df-r);
+	padding: 14px 16px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+	align-items: center;
+	justify-content: space-between;
+	transition: background-color .12s;
+}
+.df-frame .dfb-card:hover { background: var(--df-hover); }
+.df-frame .dfb-card-main { min-width: 200px; flex: 1 1 260px; }
+.df-frame .dfb-card-title { font-weight: 620; font-size: 1.04em; overflow-wrap: anywhere; }
+.df-frame .dfb-card-meta { color: var(--df-muted); font-size: .85em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.df-frame .dfb-card-actions { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+/* overflow menu */
+.df-frame .menu { position: relative; }
+.df-frame .menu-list {
+	position: absolute;
+	right: 0;
+	top: calc(100% + 6px);
+	z-index: 10;
+	min-width: 230px;
+	max-height: min(320px, 60vh);
+	overflow-y: auto;
+	background: var(--df-pop);
+	box-shadow: var(--df-pop-shadow);
+	border-radius: var(--df-r);
+	padding: 5px;
+	display: flex;
+	flex-direction: column;
+}
+.df-frame .menu-list button,
+.df-frame .df-ctx button {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	text-align: left;
+	background: none;
+	padding: 8px 10px;
+	border-radius: var(--df-r-sm);
+	color: var(--df-text);
+	cursor: pointer;
+	width: 100%;
+}
+.df-frame .menu-list button .df-ico,
+.df-frame .df-ctx button .df-ico { color: var(--df-muted); }
+.df-frame .menu-list button:hover,
+.df-frame .menu-list button:focus-visible,
+.df-frame .df-ctx button:not(:disabled):hover,
+.df-frame .df-ctx button:focus-visible { background: var(--df-accent-wash); box-shadow: none; }
+.df-frame .menu-list button.is-danger,
+.df-frame .menu-list button.is-danger .df-ico { color: var(--df-bad); }
+.df-frame .menu-list button.is-danger:hover { background: var(--df-bad-bg); }
+.df-frame .menu-list hr { border: 0; height: 2px; margin: 4px 2px; box-shadow: var(--df-groove-top); }
+
+.df-frame .privacy-note {
+	margin: 28px 0 0;
+	padding-top: 16px;
+	box-shadow: var(--df-groove-top);
+	font-size: .85rem;
+	color: var(--df-muted);
+	max-width: 70ch;
+}
+.df-frame .privacy-note strong { color: var(--df-text); font-weight: 600; }
+
+/* ---------- Builder ---------- */
+.df-frame .dfb-builder-top,
+.df-frame .fill-top {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px 12px;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 16px;
+}
+.df-frame .dfb-back {
+	display: inline-flex; align-items: center; gap: 4px;
+	color: var(--df-accent-text);
+	text-decoration: none;
+	font-weight: 600;
+}
+.df-frame .dfb-back:hover { text-decoration: underline; text-underline-offset: 3px; }
+.df-frame .dfb-builder-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.df-frame #dfb-save-status { font-size: .85em; color: var(--df-ok); min-width: 9ch; }
+.df-frame .dfb-row { margin-bottom: 14px; }
+.df-frame .dfb-row > label { display: block; font-weight: 600; margin-bottom: 5px; }
+.df-frame .dfb-row textarea { min-height: 84px; resize: vertical; }
+.df-frame .dfb-title-input { font-size: 1.2rem !important; font-weight: 620; }
+.df-frame .dfb-pair { display: flex; gap: 8px; }
+.df-frame .dfb-pair > * { flex: 1; min-width: 0; }
+.df-frame .dfb-inline { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.df-frame .dfb-inline label { font-weight: 400; margin: 0; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+
+/* Panel and question list: one groove between them, no boxes */
+.df-frame #dynaform-builder-app {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0;
+	align-items: start;
+	margin-top: 6px;
+	padding-top: 18px;
+	box-shadow: var(--df-groove-top);
+}
+.df-frame .dfb-panel { min-width: 0; padding: 0 0 18px; }
+.df-frame .dfb-panel hr { border: 0; height: 2px; margin: 16px 0; box-shadow: var(--df-groove-top); }
+.df-frame .dfb-preview { min-width: 0; padding-top: 18px; box-shadow: var(--df-groove-top); }
+@media (min-width: 760px) {
+	.df-frame #dynaform-builder-app { grid-template-columns: minmax(290px, 360px) minmax(0, 1fr); }
+	.df-frame .dfb-panel { padding: 0 24px 0 0; }
+	.df-frame .dfb-preview { padding: 0 0 0 26px; box-shadow: var(--df-groove-v); align-self: stretch; }
+}
+/* Wide screens: the builder's title stays put and the question panel and
+   the question list scroll independently, each to its own bottom. */
+@media (min-width: 760px) and (min-height: 461px) {
+	.df-frame main[data-view="builder"] { overflow: hidden; display: flex; flex-direction: column; padding-bottom: 0; }
+	.df-frame main[data-view="builder"] .dfb-builder { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+	.df-frame main[data-view="builder"] .dfb-builder-top,
+	.df-frame main[data-view="builder"] .dfb-builder > .dfb-row { flex: 0 0 auto; }
+	.df-frame main[data-view="builder"] #dynaform-builder-app { flex: 1 1 auto; min-height: 0; grid-template-rows: minmax(0, 1fr); padding-top: 0; box-shadow: none; margin-top: 0; position: relative; }
+	.df-frame main[data-view="builder"] #dynaform-builder-app::before {
+		content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; box-shadow: var(--df-groove-top); z-index: 1; pointer-events: none;
+	}
+	.df-frame main[data-view="builder"] .dfb-panel,
+	.df-frame main[data-view="builder"] .dfb-preview { height: 100%; padding-top: 18px; padding-bottom: 28px; }
+	.df-frame main[data-view="builder"] .dfb-panel { padding-left: 4px; padding-right: 22px; }
+	.df-frame main[data-view="builder"] .dfb-preview { padding-right: 6px; }
+}
+.df-frame .dfb-qlist { display: flex; flex-direction: column; gap: 8px; }
+.df-frame .dfb-qcard {
+	background: var(--df-raised);
+	box-shadow: var(--df-plate);
+	border-radius: var(--df-r-sm);
+	padding: 10px 10px 10px 13px;
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 10px;
+	cursor: grab;
+}
+.df-frame .dfb-qcard:hover { background: var(--df-hover); }
+.df-frame .dfb-qcard.is-editing { background: var(--df-selected); box-shadow: var(--df-plate), inset 0 0 0 1px var(--df-accent), inset 3px 0 0 var(--df-accent); }
+.df-frame .dfb-qcard.dfb-dragging { opacity: .4; }
+.df-frame .dfb-qcard.dfb-drag-over { background: var(--df-accent-wash); box-shadow: inset 0 0 0 1px var(--df-accent); }
+.df-frame .dfb-qcard-body { min-width: 0; overflow-wrap: anywhere; padding-top: 4px; }
+.df-frame .dfb-qcard-body strong { display: block; font-weight: 600; }
+.df-frame .dfb-qcard-meta { color: var(--df-muted); font-size: 12.5px; }
+.df-frame .dfb-qcard-actions { display: flex; gap: 4px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+.df-frame .dfb-qcard.dfb-pagebreak-card { background: var(--df-accent-wash); box-shadow: inset 0 0 0 1px var(--df-accent-wash); color: var(--df-accent-text); align-items: center; }
+.df-frame .dfb-qcard.dfb-pagebreak-card.is-editing { box-shadow: inset 0 0 0 1px var(--df-accent), inset 3px 0 0 var(--df-accent); }
+.df-frame .dfb-pagebreak-card .dfb-qcard-body { display: flex; align-items: center; gap: 8px; font-weight: 500; padding-top: 0; }
+.df-frame .dfb-description { color: var(--df-muted); font-size: .9em; }
+
+/* ---------- Fill view ---------- */
+.df-frame .fill-sheet {
+	background: var(--df-raised);
+	box-shadow: var(--df-plate);
+	border-radius: var(--df-r);
+	padding: 26px 22px;
+}
+.df-frame .fill-count { color: var(--df-muted); font-size: .85rem; font-variant-numeric: tabular-nums; }
+
+/* ---------- Toast, dialog, context menu ---------- */
+.df-frame .toast {
+	position: fixed;
+	left: 50%;
+	bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+	transform: translateX(-50%);
+	background: var(--df-pop);
+	color: var(--df-text);
+	box-shadow: var(--df-pop-shadow), inset 3px 0 0 var(--df-accent);
+	padding: 10px 16px 10px 18px;
+	border-radius: var(--df-r-sm);
+	font-size: .9rem;
+	z-index: 60;
+	max-width: calc(100% - 32px);
+}
+.df-frame .toast.is-ok { box-shadow: var(--df-pop-shadow), inset 3px 0 0 var(--df-ok); }
+.df-frame .toast.is-bad { box-shadow: var(--df-pop-shadow), inset 3px 0 0 var(--df-bad); }
+.df-frame dialog {
+	border: 0;
+	border-radius: var(--df-r);
+	padding: 20px;
+	max-height: calc(100% - 24px);
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	max-width: min(560px, calc(100% - 24px));
+	width: 100%;
+	background-color: var(--df-pop);
+	background-image: var(--df-grain);
+	box-shadow: var(--df-pop-shadow);
+	color: var(--df-text);
+}
+.df-frame dialog::backdrop { background: rgba(10, 10, 12, .42); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.df-frame dialog h3 { margin-top: 0; }
+.df-frame .share-link {
+	font-family: var(--df-mono);
+	font-size: .8rem;
+	min-height: 90px;
+	resize: vertical;
+	word-break: break-all;
+}
+.df-frame .dialog-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-top: 14px; }
+
+.df-frame .df-ctx {
+	position: fixed;
+	z-index: 100;
+	min-width: 168px;
+	padding: 5px;
+	background: var(--df-pop);
+	box-shadow: var(--df-pop-shadow);
+	border-radius: var(--df-r);
+	font-size: .92rem;
+	max-height: calc(100vh - 12px);
+	overflow-y: auto;
+}
+.df-frame .df-ctx button:disabled { color: var(--df-faint); cursor: default; }
+.df-frame .df-ctx button:disabled .df-ico { color: var(--df-faint); }
+.df-frame .df-ctx kbd {
+	margin-left: auto;
+	font-family: var(--df-mono);
+	font-size: .78em;
+	color: var(--df-faint);
+	background: none;
+	padding: 0;
+}
+
+@media (max-width: 520px) {
+	.df-frame .net-status { display: none; }
+	.df-frame .appbar-inner { padding: 8px 10px 10px; gap: 8px; }
+	.df-frame main { padding: 18px 10px 32px; scrollbar-gutter: auto; }
+	.df-frame .dfb-card-actions,
+	.df-frame .dfb-builder-actions { width: 100%; }
+	.df-frame .dfb-builder-actions .dfb-btn { flex: 1 1 auto; }
+	.df-frame #dfb-save-status { order: 2; flex-basis: 100%; min-width: 0; }
+	.df-frame #dfb-save-status:empty { display: none; }
+	.df-frame .dfb-card-actions .dfb-btn { flex: 1 1 auto; }
+	.df-frame .fill-sheet { padding: 18px 14px; }
+}
+
+/* Very short windows (a phone on its side, a small embed): the fixed
+   header and footer would leave almost no room, so the whole page
+   scrolls instead and the sections grow to fit. */
+@media (max-height: 460px) {
+	html, body { height: auto; overflow: visible; }
+	.df-frame.df-app { height: auto; min-height: 100vh; }
+	.df-app .df-stage { flex: 1 0 auto; overflow: visible; }
+	.df-frame main.df-scroll-y { overflow: visible; flex: 1 0 auto; }
+	.df-frame .dfb-panel.df-scroll-y, .df-frame .dfb-preview.df-scroll-y { overflow: visible; }
+}
