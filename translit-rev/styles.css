@@ -1,0 +1,167 @@
+/* Eastern Nagari to Roman - BhoomiTech frame, Light "Stone" matte theme.
+ * Every colour is a token on .tr-frame; the theme block is .tr-frame.tr-theme-light.
+ * Separation is done with grooves (inset shadows), never borders; corners are 4px at most. */
+
+/* ── typeface: Onest variable (SIL OFL), bundled in vendor/onest/ ── */
+@font-face {
+  font-family: 'Onest TR'; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url(vendor/onest/onest-latin-ext-wght-normal.woff2) format('woff2-variations'), url(vendor/onest/onest-latin-ext-wght-normal.woff2) format('woff2');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Onest TR'; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url(vendor/onest/onest-latin-wght-normal.woff2) format('woff2-variations'), url(vendor/onest/onest-latin-wght-normal.woff2) format('woff2');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+/* ── tokens ── */
+.tr-frame {
+  --r: 4px; --r-sm: 3px;
+  --groove-v:   inset 1px 0 0 var(--cut), inset 2px 0 0 var(--lip);
+  --groove-top: inset 0 1px 0 var(--cut), inset 0 2px 0 var(--lip);
+  --groove-bot: inset 0 -1px 0 var(--lip), inset 0 -2px 0 var(--cut);
+  --font: 'Onest TR', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --bn-font: "Noto Sans Bengali", "Nirmala UI", "Vrinda", "Lohit Bengali", "Kohinoor Bangla", system-ui, sans-serif;
+  --ui-bn-font: 'Onest TR', var(--bn-font);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+.tr-frame.tr-theme-light {
+  color-scheme: light;
+  --frame: #d8d5ce;   --body: #e8e6e0;   --sunk: #dcd9d2;   --raised: #f2f1ec;   --hover: #f8f7f3;   --pop: #f6f5f1;
+  --cut: #b9b5ac;     --lip: rgba(255,255,255,.85);    --line: rgba(0,0,0,.09);
+  --text: #23221f;    --muted: #5b5953;  --faint: #87847c;
+  --accent: #d9a441;  --accent-hi: #e4b356;  --accent-ink: #1b1407;  --accent-text: #8f600d;  --accent-wash: rgba(217,164,65,.16);
+  --ok: #2b7549;      --bad: #ad4334;    --warn: #8f600d;   --info: #376391;
+  --ok-bg: rgba(43,117,73,.12);  --bad-bg: rgba(173,67,52,.11);  --info-bg: rgba(55,99,145,.12);
+  --selected: #f6ecd5;   --scroll: #b7b3aa;   --well-tint: rgba(0,0,0,.035);
+  --well:  inset 0 1px 2px rgba(0,0,0,.14), inset 0 0 0 1px rgba(0,0,0,.07), 0 1px 0 rgba(255,255,255,.8);
+  --plate: inset 0 1px 0 rgba(255,255,255,.95), 0 1px 1px rgba(0,0,0,.09), 0 0 0 1px rgba(0,0,0,.045);
+  --pop-shadow: 0 0 0 1px rgba(0,0,0,.09), 0 14px 32px rgba(0,0,0,.18);
+  --ctl-shadow: 0 0 0 1px rgba(0,0,0,.14), inset 0 1px 0 rgba(255,255,255,.9), 0 2px 6px rgba(0,0,0,.2);
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .055 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ── page: the frame is the whole window of the app ── */
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+html { background: #d8d5ce; }                      /* the frame colour, so overscroll never shows white */
+body { height: 100dvh; overflow: hidden; }
+
+/* ── the frame ── */
+.tr-frame {
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%;
+  padding: 0 max(10px, env(safe-area-inset-right)) 0 max(10px, env(safe-area-inset-left));
+  background-color: var(--frame); background-image: var(--grain);
+  color: var(--text); font: 400 15px/1.45 var(--font); -webkit-text-size-adjust: 100%;
+}
+.tr-frame [hidden] { display: none !important; }
+.tr-frame-head {
+  display: flex; align-items: center; justify-content: flex-end; min-height: 44px;
+  padding: max(12px, env(safe-area-inset-top)) 2px 10px;
+}
+.tr-frame-brand { color: var(--muted); font-size: .84em; font-weight: 600; }
+.tr-frame-ver { color: var(--accent-text); font-weight: 500; font-variant-numeric: normal; margin-left: .25em; }
+.tr-stage {
+  display: grid; grid-template-rows: auto minmax(0, 1fr); min-height: 0;
+  background-color: var(--body); background-image: var(--grain); border-radius: var(--r);
+  box-shadow: 0 0 0 1px var(--cut), 0 1px 0 1px var(--lip);
+}
+.tr-frame-foot {
+  padding: 9px 4px max(10px, env(safe-area-inset-bottom)); text-align: center;
+  font-size: .74em; line-height: 1.4; color: var(--faint);
+}
+.tr-frame-foot strong { color: var(--muted); font-weight: 600; }
+
+/* ── app bar: title, status, OCR button ── */
+.tr-frame .tr-appbar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 8px 10px 10px 14px; box-shadow: var(--groove-bot);
+}
+.tr-frame h1 { margin: 0; font-family: var(--ui-bn-font); font-size: 1.05rem; font-weight: 620; letter-spacing: -.01em; color: var(--text); }
+.tr-frame h1 span { color: var(--accent-text); }
+.tr-frame .tools { display: flex; align-items: center; gap: 8px; }
+
+/* buttons: reset, then plate / pill / primary */
+.tr-frame button {
+  font: inherit; letter-spacing: 0; text-transform: none; margin: 0; border: 0; -webkit-appearance: none; appearance: none;
+}
+.tr-frame #status {
+  font-size: .8rem; font-weight: 500; line-height: 1.4; padding: 3px 9px; border-radius: 2px; cursor: default;
+  background: var(--ok-bg); color: var(--ok); box-shadow: none;
+}
+.tr-frame #status.action {
+  background: var(--accent); color: var(--accent-ink); font-weight: 600; cursor: pointer; padding: 5px 12px; border-radius: var(--r-sm);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 1px 1px rgba(0,0,0,.4);
+}
+.tr-frame #status.action:hover { background: var(--accent-hi); }
+.tr-frame #ocr-btn {
+  display: inline-flex; align-items: center; gap: 6px; font-size: .95rem; line-height: 1.5; padding: 3px 14px; border-radius: var(--r-sm); cursor: pointer;
+  background: var(--raised); color: var(--text); box-shadow: var(--plate);
+}
+.tr-frame #ocr-btn:hover { background: var(--hover); }
+.tr-frame #ocr-btn.active {
+  background: var(--accent); color: var(--accent-ink); font-weight: 600;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 1px 1px rgba(0,0,0,.4);
+}
+.tr-frame #ocr-btn.active:hover { background: var(--accent-hi); }
+.tr-frame button:focus-visible { outline: none; box-shadow: 0 0 0 1px var(--accent), 0 0 0 3px var(--accent-wash); }
+
+/* the OCR tool opens in its own window: a small line icon says so */
+.tr-frame #ocr-btn .tr-icon { display: block; width: 14px; height: 14px; flex: none; opacity: .8; }
+
+/* ── the writing area: a well filling the stage ── */
+.tr-frame main { min-height: 0; padding: 12px; }
+.tr-frame textarea {
+  display: block; width: 100%; height: 100%; margin: 0; resize: none; border: 0; outline: none; -webkit-appearance: none; appearance: none;
+  padding: 14px 16px; border-radius: var(--r-sm);
+  background: var(--sunk); color: var(--text); box-shadow: var(--well);
+  /* The result is Roman, so the interface face comes first; Bengali glyphs (while typing / in the placeholder) fall back to a Bengali font */
+  font-family: var(--ui-bn-font);
+  font-size: clamp(20px, 2.6vw, 30px);         /* 16px+ stops iOS zooming in on focus */
+  line-height: 1.7; letter-spacing: 0; text-transform: none;
+}
+.tr-frame textarea:focus { box-shadow: var(--well), 0 0 0 1px var(--accent); }
+.tr-frame textarea::placeholder { color: var(--faint); opacity: 1; }
+.tr-frame textarea::selection { background: var(--accent-wash); }
+.tr-frame .nojs { margin: 0; padding: 16px; color: var(--bad); }
+
+/* ── no long-press callouts (iOS) except in the text area; see guard.js ── */
+.tr-frame { -webkit-touch-callout: none; }
+.tr-frame textarea { -webkit-touch-callout: default; }
+
+/* ── the text area's own menu: Copy and Paste only (built by guard.js) ── */
+.tr-frame .tr-menu {
+  position: fixed; left: 0; top: 0; z-index: 2147483600;          /* guard.js moves it with transform */
+  min-width: 11.5rem; max-width: 16rem; padding: 4px;
+  background: var(--pop); color: var(--text); border-radius: var(--r); box-shadow: var(--pop-shadow);
+  font: 500 .9rem/1.3 var(--font); user-select: none; -webkit-user-select: none;
+}
+.tr-frame .tr-menu-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 24px;
+  padding: 7px 10px; border-radius: var(--r-sm); cursor: default;
+}
+.tr-frame .tr-menu-item.active { background: var(--accent-wash); color: var(--text); }
+.tr-frame .tr-menu-item[aria-disabled="true"] { color: var(--faint); }
+.tr-frame .tr-menu-key { color: var(--muted); font-size: .78rem; font-weight: 400; }
+.tr-frame .tr-menu-item[aria-disabled="true"] .tr-menu-key { color: var(--faint); }
+.tr-frame .tr-menu-note { margin-top: 4px; padding: 7px 10px 5px; font-size: .78rem; font-weight: 400; line-height: 1.4; color: var(--warn); box-shadow: var(--groove-top); }
+
+/* ── thin scrollbars ── */
+.tr-frame textarea { scrollbar-width: thin; scrollbar-color: var(--scroll) transparent; }
+.tr-frame textarea::-webkit-scrollbar { width: 8px; }
+.tr-frame textarea::-webkit-scrollbar-track { background: transparent; }
+.tr-frame textarea::-webkit-scrollbar-thumb { background: var(--scroll); border-radius: 2px; }
+
+/* ── small screens ── */
+@media (max-width: 640px) {
+  .tr-frame { padding-left: max(6px, env(safe-area-inset-left)); padding-right: max(6px, env(safe-area-inset-right)); }
+  .tr-frame-head { min-height: 36px; padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: 7px; }
+  .tr-frame .tr-appbar { padding: 7px 8px 9px 10px; gap: 8px; }
+  .tr-frame main { padding: 8px; }
+  .tr-frame-foot { padding-top: 7px; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tr-frame #ocr-btn, .tr-frame #status { transition: background-color .15s, color .15s; }
+  .tr-frame textarea { transition: box-shadow .15s; }
+}
