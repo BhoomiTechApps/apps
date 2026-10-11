@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GeoViewer</title>
+<style>html{background:#d8d5ce;color:#5b5953;font:14px/1.5 system-ui,sans-serif}body{margin:0;padding:24px}a{color:#8f600d}</style>
+</head>
+<body>
+<p>Opening GeoViewer…</p>
+<script>
+/* Any unknown address returns to the app: walk up the path until the folder
+   that holds manifest.webmanifest (the app's folder) is found. */
+(function () {
+    var parts = location.pathname.replace(/\/[^\/]*$/, '/').split('/').filter(Boolean);
+    function tryLevel(n) {
+        var dir = '/' + parts.slice(0, n).join('/') + (n ? '/' : '');
+        fetch(dir + 'manifest.webmanifest', { method: 'HEAD', cache: 'no-store' })
+            .then(function (r) { if (r.ok) location.replace(dir + 'index.html'); else throw 0; })
+            .catch(function () { if (n > 0) tryLevel(n - 1); else location.replace('/'); });
+    }
+    tryLevel(parts.length);
+})();
+</script>
+</body>
+</html>
