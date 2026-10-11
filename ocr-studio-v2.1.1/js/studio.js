@@ -9,7 +9,7 @@
 ( function () {
 	'use strict';
 
-	const APP_VERSION = typeof OCR_STUDIO_VERSION !== 'undefined' ? OCR_STUDIO_VERSION : '2.1.1';
+	const APP_VERSION = typeof OCR_STUDIO_VERSION !== 'undefined' ? OCR_STUDIO_VERSION : '2.3.0';
 	const ENGINE_LABEL = 'Tesseract 5 LSTM (tesseract.js 5.1.1, tessdata 4.0.0 best_int)';
 	const abs = p => new URL( p, location.href ).href;
 	const TESS_PATHS = {
@@ -479,6 +479,9 @@
 		showToast( 'Recording kept with this page. It is included in the bundle and collection.' );
 		updateTextStatus();
 	};
+
+	// File name base for the current page (used by the machine voice in voice.js).
+	window.currentBaseName = () => baseName( state.result ? state.result.page : currentPageNo() );
 
 	window.downloadAudio = function () {
 		if ( state.audio ) download( state.audio.blob, baseName( state.audio.page ) + '_reading.wav' );
