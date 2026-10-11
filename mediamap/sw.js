@@ -27,6 +27,7 @@ const SHELL = [
     'js/store.js',
     'js/zip.js',
     'js/media.js',
+    'js/streetview.js',
     'js/coords.js',
     'js/pdf.js',
     'js/layers.js',

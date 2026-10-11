@@ -246,6 +246,7 @@ The app itself never uploads anything. It only contacts outside services in thes
 - **Map tiles:** `tile.openstreetmap.org` by default. For heavy use, switch to your own or a commercial tile provider, as the OpenStreetMap tile usage policy asks.
 - **Place search and automatic place names:** `nominatim.openstreetmap.org`, limited to one request per second.
 - **Embedded players, linked images and linked PDFs:** only when you open a place that has a link.
+- **Google Street View:** `www.google.com`, only when you open a place or layer popup with a Street View link.
 - **Layers added from a web address:** downloaded once, then kept in `layers/`.
 
 ## Files
@@ -263,6 +264,7 @@ css/app.css
 js/app.js                UI, map, forms, import/export
 js/store.js              folder / app storage, mediamap.json and settings.json read-write
 js/media.js              media-type detection, embeds, EXIF GPS, photo resizing
+js/streetview.js         Google Street View links: recognising them and building the viewer address
 js/coords.js             typed-coordinate parser (decimal, DMS, hemisphere letters)
 js/pdf.js                PDF preview and full-screen reader
 js/layers.js             GeoJSON layers: validation, styling, legend, layer panel
@@ -276,6 +278,25 @@ icons/
 ```
 
 ## Changelog
+
+### 1.7.0
+
+**Google Street View**
+
+- Street View links are shown as a 360° view you can look around in, both on places (the link of a place) and in
+  GeoJSON layer popups. Each view has **Full screen** (the lightbox, nearly the whole screen) and **Open in Google
+  Maps**, and keeps the heading and tilt of the original link.
+- Understood: links copied from Google Maps (`/maps/@lat,lng,3a,…/data=…!1s<panorama>…`), Maps URLs
+  (`/maps/@?api=1&map_action=pano&viewpoint=…`), older `?layer=c&cbll=…` links, Street View "Embed a map" addresses
+  and Maps Embed API addresses, on any Google country domain.
+- In popups, a field can also hold the `<iframe>` embed code copied from Google Maps, or several links in one value
+  (for example Google My Maps' `gx_media_links`); each Street View link in it gets its own view.
+- When adding a place, the link hint says "Looks like Google Street View", and the place is typed as a photo.
+  Short `maps.app.goo.gl` links can't be read in the browser: the hint explains how to get the full address.
+- **Settings → Google Street View:** an optional Maps Embed API key, saved on this device only. Links with a
+  panorama ID (anything copied from Google Maps) never need it. Links with only a location use Google's older
+  keyless viewer, or the Embed API when a key is set.
+
 
 ### 1.6.2
 
