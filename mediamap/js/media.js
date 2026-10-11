@@ -1,4 +1,6 @@
 /** Media helpers: type detection, embeds, EXIF GPS, photo resizing. */
+import { parseStreetView, streetViewSrc } from './streetview.js';
+export { setStreetViewKey, findStreetViews } from './streetview.js';
 
 // "domain" or "domain/path-prefix"; matched on whole host names only,
 // so "x.com" never matches netflix.com.
@@ -50,6 +52,7 @@ function hostMatches( host, path, entry ) {
 export function typeFromUrl( s ) {
     const u = parseUrl( s );
     if ( ! u ) return '';
+    if ( isStreetView( s ) ) return 'image';      // a 360° view of the place
     const ext = extOf( u.pathname );
     for ( const t of KINDS ) if ( EXT[ t ].includes( ext ) ) return t;
     const host = u.hostname.toLowerCase().replace( /^www\./, '' );
@@ -71,8 +74,16 @@ export function typeFromFile( mime, name ) {
 
 export const isPdf = ( mime, name ) => mime === 'application/pdf' || extOf( name ) === 'pdf';
 
+/** True for a Google Street View link that can be shown in the app. */
+export function isStreetView( s ) {
+    return !! streetViewSrc( parseStreetView( s ) );
+}
+
 /** How an external URL can be shown inline, or null (link only). */
 export function embedFor( s ) {
+    const sv = parseStreetView( s );
+    const svSrc = streetViewSrc( sv );
+    if ( svSrc ) return { kind: 'iframe', src: svSrc, ratio: '4/3', streetview: true, open: sv.open };
     const u = parseUrl( s );
     if ( ! u ) return null;
     const host = u.hostname.toLowerCase().replace( /^www\.|^m\./, '' );

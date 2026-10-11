@@ -51,17 +51,19 @@ const DEFAULTS = {
     shrinkPhotos: true,
     author: '',
     maxTiles: 3000,
+    svKey: '',
 };
 /*
  * Settings come from two places:
  *  - settings.json in the data folder: the basemap, pin grouping, photo
  *    shrinking and the last map view (S.FOLDER_SETTING_KEYS). Each folder
  *    keeps its own, so every map opens with the background it was made with.
- *  - this device (localStorage): your name and the offline tile limit.
+ *  - this device (localStorage): your name, the offline tile limit and the Street View key.
  * localStorage also keeps the last-used folder settings, which a folder
  * without a settings.json (new, or made by an older version) starts from.
  */
 let settings = loadSettings();
+M.setStreetViewKey( settings.svKey );
 function loadSettings() {
     let s = {};
     try { s = JSON.parse( localStorage.getItem( 'mediamap_settings' ) || '{}' ) || {}; } catch {}
@@ -638,7 +640,7 @@ async function renderMedia( box, e ) {
     const emb = M.embedFor( e.url );
     if ( ! emb ) { box.remove(); return; }
     if ( ! navigator.onLine ) {
-        box.innerHTML = `<p class="notice">Connect to the internet to ${ emb.kind === 'pdf' ? 'view this document' : 'play this link' }.</p>`;
+        box.innerHTML = `<p class="notice">Connect to the internet to ${ emb.kind === 'pdf' ? 'view this document' : emb.streetview ? 'see Street View' : 'play this link' }.</p>`;
         return;
     }
     if ( emb.kind === 'pdf' ) {
@@ -654,6 +656,17 @@ async function renderMedia( box, e ) {
         } catch {
             box.remove();
         }
+        return;
+    }
+    if ( emb.streetview ) {
+        box.classList.add( 'is-sv' );
+        box.innerHTML = `<iframe src="${ esc( emb.src ) }" style="aspect-ratio:${ emb.ratio }" loading="lazy" title="Google Street View: ${ esc( e.place || 'this place' ) }"
+            allow="fullscreen; accelerometer; gyroscope" allowfullscreen
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <div class="sv-bar"><span class="sv-label">Google Street View</span>
+            <button type="button" class="btn" data-sv-full>Full screen</button>
+            <a class="btn" href="${ esc( emb.open ) }" target="_blank" rel="noopener noreferrer">Open in Google Maps</a></div>`;
+        $( '[data-sv-full]', box ).addEventListener( 'click', () => openLightbox( emb.src, `Google Street View: ${ e.place || 'this place' }`, 'iframe' ) );
         return;
     }
     if ( emb.kind === 'iframe' ) {
@@ -914,6 +927,7 @@ function openLightbox( src, alt, kind = 'image' ) {
     const kindName = kind === 'iframe' ? 'iframe' : [ 'video', 'audio', 'image' ].includes( kind ) ? kind : 'image';
     const tagName = kindName === 'image' ? 'img' : kindName;
     lightbox.dataset.kind = kindName;
+    lightbox.toggleAttribute( 'data-sv', kindName === 'iframe' && M.isStreetView( src ) );
     [ 'img', 'video', 'audio', 'iframe' ].forEach( tag => {
         const el = $( tag, lightbox );
         el.hidden = tag !== tagName;
@@ -1165,11 +1179,11 @@ function updateUrlHint() {
     const v = $( '[data-url]', f.el ).value.trim();
     const hint = $( '[data-url-hint]', f.el );
     hint.classList.remove( 'is-warn' );
-    if ( ! v ) { hint.textContent = 'YouTube, Vimeo, SoundCloud, Spotify, a direct media link or any web page.'; return; }
+    if ( ! v ) { hint.textContent = 'YouTube, Vimeo, SoundCloud, Spotify, Google Street View, a direct media link or any web page.'; return; }
     if ( ! M.parseUrl( v ) ) { hint.textContent = 'Links start with https:// or http://'; hint.classList.add( 'is-warn' ); return; }
     const t = M.typeFromUrl( v );
     const dup = state.index.entries.find( e => e.url === v && e.id !== f.id );
-    hint.textContent = ( t ? `Looks like ${ TYPES[ t ].label.toLowerCase() }.` : 'Saved as a link.' ) +
+    hint.textContent = ( M.isStreetView( v ) ? 'Looks like Google Street View: shown as a 360° view.' : t ? `Looks like ${ TYPES[ t ].label.toLowerCase() }.` : /^https?:\/\/(maps\.app\.goo\.gl|goo\.gl\/maps)\//i.test( v ) ? 'Saved as a link. For Street View, open this short link and copy the full address from the browser bar.' : 'Saved as a link.' ) +
         ( dup ? ` Already used for “${ dup.place || 'another place' }”.` : '' );
     if ( dup ) hint.classList.add( 'is-warn' );
 }
@@ -1515,6 +1529,17 @@ async function showSettings() {
         </div>
         </details>
 
+        <details class="set acc" data-acc="streetview" ${ accOpen( 'streetview' ) }>
+            <summary class="acc-head"><span class="acc-title">Google Street View</span><span class="acc-meta">${ settings.svKey ? 'Embed API key set' : 'No key needed' }</span>${ icon( 'chevron', 18 ) }</summary>
+            <div class="acc-body">
+            <p>Street View links on places and in layer popups are shown as a 360° view you can look around in. They load from Google, so they need a connection.</p>
+            <label class="lbl">Maps Embed API key (optional)
+                <input type="text" class="field" data-svkey autocomplete="off" autocapitalize="off" spellcheck="false" value="${ esc( settings.svKey ) }" placeholder="Leave empty to use the free viewer">
+                <small class="hint">Not needed for links copied from Google Maps, which include the panorama. Links with only a location use Google's older free viewer; if those stay blank, add a free Google Maps Embed API key (restrict it to this site's address in Google Cloud). Saved on this device only.</small>
+            </label>
+        </div>
+        </details>
+
         <details class="set acc" data-acc="device" ${ accOpen( 'device' ) }>
             <summary class="acc-head"><span class="acc-title">This device</span><span class="acc-meta">v${ APP_VERSION }</span>${ icon( 'chevron', 18 ) }</summary>
             <div class="acc-body">
@@ -1596,6 +1621,14 @@ async function showSettings() {
         settings.author = e.target.value.trim().slice( 0, 100 );
         saveSettings( 'author' );
         toast( settings.author ? `New places will show “${ settings.author }”.` : 'Your name was removed.' );
+    } );
+    $( '[data-svkey]', body ).addEventListener( 'change', e => {
+        settings.svKey = e.target.value.trim().slice( 0, 200 );
+        saveSettings( 'svKey' );
+        M.setStreetViewKey( settings.svKey );
+        const meta = $( '[data-acc="streetview"] .acc-meta', body );
+        if ( meta ) meta.textContent = settings.svKey ? 'Embed API key set' : 'No key needed';
+        toast( settings.svKey ? 'Street View key saved on this device.' : 'Street View key removed.' );
     } );
     $( '[data-print-map]', body ).addEventListener( 'click', () => state.reports.showPrint( showSettings ) );
     $( '[data-csv]', body ).addEventListener( 'click', () => state.reports.exportCSV() );

@@ -425,8 +425,26 @@ export function createLayers( ctx ) {
         const lightboxButton = `<button type="button" class="geo-pop-lightbox" data-lightbox-src="${ esc( emb.src ) }" data-lightbox-kind="${ esc( emb.kind ) }">Lightbox</button>`;
         if ( emb.kind === 'image' ) return `<div class="geo-pop-media geo-pop-image"><img src="${ esc( emb.src ) }" alt="" loading="lazy" referrerpolicy="no-referrer"><div class="geo-pop-media-actions">${ lightboxButton }<a class="geo-pop-open" href="${ esc( emb.src ) }" target="_blank" rel="noopener noreferrer">Open</a></div></div>`;
         if ( emb.kind === 'video' || emb.kind === 'audio' ) return `<div class="geo-pop-media geo-pop-${ emb.kind }"><${ emb.kind } controls playsinline preload="metadata" src="${ esc( emb.src ) }"></${ emb.kind }><div class="geo-pop-media-actions">${ lightboxButton }<a class="geo-pop-open" href="${ esc( emb.src ) }" target="_blank" rel="noopener noreferrer">Open</a></div></div>`;
+        if ( emb.streetview ) return svCell( emb.src, emb.open, key );
         if ( emb.kind === 'iframe' ) return `<div class="geo-pop-media geo-pop-embed"><iframe src="${ esc( emb.src ) }" loading="lazy" title="Embedded media" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin"></iframe><div class="geo-pop-media-actions">${ lightboxButton }<a class="geo-pop-open" href="${ esc( raw ) }" target="_blank" rel="noopener noreferrer">Open</a></div></div>`;
         return `<a href="${ esc( raw ) }" target="_blank" rel="noopener noreferrer">${ esc( raw ) }</a>`;
+    }
+
+    function svCell( src, open, key ) {
+        const lightboxButton = `<button type="button" class="geo-pop-lightbox" data-lightbox-src="${ esc( src ) }" data-lightbox-kind="iframe">Full screen</button>`;
+        return `<div class="geo-pop-media geo-pop-embed geo-pop-sv"><iframe src="${ esc( src ) }" loading="lazy" title="Google Street View${ key ? ': ' + esc( key ) : '' }" allow="fullscreen; accelerometer; gyroscope" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe><div class="geo-pop-media-actions">${ lightboxButton }<a class="geo-pop-open" href="${ esc( open ) }" target="_blank" rel="noopener noreferrer">Google Maps</a></div></div>`;
+    }
+
+    /** A value that isn't a single link: show its text, plus any Street View links or embed code inside it. */
+    function textCell( key, raw, display ) {
+        const svs = M.findStreetViews( raw );
+        if ( ! svs.length ) return `<div class="geo-pop-value">${ esc( display ) }</div>`;
+        const isEmbedCode = /^\s*<iframe\b/i.test( raw );
+        let text = raw;
+        for ( const sv of svs ) text = text.split( sv.url ).join( ' ' );
+        text = isEmbedCode ? '' : text.replace( /\s+/g, ' ' ).trim();
+        return ( text ? `<div class="geo-pop-value">${ esc( text.length > 300 ? text.slice( 0, 300 ) + '…' : text ) }</div>` : '' ) +
+            svs.slice( 0, 4 ).map( sv => svCell( sv.src, sv.open, key ) ).join( '' );
     }
 
     function popupHtml( meta, f ) {
@@ -437,7 +455,10 @@ export function createLayers( ctx ) {
             const value = p[ key ];
             const raw = typeof value === 'object' ? JSON.stringify( value ) : String( value );
             const display = raw.length > 300 ? raw.slice( 0, 300 ) + '…' : raw;
-            const cell = M.parseUrl( raw ) ? mediaCell( key, raw ) : `<div class="geo-pop-value">${ esc( display ) }</div>`;
+            const words = raw.trim().split( /\s+/ );
+            const cell = words.length > 1 && words.every( w => M.parseUrl( w ) )
+                ? words.slice( 0, 8 ).map( w => mediaCell( key, w ) ).join( '' )      // several links, e.g. Google My Maps "gx_media_links"
+                : M.parseUrl( raw ) && words.length === 1 ? mediaCell( key, raw ) : textCell( key, raw, display );
             return `<div class="geo-pop-field">${ cell }</div>`;
         } ).join( '' );
         const hiddenCount = popupFields( meta, f ).filter( field => ! field.visible && field.key !== titleKey ).length;
