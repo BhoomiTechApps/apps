@@ -1,0 +1,6 @@
+{
+  "voices": [
+    { "id": "ben-syspin-f", "name": "Bengali female (SYSPIN)" },
+    { "id": "ben-mms", "name": "Bengali (Meta MMS)" }
+  ]
+}
