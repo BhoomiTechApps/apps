@@ -3,5 +3,5 @@
  * so bumping it here is all a release needs: installed copies then offer "Update now". */
 ( function ( g ) {
     'use strict';
-    g.APP_VERSION = '1.6.7';
+    g.APP_VERSION = '1.7.0';
 }( typeof self !== 'undefined' ? self : this ) );
