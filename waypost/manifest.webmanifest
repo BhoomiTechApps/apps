@@ -2,7 +2,7 @@
   "name": "Waypost",
   "short_name": "Waypost",
   "description": "Build your own map of places and tracks, plan routes on them and replay the journey.",
-  "id": "./",
+  "id": "/apps/waypost/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
