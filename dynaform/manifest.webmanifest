@@ -2,7 +2,7 @@
   "name": "DynaForm PDF",
   "short_name": "DynaForm",
   "description": "Build survey forms and collect responses offline. Each submission becomes a PDF on the respondent's device, and the organiser can gather the PDFs into a table on their own device. Nothing is uploaded.",
-  "id": "./",
+  "id": "/apps/dynaform/",
   "start_url": "./#/",
   "scope": "./",
   "display": "standalone",
