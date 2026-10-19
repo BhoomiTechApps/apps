@@ -2,7 +2,7 @@
   "name": "LexiPic — Heritage Language Archive",
   "short_name": "LexiPic",
   "description": "Record photo, voice, native script and Roman transliteration for heritage language words. Works offline.",
-  "id": "./",
+  "id": "/apps/lexipic/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
