@@ -1,0 +1,79 @@
+:root {
+  --bg: #111418; --panel: #1b2027; --text: #e8ecf1; --muted: #8a94a3;
+  --accent: #3d8bfd; --rec: #ff3b30; --border: #2a313b;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+main { max-width: 820px; margin: 0 auto; padding: 12px 16px 32px; }
+.viewer { position: relative; background: #000; border-radius: 12px; overflow: hidden; aspect-ratio: 16 / 9; }
+video, #live { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
+video[hidden], #live[hidden] { display: none; }
+.rotate-hint {
+  position: absolute; top: 8px; left: 50%; transform: translateX(-50%); max-width: calc(100% - 16px);
+  padding: 4px 10px; border-radius: 999px; background: rgba(0,0,0,.6); color: #fff; font-size: 12px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+}
+.rotate-hint[hidden] { display: none; }
+/* Off-screen (not display:none) so mobile browsers keep decoding the camera feed. */
+.cam-source { position: fixed; left: -10000px; top: 0; width: 16px; height: 16px; opacity: 0; pointer-events: none; }
+.hud {
+  position: absolute; inset: auto 0 0 0; display: flex; justify-content: space-between; gap: 8px;
+  padding: 8px 12px; background: linear-gradient(transparent, rgba(0,0,0,.75));
+  font-variant-numeric: tabular-nums; font-size: 13px;
+}
+.dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #555; margin-right: 6px; vertical-align: middle; }
+.dot.on { background: var(--rec); animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: .3; } }
+.controls { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+select, button {
+  font: inherit; color: var(--text); background: var(--panel); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 14px; min-height: 44px;
+}
+button { cursor: pointer; }
+button:disabled { opacity: .45; cursor: default; }
+.controls { align-items: center; }
+.controls select { flex: 1; min-width: 0; }
+/* Camera / restart icon button */
+.icon-btn { width: 48px; height: 48px; padding: 0; display: inline-grid; place-items: center; border-radius: 50%; }
+.icon-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.icon-btn .i-camera path { fill: currentColor; stroke: none; }
+.icon-btn .i-restart { display: none; }
+.icon-btn[data-mode="restart"] .i-camera { display: none; }
+.icon-btn[data-mode="restart"] .i-restart { display: block; }
+/* Record / stop: white ring with a red dot that morphs into a square */
+.record-btn {
+  width: 64px; height: 64px; padding: 0; border-radius: 50%; flex: none;
+  background: transparent; border: 4px solid #fff; display: inline-grid; place-items: center;
+}
+.record-btn .rec-shape { width: 46px; height: 46px; border-radius: 50%; background: var(--rec); transition: all .18s ease; }
+.record-btn.recording .rec-shape { width: 24px; height: 24px; border-radius: 5px; }
+.record-btn:disabled { opacity: .35; }
+.record-btn:focus-visible, .icon-btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+#status { min-height: 1.4em; color: var(--muted); margin: 10px 0; }
+.rec-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+h2 { font-size: 17px; margin: 8px 0; }
+.muted { color: var(--muted); font-size: 13px; }
+ul { list-style: none; padding: 0; margin: 0; }
+li { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+li .title { font-weight: 600; }
+li .meta { color: var(--muted); font-size: 13px; margin: 2px 0 8px; }
+li .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+li .actions button { padding: 6px 12px; min-height: 36px; font-size: 14px; }
+li .actions .danger { color: #ff8a80; }
+.warn { color: #ffb74d; }
+.settings { margin-top: 12px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--border); border-radius: 10px; display: grid; gap: 8px; }
+.settings .check { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.settings .check input { width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--accent); flex: none; }
+.settings .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; color: var(--muted); font-size: 14px; }
+.settings .row select { min-height: 36px; padding: 4px 8px; }
+.settings .hint { margin: 0; color: var(--muted); font-size: 12.5px; }
+.settings code { color: var(--text); }
+.badge { font-size: 13px; margin: 0 0 12px; padding: 6px 10px; border-radius: 8px; background: var(--panel); border: 1px solid var(--border); color: var(--muted); }
+.badge.ok { color: #7ee2a8; border-color: #2f5a41; }
+.badge.bad { color: #ffb74d; border-color: #5a4a2f; }
+.gps-help { margin: -4px 0 10px; padding: 8px 10px; border-radius: 8px; background: #2a2416; border: 1px solid #5a4a2f; color: #ffcc80; font-size: 13px; }
+.gps-help[hidden] { display: none; }
