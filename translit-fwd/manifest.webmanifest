@@ -2,7 +2,7 @@
   "name": "Roman to Bengali Transliteration",
   "short_name": "Translit",
   "description": "Type in Roman letters and get Bengali script as you type. Works offline.",
-  "id": "./",
+  "id": "/apps/translit-fwd/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
