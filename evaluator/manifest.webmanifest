@@ -2,7 +2,7 @@
   "name": "Evaluator",
   "short_name": "Evaluator",
   "description": "Build sourced arguments for or against a claim, searching only sources you trust.",
-  "id": "./",
+  "id": "/apps/evaluator/",
   "start_url": "./#trace",
   "scope": "./",
   "display": "standalone",
