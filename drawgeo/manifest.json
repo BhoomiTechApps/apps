@@ -1,5 +1,5 @@
 {
-  "id": "./",
+  "id": "/apps/drawgeo/",
   "name": "DrawGeo",
   "short_name": "DrawGeo",
   "description": "Draw lines, areas and points on a map, record GPS walks, measure them and export them as GeoJSON or KML.",
