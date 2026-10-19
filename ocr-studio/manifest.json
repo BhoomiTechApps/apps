@@ -2,7 +2,7 @@
   "name": "OCR Studio",
   "short_name": "OCR Studio",
   "description": "Offline OCR for Eastern Nagari (Bengali–Assamese) and English printed text, with source details, corpus export and training data.",
-  "id": "./",
+  "id": "/apps/ocr-studio/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
