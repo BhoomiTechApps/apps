@@ -2,7 +2,7 @@
   "name": "Waypost Reporter",
   "short_name": "Reporter",
   "description": "Report an incident with GPS location and photo.",
-  "id": "./",
+  "id": "/apps/waypost-reporter/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
