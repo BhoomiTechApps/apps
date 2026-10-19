@@ -1,5 +1,5 @@
 {
-  "id": "./",
+  "id": "/apps/geotag/",
   "name": "GeoTag: Location & Photo Mapper",
   "short_name": "GeoTag",
   "description": "Capture site photos with GPS coordinates, keep them offline, and export them as photos, CSV, GeoJSON and KML.",
