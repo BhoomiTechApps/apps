@@ -2,7 +2,7 @@
   "name": "Bengali to Roman Transliteration",
   "short_name": "Bn to Roman",
   "description": "Type or paste Bengali script and get Roman letters. Works offline.",
-  "id": "./",
+  "id": "/apps/translit-rev/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
