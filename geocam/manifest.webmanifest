@@ -2,6 +2,7 @@
   "name": "GeoCam — Video + GPS Recorder",
   "short_name": "GeoCam",
   "description": "Record video with a synchronized GPS track, saved on your device.",
+  "id": "/apps/geocam/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
