@@ -1,5 +1,5 @@
 {
-  "id": "./",
+  "id": "/apps/geoviewer/",
   "name": "GeoViewer",
   "short_name": "GeoViewer",
   "description": "View, style and edit GeoJSON and KML maps: layers, colour by data, attribute tables, search, distance and area tools, printing, offline map areas and imagery comparison. Works offline.",
