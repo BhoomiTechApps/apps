@@ -543,6 +543,7 @@ async function bootUsbMode() {
     try {
         const settings = await getKioskSettingsFromUsb();
         setIdleTimeSeconds(settings.idle_time_seconds || 90);
+        OnScreenKeyboard.setEnabled(settings.on_screen_keyboard !== false);
 
         const layers = await getAllLayersFromUsb();
 
@@ -2049,8 +2050,9 @@ const SearchModule = (() => {
     }
 
     /** Back to a clean box and map: used by the clear button and the idle reset. */
-    function resetView() {
+    function resetView({ keepFocus = false } = {}) {
         if (!els) return;
+        if (!keepFocus && document.activeElement === els.input) els.input.blur(); // also hides the on-screen keyboard
         clearTimeout(worldTimer);
         if (worldAbort) { worldAbort.abort(); worldAbort = null; }
         worldSeq++;
@@ -2082,12 +2084,191 @@ const SearchModule = (() => {
             const row = e.target.closest('.search-row');
             if (row) choose(Number(row.dataset.i));
         });
-        els.clear.addEventListener('click', () => { resetView(); els.input.focus(); });
+        els.clear.addEventListener('pointerdown', e => e.preventDefault()); // keep focus (and the keyboard) in the box
+        els.clear.addEventListener('click', () => { resetView({ keepFocus: true }); els.input.focus(); OnScreenKeyboard.show(); });
         // Tapping the map or anywhere else closes the list (but keeps the text).
-        document.addEventListener('pointerdown', e => { if (!els.box.contains(e.target)) close(); }, true);
+        document.addEventListener('pointerdown', e => {
+            if (els.box.contains(e.target) || OnScreenKeyboard.contains(e.target)) return;
+            close();
+            // Touching the map (or anything else) also puts the keyboard away.
+            if (document.activeElement === els.input) els.input.blur();
+        }, true);
     }
 
     return { init, clearIndex, addPoint, addShape, resetView };
+})();
+
+// ---------------------------------------------------------------------------
+// 12c. ON-SCREEN KEYBOARD (for the search box)
+// ---------------------------------------------------------------------------
+// A kiosk usually has no physical keyboard, and the operating system's own
+// touch keyboard is unreliable (or absent) in a fullscreen kiosk browser.
+// Touching the search box opens this keyboard docked at the bottom of the
+// screen; the box gets inputmode="none" so the system keyboard stays away.
+// Keys type at the caret and fire the box's normal "input" event, so the
+// live search results update exactly as with a real keyboard. Keys never
+// take focus (pointerdown is cancelled), so the caret stays in the box.
+// The keyboard closes when a result is chosen, with its own hide key, when
+// the map is touched, and at the idle reset. Turn it off with
+// "on_screen_keyboard": false in settings.json's "kiosk" block (for a kiosk
+// with a real keyboard).
+const OnScreenKeyboard = (() => {
+    const LAYOUTS = {
+        letters: [
+            ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', { k: 'backspace', w: 1.5 }],
+            ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', { k: 'enter', w: 2 }],
+            ['z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '-'],
+            [{ k: 'layout:symbols', label: '?123', w: 1.5 }, { k: 'space', w: 6 }, { k: 'hide', w: 1.5 }],
+        ],
+        symbols: [
+            ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', { k: 'backspace', w: 1.5 }],
+            ['@', '#', '&', '(', ')', '/', "'", '"', ':', { k: 'enter', w: 2 }],
+            ['+', '=', '_', '?', '!', ';', '°', ',', '.', '-'],
+            [{ k: 'layout:letters', label: 'ABC', w: 1.5 }, { k: 'space', w: 6 }, { k: 'hide', w: 1.5 }],
+        ],
+    };
+    const ICONS = { backspace: 'backspace', enter: 'search', hide: 'keyboard_hide' };
+    const LABELS = { backspace: 'Delete', enter: 'Search', hide: 'Hide keyboard', space: 'Space' };
+
+    let el = null, input = null, layout = 'letters', enabled = true, repeatTimer = null, repeatDelay = null;
+
+    function build() {
+        el = document.createElement('div');
+        el.id = 'osk';
+        el.className = 'osk';
+        el.setAttribute('role', 'group');
+        el.setAttribute('aria-label', 'On-screen keyboard');
+        el.hidden = true;
+        document.getElementById('kiosk-root').appendChild(el);
+        render();
+        // Keep focus (and the caret) in the search box whatever is touched on the keyboard.
+        el.addEventListener('pointerdown', onPointerDown);
+        ['pointerup', 'pointercancel', 'pointerleave'].forEach(t => el.addEventListener(t, stopRepeat));
+        el.addEventListener('contextmenu', e => e.preventDefault());
+    }
+
+    function render() {
+        el.innerHTML = LAYOUTS[layout].map(row => `<div class="osk-row">${row.map(keyHtml).join('')}</div>`).join('');
+        updateCase();
+    }
+
+    function keyHtml(key) {
+        const k = typeof key === 'string' ? { k: key } : key;
+        const special = k.k.length > 1;
+        const icon = ICONS[k.k];
+        const label = k.label || (icon ? `<span class="material-icons">${icon}</span>` : k.k === 'space' ? '' : escHtml(k.k));
+        const cls = ['osk-key', special ? 'osk-special' : '', k.k === 'enter' ? 'osk-enter' : '', k.k === 'space' ? 'osk-space' : ''].filter(Boolean).join(' ');
+        const aria = LABELS[k.k] || (k.label ? (k.label === 'ABC' ? 'Letters' : 'Numbers and symbols') : k.k);
+        return `<button type="button" tabindex="-1" class="${cls}" data-key="${escHtml(k.k)}" style="flex-grow:${k.w || 1}" aria-label="${escHtml(aria)}">${label}</button>`;
+    }
+
+    // Capitals at the start and after a space, so place names read naturally (the search ignores case anyway).
+    function capitalNext() {
+        if (!input) return false;
+        const before = input.value.slice(0, input.selectionStart ?? input.value.length);
+        return before === '' || /[\s(\-/]$/.test(before);
+    }
+
+    function updateCase() {
+        if (!el || layout !== 'letters') return;
+        const upper = capitalNext();
+        el.querySelectorAll('.osk-key:not(.osk-special)').forEach(b => {
+            const k = b.dataset.key;
+            if (/^[a-z]$/.test(k)) b.textContent = upper ? k.toUpperCase() : k;
+        });
+    }
+
+    function insert(text) {
+        const start = input.selectionStart ?? input.value.length;
+        const end = input.selectionEnd ?? start;
+        if (input.maxLength > 0 && input.value.length - (end - start) + text.length > input.maxLength) return;
+        input.setRangeText(text, start, end, 'end');
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function backspace() {
+        const start = input.selectionStart ?? input.value.length;
+        const end = input.selectionEnd ?? start;
+        if (start === end && start === 0) return;
+        input.setRangeText('', start === end ? start - 1 : start, end, 'end');
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+
+    function press(k) {
+        handleUserActivity();
+        if (navigator.vibrate) { try { navigator.vibrate(8); } catch (e) { /* not allowed */ } }
+        if (k === 'backspace') backspace();
+        else if (k === 'space') insert(' ');
+        else if (k === 'enter') input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+        else if (k === 'hide') hide();
+        else if (k.startsWith('layout:')) { layout = k.slice(7); render(); }
+        else insert(layout === 'letters' && capitalNext() ? k.toUpperCase() : k);
+        updateCase();
+    }
+
+    function onPointerDown(e) {
+        e.preventDefault(); // no focus change, no text selection, no double-tap zoom
+        const btn = e.target.closest('.osk-key');
+        if (!btn || !input) return;
+        btn.classList.add('pressed');
+        setTimeout(() => btn.classList.remove('pressed'), 120);
+        const k = btn.dataset.key;
+        if (document.activeElement !== input) input.focus({ preventScroll: true });
+        press(k);
+        // Hold Delete to keep deleting.
+        if (k === 'backspace') {
+            stopRepeat();
+            repeatDelay = setTimeout(() => { repeatTimer = setInterval(() => press('backspace'), 70); }, 450);
+        }
+    }
+
+    function stopRepeat() {
+        clearTimeout(repeatDelay); clearInterval(repeatTimer);
+        repeatDelay = repeatTimer = null;
+    }
+
+    function show() {
+        if (!enabled || !el || !el.hidden) return;
+        el.hidden = false;
+        document.documentElement.style.setProperty('--osk-h', el.offsetHeight + 'px');
+        document.documentElement.classList.add('osk-open');
+        updateCase();
+    }
+
+    function hide() {
+        stopRepeat();
+        if (!el || el.hidden) return;
+        el.hidden = true;
+        document.documentElement.style.setProperty('--osk-h', '0px');
+        document.documentElement.classList.remove('osk-open');
+        if (layout !== 'letters') { layout = 'letters'; render(); }
+    }
+
+    function setEnabled(on) {
+        enabled = !!on;
+        if (!input) return;
+        // inputmode="none" keeps the system's touch keyboard from opening as well.
+        if (enabled) input.setAttribute('inputmode', 'none');
+        else { input.removeAttribute('inputmode'); hide(); }
+    }
+
+    function contains(node) { return !!(el && node && el.contains(node)); }
+
+    function init() {
+        input = document.getElementById('kiosk-search-input');
+        if (!input) return;
+        build();
+        setEnabled(enabled);
+        input.addEventListener('focus', show);
+        input.addEventListener('pointerdown', show);   // already focused but the keyboard was hidden
+        input.addEventListener('blur', hide);
+        ['input', 'click', 'keyup', 'select'].forEach(t => input.addEventListener(t, updateCase));
+        window.addEventListener('resize', () => {
+            if (el && !el.hidden) document.documentElement.style.setProperty('--osk-h', el.offsetHeight + 'px');
+        });
+    }
+
+    return { init, show, hide, setEnabled, contains };
 })();
 
 // ---------------------------------------------------------------------------
@@ -2296,5 +2477,6 @@ if ('serviceWorker' in navigator) {
 
 window.addEventListener('DOMContentLoaded', () => {
     SearchModule.init();
+    OnScreenKeyboard.init();
     restoreAndBoot();
 });
