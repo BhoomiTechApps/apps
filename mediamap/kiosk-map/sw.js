@@ -13,7 +13,8 @@
 // want to intercept or cache a kiosk page being displayed from someone
 // else's site.
 
-const CACHE_NAME = 'mediamap-kiosk-v5'; // v5: PDF viewer fits to width; install no longer fails the whole shell on one bad URL
+const CACHE_NAME = 'mediamap-kiosk-v6'; // v6: header search (loaded data, then Nominatim); zoom out to world level
+// v5: PDF viewer fits to width; install no longer fails the whole shell on one bad URL
 
 const APP_SHELL = [
     './',

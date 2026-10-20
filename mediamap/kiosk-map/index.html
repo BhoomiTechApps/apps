@@ -150,6 +150,19 @@
           <p>Kiosk</p>
         </div>
       </div>
+      <!-- Search: places in the loaded data first, then OpenStreetMap
+           Nominatim when nothing on the map matches (see SearchModule). -->
+      <div class="header-search" id="kiosk-search" role="search">
+        <span class="material-icons search-icon" aria-hidden="true">search</span>
+        <input id="kiosk-search-input" type="search" autocomplete="off" autocapitalize="off"
+               spellcheck="false" enterkeyhint="search" placeholder="Search places"
+               role="combobox" aria-autocomplete="list" aria-expanded="false"
+               aria-controls="kiosk-search-results" aria-label="Search places on this map or anywhere">
+        <button type="button" id="kiosk-search-clear" class="search-clear" aria-label="Clear search" hidden>
+          <span class="material-icons">close</span>
+        </button>
+        <div id="kiosk-search-results" class="search-results" role="listbox" aria-label="Search results" hidden></div>
+      </div>
     </div>
   </header>
 

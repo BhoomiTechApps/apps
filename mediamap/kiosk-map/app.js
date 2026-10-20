@@ -1483,6 +1483,7 @@ function startKioskHeartbeat() {
             // mirroring how the sibling LexiPic Kiosk PWA returns to its
             // sets grid on idle.
             closeLightbox();
+            SearchModule.resetView();
             fitMapToActiveLayers();
             lastActivityTime = Date.now();
         }
@@ -1498,11 +1499,26 @@ function stopKioskHeartbeat() {
 // ---------------------------------------------------------------------------
 const KIOSK_HOME_VIEW = { center: [26.1805, 91.7539], zoom: 8 };
 
+// Zooming out always goes as far as the whole world: the smallest zoom at
+// which the world's width still fills the map (zoom 2 on a 1366px-wide
+// screen, 1 on a phone). Panning stops at the poles instead of showing grey.
+const WORLD_BOUNDS = L.latLngBounds([-85.06, -1080], [85.06, 1080]);
+function worldMinZoom() {
+    const w = (document.getElementById('map') || {}).clientWidth || window.innerWidth || 1024;
+    return Math.max(0, Math.floor(Math.log2(w / 256)));
+}
+
 function initMap() {
     if (mapInitialized) return;
     mapInitialized = true;
 
-    map = L.map('map', { zoomControl: false, tap: false }).setView(KIOSK_HOME_VIEW.center, KIOSK_HOME_VIEW.zoom);
+    map = L.map('map', {
+        zoomControl: false,
+        tap: false,
+        minZoom: worldMinZoom(),
+        maxBounds: WORLD_BOUNDS,
+        maxBoundsViscosity: 1,
+    }).setView(KIOSK_HOME_VIEW.center, KIOSK_HOME_VIEW.zoom);
     L.control.zoom({ position: 'topright' }).addTo(map);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -1526,7 +1542,7 @@ function initMapResizeHandling() {
 
     if ('ResizeObserver' in window && mapEl) {
         const resizeObserver = new ResizeObserver(() => {
-            if (map) map.invalidateSize();
+            if (map) { map.invalidateSize(); map.setMinZoom(worldMinZoom()); }
         });
         resizeObserver.observe(mapEl);
     }
@@ -1579,6 +1595,7 @@ function renderLayerOnMap(layer) {
             openLightbox(item);
         });
         pointsTarget.addLayer(marker);
+        SearchModule.addPoint(item, marker, pointsTarget, groupName);
     });
 
     if (points.length > 0) {
@@ -1588,6 +1605,7 @@ function renderLayerOnMap(layer) {
     const shapes = layer.shapes || [];
     if (shapes.length > 0) {
         const style = layer.shapeStyle || DEFAULT_SHAPE_STYLE;
+        const shapeRefs = [];
         const geoJsonLayer = L.geoJSON(shapes, {
             style: () => ({
                 color: style.lineColor,
@@ -1595,8 +1613,10 @@ function renderLayerOnMap(layer) {
                 fillColor: style.fillColor,
                 fillOpacity: style.fillOpacity,
             }),
+            onEachFeature: (feature, sublayer) => shapeRefs.push([feature, sublayer]),
         });
         layerGroup.addLayer(geoJsonLayer);
+        shapeRefs.forEach(([feature, sublayer]) => SearchModule.addShape(feature, sublayer, geoJsonLayer, groupName));
 
         if (style.label && style.label.trim()) {
             const labelPoint = findLargestShapeCenter(geoJsonLayer);
@@ -1650,6 +1670,7 @@ function findLargestShapeCenter(geoJsonLayer) {
 function redrawActiveLayersInOrder(layers) {
     Object.keys(mapLayers).forEach(key => map.removeLayer(mapLayers[key]));
     mapLayers = {};
+    SearchModule.clearIndex();
 
     const mapEmpty = document.getElementById('map-empty');
     const activeLayers = (layers || []).filter(l => l.active);
@@ -1677,9 +1698,9 @@ function setLockBoundsToData(enabled) {
 
 function fitMapToActiveLayers() {
     const groups = Object.values(mapLayers);
+    map.setMinZoom(worldMinZoom());
     if (groups.length === 0) {
-        map.setMaxBounds(null);
-        map.setMinZoom(0);
+        map.setMaxBounds(WORLD_BOUNDS);
         map.setView(KIOSK_HOME_VIEW.center, KIOSK_HOME_VIEW.zoom);
         return;
     }
@@ -1696,21 +1717,378 @@ function fitMapToActiveLayers() {
     if (bounds && bounds.isValid()) {
         map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
 
-        if (kioskLockBoundsToData) {
-            const padded = bounds.pad(0.5);
-            map.setMaxBounds(padded);
-            const computedMinZoom = map.getBoundsZoom(padded, true);
-            map.setMinZoom(Number.isFinite(computedMinZoom) && computedMinZoom > 0 ? computedMinZoom : 1);
-        } else {
-            map.setMaxBounds(null);
-            map.setMinZoom(0);
-        }
+        // "lock_bounds_to_data" keeps panning near the data; zooming out to
+        // the whole world is still allowed (the view then stays centred on
+        // the data). A search result elsewhere lifts it until the idle reset.
+        map.setMaxBounds(kioskLockBoundsToData ? bounds.pad(0.5) : WORLD_BOUNDS);
     } else {
-        map.setMaxBounds(null);
-        map.setMinZoom(0);
+        map.setMaxBounds(WORLD_BOUNDS);
         map.setView(KIOSK_HOME_VIEW.center, KIOSK_HOME_VIEW.zoom);
     }
 }
+
+// ---------------------------------------------------------------------------
+// 12b. SEARCH — the loaded data first, then OpenStreetMap Nominatim
+// ---------------------------------------------------------------------------
+// One box in the header. As the visitor types, places in the loaded layers
+// are matched straight away (point names and descriptions, and the text
+// properties of lines and areas, e.g. a district's "dtname"). Only when
+// nothing on the map matches is the query sent to Nominatim (debounced,
+// at most one request per second, as its usage policy asks). When the map
+// does have matches, a last row still offers "Search worldwide". Choosing a
+// result zooms and centres the map on it: a pin is unclustered and pulsed,
+// an area is fitted and outlined, a Nominatim place is fitted to its
+// bounding box and marked with a temporary pin. The idle reset clears it all.
+const SearchModule = (() => {
+    const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
+    const MAX_LOCAL = 8;
+    const MIN_WORLD_CHARS = 3;
+    const WORLD_DEBOUNCE_MS = 650;
+    const WORLD_MIN_GAP_MS = 1100;
+    const NAME_KEY = /^(place_?name|name|title|label)$/i;
+    const NAME_KEY_LOOSE = /(name|title|label)$/i;
+    const TYPE_ICONS = { video: 'videocam', audio: 'audiotrack', image: 'image', pdf: 'picture_as_pdf', text: 'description', streetview: 'streetview' };
+
+    let index = [];             // { name, hay, kind:'point'|'shape', layerName, type?, marker?, group?, latlng?, sublayer?, parent? }
+    let resultMarker = null;    // temporary pin for a Nominatim place
+    let highlight = null;       // { cleanup() } for the current pulse / outline
+    let results = [];           // what the list currently shows (selectable rows)
+    let active = -1;
+    let worldTimer = null, worldAbort = null, lastWorldAt = 0, worldSeq = 0;
+    const worldCache = new Map();
+    let els = null;
+
+    // Lower-case, single-spaced, Latin accents removed. Only the combining
+    // accents block is stripped, so Indic vowel signs (also "marks") stay.
+    const fold = s => String(s ?? '').normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+    // ---- index -------------------------------------------------------------
+    function clearIndex() { index = []; }
+
+    function addPoint(item, marker, group, layerName) {
+        index.push({
+            kind: 'point', name: item.place_name, layerName, type: item.media_type,
+            marker, group, latlng: marker.getLatLng(),
+            fname: fold(item.place_name), hay: fold(item.place_name + ' ' + (item.description || '')),
+        });
+    }
+
+    function shapeName(props) {
+        const keys = Object.keys(props || {});
+        const pick = test => keys.find(k => test(k) && typeof props[k] === 'string' && props[k].trim());
+        const k = pick(k => NAME_KEY.test(k)) || pick(k => NAME_KEY_LOOSE.test(k)) || pick(k => props[k].length <= 80);
+        return k ? props[k].trim() : '';
+    }
+
+    function addShape(feature, sublayer, parent, layerName) {
+        const props = feature.properties || {};
+        const name = shapeName(props);
+        if (!name) return;
+        const text = Object.values(props).filter(v => typeof v === 'string' && v.length <= 300).join(' ');
+        index.push({ kind: 'shape', name, layerName, sublayer, parent, fname: fold(name), hay: fold(name + ' ' + text) });
+    }
+
+    // ---- matching ----------------------------------------------------------
+    function searchLocal(query) {
+        const q = fold(query);
+        if (!q) return [];
+        const tokens = q.split(' ');
+        const out = [];
+        for (const e of index) {
+            if (!tokens.every(t => e.hay.includes(t))) continue;
+            let score = 10;
+            if (e.fname === q) score = 100;
+            else if (e.fname.startsWith(q)) score = 80;
+            else if ((' ' + e.fname).includes(' ' + q)) score = 60;
+            else if (e.fname.includes(q)) score = 40;
+            else if (tokens.every(t => e.fname.includes(t))) score = 30;
+            if (e.kind === 'point') score += 1; // a pin beats an area of the same name
+            out.push({ e, score });
+        }
+        out.sort((a, b) => b.score - a.score || a.e.name.localeCompare(b.e.name));
+        // The same pin can't appear twice; same-named areas from several features collapse to one row.
+        const seen = new Set();
+        return out.filter(({ e }) => {
+            const key = e.kind === 'shape' ? 's|' + e.layerName + '|' + e.fname : e;
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        }).slice(0, MAX_LOCAL).map(x => x.e);
+    }
+
+    async function searchWorld(query) {
+        const key = fold(query);
+        if (worldCache.has(key)) return worldCache.get(key);
+        // Nominatim asks for no more than one request per second.
+        const wait = lastWorldAt + WORLD_MIN_GAP_MS - Date.now();
+        if (wait > 0) await new Promise(r => setTimeout(r, wait));
+        if (worldAbort) worldAbort.abort();
+        worldAbort = new AbortController();
+        lastWorldAt = Date.now();
+        const params = new URLSearchParams({ q: query, format: 'jsonv2', limit: '6', addressdetails: '0' });
+        if (navigator.language) params.set('accept-language', navigator.language + ',en');
+        // Prefer places near the loaded data (a bias, not a limit).
+        const b = dataBounds();
+        if (b) params.set('viewbox', [b.getWest(), b.getNorth(), b.getEast(), b.getSouth()].map(n => n.toFixed(4)).join(','));
+        const res = await fetch(NOMINATIM_URL + '?' + params, { signal: worldAbort.signal, headers: { Accept: 'application/json' } });
+        if (!res.ok) throw new Error('Place search answered ' + res.status);
+        const list = (await res.json()).map(r => ({
+            kind: 'world',
+            name: r.name || String(r.display_name || '').split(',')[0],
+            sub: r.display_name || '',
+            lat: parseFloat(r.lat), lng: parseFloat(r.lon),
+            bbox: Array.isArray(r.boundingbox) ? r.boundingbox.map(Number) : null, // [south, north, west, east]
+        })).filter(r => Number.isFinite(r.lat) && Number.isFinite(r.lng));
+        worldCache.set(key, list);
+        return list;
+    }
+
+    function dataBounds() {
+        let bounds = null;
+        Object.values(mapLayers).forEach(g => {
+            try { const gb = g.getBounds(); if (gb && gb.isValid()) bounds = bounds ? bounds.extend(gb) : L.latLngBounds(gb.getSouthWest(), gb.getNorthEast()); } catch (e) { /* empty group */ }
+        });
+        return bounds;
+    }
+
+    // ---- list rendering ----------------------------------------------------
+    function rowHtml(r, i) {
+        let icon = 'place', color = '#4f46e5', sub = '';
+        if (r.kind === 'point') {
+            icon = TYPE_ICONS[r.type] || 'place';
+            color = (MarkerIconModule.TYPES[r.type] || MarkerIconModule.TYPES.text).color;
+            sub = `${MarkerIconModule.labelFor(r.type)} · ${r.layerName}`;
+        } else if (r.kind === 'shape') {
+            icon = 'layers'; sub = `Area · ${r.layerName}`;
+        } else if (r.kind === 'world') {
+            icon = 'public'; color = '#0f766e'; sub = r.sub;
+        } else if (r.kind === 'more') {
+            icon = 'public'; color = '#0f766e';
+        }
+        const label = r.kind === 'more' ? `Search worldwide for “${escHtml(r.query)}”` : escHtml(r.name);
+        return `<div class="search-row${i === active ? ' active' : ''}${r.kind === 'more' ? ' search-more' : ''}" role="option" id="search-opt-${i}" data-i="${i}" aria-selected="${i === active}">
+            <span class="material-icons" style="color:${color}">${icon}</span>
+            <span class="search-text"><span class="search-name">${label}</span>${sub ? `<span class="search-sub">${escHtml(sub)}</span>` : ''}</span>
+        </div>`;
+    }
+
+    function render({ local = [], world = null, status = '', query = '' }) {
+        const parts = [];
+        results = [];
+        if (local.length) {
+            parts.push('<div class="search-head">On this map</div>');
+            local.forEach(r => { parts.push(rowHtml(r, results.length)); results.push(r); });
+        }
+        if (world && world.length) {
+            parts.push('<div class="search-head">Places worldwide <span>OpenStreetMap</span></div>');
+            world.forEach(r => { parts.push(rowHtml(r, results.length)); results.push(r); });
+        }
+        if (status) parts.push(`<div class="search-status">${status}</div>`);
+        if (local.length && world === null && fold(query).length >= 2) {
+            const more = { kind: 'more', query };
+            parts.push(rowHtml(more, results.length)); results.push(more);
+        }
+        if (active >= results.length) active = results.length - 1;
+        els.list.innerHTML = parts.join('');
+        const open = parts.length > 0;
+        els.list.hidden = !open;
+        els.input.setAttribute('aria-expanded', String(open));
+        els.input.setAttribute('aria-activedescendant', active >= 0 ? 'search-opt-' + active : '');
+    }
+
+    function setActive(i) {
+        if (!results.length) return;
+        active = (i + results.length) % results.length;
+        els.list.querySelectorAll('.search-row').forEach(el => {
+            const on = Number(el.dataset.i) === active;
+            el.classList.toggle('active', on);
+            el.setAttribute('aria-selected', String(on));
+            if (on) el.scrollIntoView({ block: 'nearest' });
+        });
+        els.input.setAttribute('aria-activedescendant', 'search-opt-' + active);
+    }
+
+    // ---- searching ---------------------------------------------------------
+    function onInput() {
+        const query = els.input.value;
+        els.clear.hidden = !query;
+        active = -1;
+        clearTimeout(worldTimer);
+        if (worldAbort) { worldAbort.abort(); worldAbort = null; }
+        if (!fold(query)) { close(); return; }
+        const local = searchLocal(query);
+        if (local.length) { render({ local, query }); return; }
+        if (fold(query).length < MIN_WORLD_CHARS) {
+            render({ status: 'Nothing on this map matches. Keep typing to search places worldwide.' });
+            return;
+        }
+        render({ status: '<span class="material-icons spin">public</span> Nothing on this map matches. Searching places worldwide…' });
+        worldTimer = setTimeout(() => runWorld(query), WORLD_DEBOUNCE_MS);
+    }
+
+    async function runWorld(query, { pickFirst = false } = {}) {
+        const seq = ++worldSeq;
+        const local = searchLocal(query);
+        if (!navigator.onLine) {
+            render({ local, world: [], query, status: '<span class="material-icons">wifi_off</span> Searching places worldwide needs an internet connection.' });
+            return;
+        }
+        if (local.length) render({ local, world: [], query, status: '<span class="material-icons spin">public</span> Searching places worldwide…' });
+        try {
+            const world = await searchWorld(query);
+            if (seq !== worldSeq || els.input.value !== query) return; // superseded by newer typing
+            render({ local, world, query, status: world.length ? '' : `<span class="material-icons">search_off</span> No places found for “${escHtml(query)}”.` });
+            if (pickFirst && world.length) choose(local.length);
+        } catch (err) {
+            if (err && err.name === 'AbortError') return;
+            if (seq !== worldSeq) return;
+            render({ local, world: [], query, status: '<span class="material-icons">wifi_off</span> Place search isn’t available right now. Check the internet connection and try again.' });
+        }
+    }
+
+    // ---- going to a result -------------------------------------------------
+    function clearHighlight() {
+        if (highlight) { highlight.cleanup(); highlight = null; }
+    }
+
+    function clearResultMarker() {
+        if (resultMarker) { map.removeLayer(resultMarker); resultMarker = null; }
+    }
+
+    function pulseAt(latlng) {
+        const ring = L.marker(latlng, {
+            icon: L.divIcon({ className: 'search-pulse-icon', html: '<span class="search-pulse"></span>', iconSize: [64, 64], iconAnchor: [32, 32] }),
+            interactive: false, keyboard: false, zIndexOffset: -1000,
+        }).addTo(map);
+        const t = setTimeout(() => map.removeLayer(ring), 4500);
+        return { cleanup() { clearTimeout(t); map.removeLayer(ring); } };
+    }
+
+    // A search result may lie outside "lock_bounds_to_data"; lift the lock until the idle reset restores it.
+    function allowView(bounds) {
+        const mb = map.options.maxBounds;
+        if (mb && !mb.contains(bounds)) map.setMaxBounds(WORLD_BOUNDS);
+    }
+
+    function goPoint(r) {
+        const target = Math.max(map.getZoom(), 16);
+        map.setView(r.latlng, Math.min(target, map.getMaxZoom()), { animate: false });
+        const finish = () => {
+            map.panTo(r.latlng, { animate: false });
+            highlight = pulseAt(r.latlng);
+            if (r.marker.openTooltip) r.marker.openTooltip();
+        };
+        // In a cluster: zoom far enough to unbundle it (or spiderfy at max zoom).
+        if (r.group && typeof r.group.zoomToShowLayer === 'function' && r.group.hasLayer(r.marker)) r.group.zoomToShowLayer(r.marker, finish);
+        else finish();
+    }
+
+    function goShape(r) {
+        let b;
+        try { b = r.sublayer.getBounds(); } catch (e) { return; }
+        if (!b || !b.isValid()) return;
+        map.fitBounds(b, { padding: [40, 40], maxZoom: 16 });
+        if (r.sublayer.setStyle) {
+            r.sublayer.setStyle({ weight: 5, color: '#f59e0b', fillOpacity: Math.max(0.25, (r.sublayer.options.fillOpacity || 0)) });
+            if (r.sublayer.bringToFront) r.sublayer.bringToFront();
+            const t = setTimeout(() => restore(), 6000);
+            const restore = () => { clearTimeout(t); try { r.parent.resetStyle(r.sublayer); } catch (e) { /* layer gone */ } };
+            highlight = { cleanup: restore };
+        }
+    }
+
+    function goWorld(r) {
+        let b = null;
+        if (r.bbox && r.bbox.length === 4 && r.bbox.every(Number.isFinite)) b = L.latLngBounds([r.bbox[0], r.bbox[2]], [r.bbox[1], r.bbox[3]]);
+        const latlng = L.latLng(r.lat, r.lng);
+        allowView(b || L.latLngBounds(latlng, latlng));
+        if (b && b.isValid() && !b.getSouthWest().equals(b.getNorthEast())) map.fitBounds(b, { padding: [40, 40], maxZoom: 16 });
+        else map.setView(latlng, 15);
+        resultMarker = L.marker(latlng, {
+            icon: L.divIcon({ className: 'search-result-icon', html: '<span class="material-icons">location_on</span>', iconSize: [40, 40], iconAnchor: [20, 38] }),
+            interactive: false, keyboard: false, zIndexOffset: 1000,
+        }).bindTooltip(escHtml(r.name), { permanent: true, direction: 'top', offset: [0, -36], className: 'search-result-label' }).addTo(map);
+    }
+
+    function choose(i) {
+        const r = results[i];
+        if (!r) return;
+        if (r.kind === 'more') {
+            clearTimeout(worldTimer);
+            runWorld(r.query);
+            return;
+        }
+        clearHighlight();
+        clearResultMarker();
+        els.input.value = r.name;
+        els.clear.hidden = false;
+        close();
+        els.input.blur(); // put the on-screen keyboard away
+        if (r.kind === 'point') goPoint(r);
+        else if (r.kind === 'shape') goShape(r);
+        else goWorld(r);
+    }
+
+    function submit() {
+        if (active >= 0) { choose(active); return; }
+        const query = els.input.value;
+        if (!fold(query)) return;
+        const local = searchLocal(query);
+        if (local.length) { results = local; choose(0); return; }
+        clearTimeout(worldTimer);
+        runWorld(query, { pickFirst: true });
+    }
+
+    function close() {
+        active = -1;
+        results = [];
+        els.list.hidden = true;
+        els.list.innerHTML = '';
+        els.input.setAttribute('aria-expanded', 'false');
+        els.input.removeAttribute('aria-activedescendant');
+    }
+
+    /** Back to a clean box and map: used by the clear button and the idle reset. */
+    function resetView() {
+        if (!els) return;
+        clearTimeout(worldTimer);
+        if (worldAbort) { worldAbort.abort(); worldAbort = null; }
+        worldSeq++;
+        els.input.value = '';
+        els.clear.hidden = true;
+        close();
+        clearHighlight();
+        clearResultMarker();
+    }
+
+    function init() {
+        els = {
+            box: document.getElementById('kiosk-search'),
+            input: document.getElementById('kiosk-search-input'),
+            clear: document.getElementById('kiosk-search-clear'),
+            list: document.getElementById('kiosk-search-results'),
+        };
+        if (!els.input) { els = null; return; }
+        els.input.addEventListener('input', onInput);
+        els.input.addEventListener('focus', () => { if (els.input.value && els.list.hidden) onInput(); });
+        els.input.addEventListener('keydown', e => {
+            if (e.key === 'ArrowDown') { e.preventDefault(); setActive(active + 1); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(active - 1); }
+            else if (e.key === 'Enter') { e.preventDefault(); submit(); }
+            else if (e.key === 'Escape') { if (els.list.hidden) resetView(); else close(); }
+        });
+        els.list.addEventListener('pointerdown', e => e.preventDefault()); // keep focus in the box while tapping a row
+        els.list.addEventListener('click', e => {
+            const row = e.target.closest('.search-row');
+            if (row) choose(Number(row.dataset.i));
+        });
+        els.clear.addEventListener('click', () => { resetView(); els.input.focus(); });
+        // Tapping the map or anywhere else closes the list (but keeps the text).
+        document.addEventListener('pointerdown', e => { if (!els.box.contains(e.target)) close(); }, true);
+    }
+
+    return { init, clearIndex, addPoint, addShape, resetView };
+})();
 
 // ---------------------------------------------------------------------------
 // 13. LIGHTBOX
@@ -1917,5 +2295,6 @@ if ('serviceWorker' in navigator) {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    SearchModule.init();
     restoreAndBoot();
 });
