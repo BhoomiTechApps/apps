@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+<title>BhoomiTech Apps</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#d8d5ce">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: BhoomiTech stone frame. Grooved header band (brand + category chips) → search toolbar → app grid on raised plates → credit footer.
+   Tokens follow the shared BhoomiTech app frame (stone #d8d5ce, amber accent, Onest). */
+:root{
+  --bg:#d8d5ce; --surface:#e8e6e0; --hover:#f8f7f3; --sunk:#cfccc4; --fg:#232427; --muted:#5b5953; --line:rgba(0,0,0,.09);
+  --cut:#b9b5ac; --lip:rgba(255,255,255,.85);
+  --accent:#d9a441; --accent-fg:#1b1407; --accent-text:#8f600d; --accent-soft:rgba(217,164,65,.14); --danger:#ad4334;
+  --plate:inset 0 1px 0 rgba(255,255,255,.95), 0 1px 1px rgba(0,0,0,.09), 0 0 0 1px rgba(0,0,0,.045);
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .055 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --display:"Onest", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Bengali", sans-serif;
+  --body:var(--display);
+  --mono:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1d1e20; --surface:#232427; --hover:#323338; --sunk:#18191b; --fg:#e8e6e0; --muted:#a09f9a; --line:rgba(255,255,255,.07);
+  --cut:#121315; --lip:rgba(255,255,255,.065);
+  --accent:#d9a441; --accent-fg:#1b1407; --accent-text:#e5b556; --accent-soft:rgba(217,164,65,.16); --danger:#e0877b;
+  --plate:inset 0 1px 0 rgba(255,255,255,.045), 0 1px 1px rgba(0,0,0,.35);
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1d1e20; --surface:#232427; --hover:#323338; --sunk:#18191b; --fg:#e8e6e0; --muted:#a09f9a; --line:rgba(255,255,255,.07);
+  --cut:#121315; --lip:rgba(255,255,255,.065);
+  --accent:#d9a441; --accent-fg:#1b1407; --accent-text:#e5b556; --accent-soft:rgba(217,164,65,.16); --danger:#e0877b;
+  --plate:inset 0 1px 0 rgba(255,255,255,.045), 0 1px 1px rgba(0,0,0,.35);
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.5 var(--body);min-height:100%;display:flex;flex-direction:column}
+header.site,footer.site,.app{background-color:var(--surface);background-image:var(--grain)}
+.wrap{max-width:1180px;margin:0 auto;width:100%;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:inherit}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* Header */
+header.site{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;box-shadow:inset 0 -1px 0 var(--lip), inset 0 -2px 0 var(--cut)}
+header.site .wrap{display:flex;align-items:center;gap:16px;padding-block:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none;margin-right:auto}
+.logo{width:44px;height:44px;border-radius:11px;background:var(--accent);color:var(--accent-fg);display:grid;place-items:center;font:700 17px/1 var(--display);flex:none;overflow:hidden}
+.logo img{width:100%;height:100%;object-fit:cover}
+.brand h1{font:700 1.3rem/1.1 var(--display);margin:0;letter-spacing:-.015em;text-wrap:balance}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:.85rem}
+/* Toolbar */
+main{flex:1}
+.toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding-block:22px 14px}
+.search{flex:1 1 260px;display:flex;align-items:center;gap:8px;background:var(--hover);box-shadow:inset 0 1px 2px rgba(0,0,0,.12), 0 0 0 1px var(--line);border-radius:9px;padding:0 12px}
+.search input{border:0;background:transparent;padding:10px 0;width:100%;outline:none}
+.count{font:500 .8rem var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.header-chips{justify-content:flex-end;margin-left:auto}
+.chip{border:1px solid var(--cut);background:transparent;border-radius:99px;padding:4px 11px;font-size:.82rem;cursor:pointer;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}
+/* Grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;padding-block:6px 40px}
+.app{box-shadow:var(--plate);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px;text-decoration:none;min-width:0;transition:box-shadow .15s,transform .15s}
+.app:hover{transform:translateY(-2px);box-shadow:var(--plate),0 0 0 2px var(--accent),0 8px 20px rgba(0,0,0,.12)}
+.app-top{display:flex;gap:12px;align-items:center;min-width:0}
+.icon{width:52px;height:52px;border-radius:13px;background:var(--accent-soft);display:grid;place-items:center;font-size:24px;flex:none;overflow:hidden}
+.icon img{width:100%;height:100%;object-fit:cover}
+.app h3{margin:0;font:700 1.05rem/1.2 var(--display);overflow-wrap:anywhere}
+.tag{font:600 .7rem var(--body);text-transform:uppercase;letter-spacing:.08em;color:var(--accent-text)}
+.app p{margin:0;color:var(--muted);font-size:.9rem;flex:1}
+.path{font:.74rem var(--mono);color:var(--muted);border-top:1px solid var(--line);padding-top:9px;display:flex;justify-content:space-between;gap:8px;min-width:0}
+.path span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.empty{grid-column:1/-1;text-align:center;padding:48px 16px;color:var(--muted);border:1px dashed var(--line);border-radius:var(--r)}
+
+/* Footer */
+footer.site{box-shadow:inset 0 1px 0 var(--cut), inset 0 2px 0 var(--lip);font-size:.88rem;color:var(--muted)}
+footer.site .wrap{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:center;justify-content:space-between;padding-block:20px}
+footer.site nav{display:flex;gap:16px;flex-wrap:wrap}
+footer.site a{text-decoration:none;font-weight:500}
+footer.site a{display:inline-flex;align-items:center;gap:6px}
+footer.site .gh{color:var(--muted);opacity:.85;flex:none}
+footer.site a:hover{color:var(--accent-text)}
+footer.site a:hover .gh{color:var(--accent-text);opacity:1}
+footer.site strong{color:var(--fg);font-weight:600}
+
+@media (max-width:640px){ .header-chips{width:100%;justify-content:flex-start;margin-left:0} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="site">
+  <div class="wrap">
+    <a class="brand" id="brand" href="#top">
+      <div class="logo" id="logo"></div>
+      <div style="min-width:0"><h1 id="title"></h1><p id="tagline"></p></div>
+    </a>
+    <div class="chips header-chips" id="chips" role="group" aria-label="Filter by category"></div>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap">
+    <div class="toolbar">
+      <label class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Search apps" aria-label="Search apps">
+      </label>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</main>
+
+<footer class="site"><div class="wrap"><span id="ftext"></span><nav id="flinks" aria-label="Footer"></nav></div></footer>
+
+<script>
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+const EXAMPLE = {
+  "title": "BhoomiTech Apps",
+  "tagline": "Offline web apps for mapping, language and heritage work",
+  "logo": {
+    "type": "image",
+    "text": "BT",
+    "src": "logo_color_trnsparent_background.png"
+  },
+  "footer": {
+    "text": "Web apps developed by Shankar Sinha for BhoomiTech Heritage and Development Foundation under CDEP",
+    "links": [
+      {
+        "label": "GitHub",
+        "url": "https://github.com/bhoomitechapps"
+      }
+    ]
+  },
+  "repo": {
+    "owner": "bhoomitechapps",
+    "name": "apps",
+    "branch": "main",
+    "path": ""
+  },
+  "example": false,
+  "apps": [
+    {
+      "id": "geoviewer",
+      "name": "GeoViewer",
+      "url": "https://bhoomitechapps.github.io/apps/geoviewer/",
+      "icon": "https://bhoomitechapps.github.io/apps/geoviewer/assets/img/icon-192.png",
+      "tag": "Maps",
+      "desc": "View, style and edit GeoJSON and KML maps: layers, colour by data, attribute tables, distance and area tools, offline map areas."
+    },
+    {
+      "id": "drawgeo",
+      "name": "DrawGeo",
+      "url": "https://bhoomitechapps.github.io/apps/drawgeo/",
+      "icon": "https://bhoomitechapps.github.io/apps/drawgeo/icon-192.png",
+      "tag": "Maps",
+      "desc": "Draw lines, areas and points on a map, record GPS walks, measure them and export as GeoJSON or KML."
+    },
+    {
+      "id": "geotag",
+      "name": "GeoTag",
+      "url": "https://bhoomitechapps.github.io/apps/geotag/",
+      "icon": "https://bhoomitechapps.github.io/apps/geotag/icon-192.png",
+      "tag": "Maps",
+      "desc": "Capture site photos with GPS coordinates, keep them offline, and export as photos, CSV, GeoJSON and KML."
+    },
+    {
+      "id": "mediamap",
+      "name": "Media Map",
+      "url": "https://bhoomitechapps.github.io/apps/mediamap/",
+      "icon": "https://bhoomitechapps.github.io/apps/mediamap/icons/icon-192.png",
+      "tag": "Maps",
+      "desc": "Pin photos, video, audio, documents and notes to places, with your own map layers. Everything stays on your device."
+    },
+    {
+      "id": "lexipic",
+      "name": "LexiPic",
+      "url": "https://bhoomitechapps.github.io/apps/lexipic/",
+      "icon": "https://bhoomitechapps.github.io/apps/lexipic/icons/icon-192.png",
+      "tag": "Heritage",
+      "desc": "Heritage language archive: record photo, voice, native script and Roman transliteration for each word."
+    },
+    {
+      "id": "geneamap",
+      "name": "GeneaMap",
+      "url": "https://bhoomitechapps.github.io/apps/geneamap/",
+      "icon": "https://bhoomitechapps.github.io/apps/geneamap/icon-192.png",
+      "tag": "Heritage",
+      "desc": "Build and explore family trees visually, with photos, your community’s kinship terms and GEDCOM."
+    },
+    {
+      "id": "ocr-studio",
+      "name": "OCR Studio",
+      "url": "https://bhoomitechapps.github.io/apps/ocr-studio/",
+      "icon": "https://bhoomitechapps.github.io/apps/ocr-studio/icon-192.png",
+      "tag": "Language",
+      "desc": "Offline OCR for Eastern Nagari (Bengali–Assamese) and English printed text, with corpus export."
+    },
+    {
+      "id": "translit-fwd",
+      "name": "Roman → Eastern Nagari",
+      "url": "https://bhoomitechapps.github.io/apps/translit-fwd/",
+      "icon": "https://bhoomitechapps.github.io/apps/translit-fwd/icons/icon-192.png",
+      "tag": "Language",
+      "desc": "Type in Roman letters and get Assamese / Bengali script as you type."
+    },
+    {
+      "id": "translit-rev",
+      "name": "Eastern Nagari → Roman",
+      "url": "https://bhoomitechapps.github.io/apps/translit-rev/",
+      "icon": "https://bhoomitechapps.github.io/apps/translit-rev/icons/icon-192.png",
+      "tag": "Language",
+      "desc": "Type or paste Assamese / Bengali script and get Roman letters."
+    },
+    {
+      "id": "dynaform",
+      "name": "DynaForm PDF",
+      "url": "https://bhoomitechapps.github.io/apps/dynaform/",
+      "icon": "https://bhoomitechapps.github.io/apps/dynaform/icons/icon-192.png",
+      "tag": "Forms & Research",
+      "desc": "Build survey forms and collect responses offline. Each submission becomes a PDF; gather them into one table."
+    },
+    {
+      "id": "evaluator",
+      "name": "Evaluator",
+      "url": "https://bhoomitechapps.github.io/apps/evaluator/",
+      "icon": "https://bhoomitechapps.github.io/apps/evaluator/icons/icon-192.png",
+      "tag": "Forms & Research",
+      "desc": "Build sourced arguments for or against a claim, searching only sources you trust."
+    },
+    {
+      "id": "geocam",
+      "name": "GeoCam",
+      "url": "https://bhoomitechapps.github.io/apps/geocam/",
+      "icon": "https://bhoomitechapps.github.io/apps/geocam/icon-192.png",
+      "tag": "Maps",
+      "desc": "Record video with GPS track live. Supported Mobile Netwrok as support" 
+    },
+    {
+      "id": "waypost",
+      "name": "WayPost",
+      "url": "https://bhoomitechapps.github.io/apps/waypost/",
+      "icon": "https://bhoomitechapps.github.io/apps/waypost/assets/img/icon-192.png",
+      "tag": "Maps",
+      "desc": "Route builder and animation with media stops. Integrated with video street video synchronization"
+    },
+    {
+      "id": "waypost-reporter",
+      "name": "Waypost Reporter",
+      "url": "https://bhoomitechapps.github.io/apps/waypost-reporter/",
+      "icon": "https://bhoomitechapps.github.io/apps/waypost-reporter/icon-192.png",
+      "tag": "Maps",
+      "desc": "Submit live loction reports to display and manage with waypost."
+    }
+  ]
+};
+
+let cfg, tagFilter = 'All';
+
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function safeUrl(u){ u = String(u||'').trim(); return /^(https?:\/\/|#|\.?\/|[\w-]+\/)/i.test(u) && !/^javascript:/i.test(u) ? u : '#'; }
+function isExternal(u){ return /^https?:/i.test(u); }
+function iconHTML(v){ return /^(data:image|https?:\/\/)|\.(png|svg|jpe?g|webp|ico)$/i.test(v||'') ? `<img src="${esc(v)}" alt="" onerror="this.parentNode.textContent='📱'">` : esc(v || '📱'); }
+function shortPath(u){ try { const x = new URL(u); return x.host + x.pathname; } catch(e){ return u; } }
+
+/* ---------- Render dashboard ---------- */
+function renderChrome(){
+  document.title = cfg.title || 'BhoomiTech Apps';
+  document.getElementById('title').textContent = cfg.title;
+  document.getElementById('tagline').textContent = cfg.tagline;
+  document.getElementById('tagline').hidden = !cfg.tagline;
+  const lg = document.getElementById('logo');
+  lg.innerHTML = cfg.logo.type === 'image' && cfg.logo.src ? `<img src="${esc(cfg.logo.src)}" alt="">` : esc(cfg.logo.text || '');
+  document.getElementById('ftext').textContent = cfg.footer.text;
+  document.getElementById('flinks').innerHTML = cfg.footer.links.filter(m=>m.label).map(m =>
+    `<a href="${esc(safeUrl(m.url))}" ${isExternal(m.url)?'target="_blank" rel="noopener"':''}>${/^https?:\/\/(www\.)?github\.com\//i.test(m.url)?GH_MARK:''}${esc(m.label)}</a>`).join('');
+}
+const GH_MARK = '<svg class="gh" viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>';
+function renderGrid(){
+  const q = document.getElementById('q').value.trim().toLowerCase();
+  const tags = ['All', ...new Set(cfg.apps.map(a => a.tag).filter(Boolean))];
+  if (!tags.includes(tagFilter)) tagFilter = 'All';
+  document.getElementById('chips').innerHTML = tags.length > 2 ? tags.map(t =>
+    `<button class="chip" type="button" data-tag="${esc(t)}" aria-pressed="${t===tagFilter}">${esc(t)}</button>`).join('') : '';
+  const list = cfg.apps.filter(a => (tagFilter==='All' || a.tag===tagFilter) &&
+    (!q || [a.name,a.desc,a.tag].join(' ').toLowerCase().includes(q)));
+  document.getElementById('count').textContent = `${list.length} of ${cfg.apps.length} apps`;
+  const grid = document.getElementById('grid');
+  if (!cfg.apps.length){ grid.innerHTML = `<div class="empty">No apps to show yet.</div>`; return; }
+  if (!list.length){ grid.innerHTML = `<div class="empty">No apps match “${esc(q || tagFilter)}”.</div>`; return; }
+  grid.innerHTML = list.map(a => `
+    <a class="app" href="${esc(safeUrl(a.url))}" target="_blank" rel="noopener">
+      <div class="app-top"><div class="icon">${iconHTML(a.icon)}</div>
+        <div style="min-width:0">${a.tag?`<div class="tag">${esc(a.tag)}</div>`:''}<h3>${esc(a.name)}</h3></div></div>
+      ${a.desc?`<p>${esc(a.desc)}</p>`:'<p></p>'}
+      <div class="path"><span>${esc(shortPath(a.url))}</span><span aria-hidden="true">↗</span></div>
+    </a>`).join('');
+}
+function render(){ renderChrome(); renderGrid(); }
+
+function normalize(c){
+  const e = structuredClone(EXAMPLE);
+  return {
+    title: c.title ?? e.title, tagline: c.tagline ?? '',
+    logo: { type: c.logo?.type === 'image' ? 'image' : 'text', text: c.logo?.text ?? '', src: c.logo?.src ?? '' },
+    footer: { text: c.footer?.text ?? '', links: Array.isArray(c.footer?.links) ? c.footer.links : [] },
+    repo: { owner:'', name:'', branch:'main', path:'', ...(c.repo||{}) }, example: !!c.example,
+    apps: (Array.isArray(c.apps) ? c.apps : []).map(a => ({ id: a.id || uid(), name: a.name||'', url: a.url||'', icon: absIcon(a.icon||'📱', c.repo), tag: a.tag||'', desc: a.desc||'' }))
+  };
+}
+/* Icon paths like "drawgeo/icon-192.png" only work when this page sits next to the app folders.
+   Resolve them against the repo's GitHub Pages address so they load from anywhere, including localhost. */
+function absIcon(icon, repo){
+  if (!/\.(png|svg|jpe?g|webp|ico)$/i.test(icon) || /^(data:|https?:\/\/)/i.test(icon) || !repo?.owner || !repo?.name) return icon;
+  const base = repo.name.toLowerCase() === `${repo.owner.toLowerCase()}.github.io` ? '' : `${repo.name}/`;
+  const root = `https://${repo.owner}.github.io/${base}${repo.path ? repo.path.replace(/\/$/,'') + '/' : ''}`;
+  try { return new URL(icon.replace(/^\//,''), root).href; } catch(e){ return icon; }
+}
+
+/* ---------- Events ---------- */
+document.getElementById('q').addEventListener('input', renderGrid);
+document.getElementById('chips').addEventListener('click', e => { const b = e.target.closest('[data-tag]'); if (b){ tagFilter = b.dataset.tag; renderGrid(); } });
+
+/* Boot: use a dashboard.json published beside the page if present; otherwise the built-in list */
+cfg = normalize(EXAMPLE); render();
+(async () => {
+  try { const r = await fetch('dashboard.json', { cache: 'no-store' }); if (r.ok){ cfg = normalize(await r.json()); render(); } } catch(e){}
+})();
+</script>
+
+</html>
