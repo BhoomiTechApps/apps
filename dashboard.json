@@ -160,6 +160,14 @@
       "icon": "https://bhoomitechapps.github.io/apps/guide-tracker/icon-192gt.png",
       "tag": "Maps",
       "desc": "Get live route guidance over phone from Guide Track online guides over phone."
-    }
+    },
+	{
+      "id": "recorder",
+      "name": "Remote Interview",
+      "url": "https://bhoomitechfoundation.org/recorder/",
+      "icon": "https://bhoomitechapps.github.io/apps/recorder/icon-192.png",
+      "tag": "Heritage",
+      "desc": "Record high quality live remote interviews, even in places with poor network."
+    }  
   ]
 }
