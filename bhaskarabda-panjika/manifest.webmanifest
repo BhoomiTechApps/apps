@@ -1,0 +1,28 @@
+{
+  "name": "Bhaskarabda Panjika",
+  "short_name": "Panjika",
+  "description": "Bhaskarabda calendar with tithis, Bihus, festivals and your own events.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#d8d5ce",
+  "theme_color": "#d8d5ce",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
