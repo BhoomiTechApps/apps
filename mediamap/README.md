@@ -144,7 +144,13 @@ Every data folder has its own `settings.json`, so each map keeps its own backgro
 ## Features
 
 - **Map:** Leaflet with grouped pins, colour-coded by kind (photo, video, audio, note). The tile server is configurable per data folder (saved in its `settings.json`). Any basemap address is accepted: XYZ (`{z}/{x}/{y}`, `{s}`), TMS (`{-y}`), Bing-style quadkeys (`{q}`), WMTS names (`{TileMatrix}/{TileRow}/{TileCol}`), bounding-box templates (`{bbox-epsg-3857}`), plain WMS or WMTS service addresses, and ArcGIS MapServer links. `http://` and scheme-less addresses are allowed too, and unknown placeholders are left as they are.
-- **Adding places:** tap the map, search for a place (OpenStreetMap Nominatim), use your GPS location, or let a geotagged photo place itself.
+- **Adding places:** tap the map, search, use your GPS location, or let a geotagged photo place itself.
+- **Search:** the place search in the add/edit form and the search box in the places list look in three places, and always show the results in this order:
+  1. **Your places** (the loaded points): name, description, link, file name, notes, attachments and author. Name matches come first.
+  2. **Map layers that are switched on:** every property of every feature in the visible GeoJSON layers. Features whose title (the popup title, the label field, or a `name`/`title` property) matches come before matches in other fields. Hidden layers are not searched.
+  3. **OpenStreetMap** (Nominatim), from 3 letters and only when online, preferring places near the part of the map on screen.
+
+  In the form, choosing a result moves the pin there and names the place after it; for a line or an area the pin goes to its middle. In the places list, a layer result zooms to the feature, outlines it briefly and opens its popup, and an OpenStreetMap result shows a marker with **Add a place here**. Your places and map layers are searched offline too.
 - **Typed coordinates:** enter a location as decimal degrees (`26.1445, 91.7362`) or degrees/minutes/seconds (`26°08′40″N 91°44′10″E`). Hemisphere letters are understood, and longitude-first pairs are detected and swapped.
 - **Media:** attach a photo, video, audio file or PDF from the device, which is copied into `media/`. Large photos are shrunk to 2560 px unless you turn that off.
 - **PDF documents:** the place shows a preview of the first page plus the page count. **Open document** opens a full-screen reader with page navigation, zoom and download. PDF links on the web get the same preview when the website allows it. The reader is bundled PDF.js, so it works offline.
@@ -210,7 +216,7 @@ mediamap-kiosk-data/
 {
   "backupFormatVersion": 1,
   "exportedAt": "2026-10-20T10:15:00.000Z",
-  "generator": "Media Map 1.8.0",
+  "generator": "Media Map 1.9.0",
   "kiosk": { "idle_time_seconds": 90, "lock_bounds_to_data": false },
   "layers": [
     { "file": "2026-09-27_ward-boundaries.geojson", "name": "Ward boundaries", "type": "shape", "enabled": true,
@@ -291,7 +297,7 @@ On browsers without folder support, export a backup regularly. You can also use 
 The app itself never uploads anything. It only contacts outside services in these cases:
 
 - **Map tiles:** `tile.openstreetmap.org` by default. For heavy use, switch to your own or a commercial tile provider, as the OpenStreetMap tile usage policy asks.
-- **Place search and automatic place names:** `nominatim.openstreetmap.org`, limited to one request per second.
+- **Place search and automatic place names:** `nominatim.openstreetmap.org`, limited to one request per second. Searches of your places and map layers stay on the device; only the text you type is sent to OpenStreetMap, together with the edges of the map on screen (to prefer nearby results).
 - **Embedded players, linked images and linked PDFs:** only when you open a place that has a link.
 - **Google Street View:** `www.google.com`, only when you open a place or layer popup with a Street View link.
 - **Layers added from a web address:** downloaded once, then kept in `layers/`.
@@ -326,6 +332,20 @@ icons/
 ```
 
 ## Changelog
+
+### 1.9.0
+
+**Search across your places, map layers and OpenStreetMap**
+
+- The place search in the add/edit form and the places-list search now look, in this order, in: 1. your places,
+  2. the GeoJSON map layers that are switched on (all feature properties), 3. OpenStreetMap (Nominatim). Results
+  are grouped under those headings.
+- Your places and layer features are found as you type, and offline; OpenStreetMap is asked from 3 letters, when
+  online, once you pause typing, and prefers places near the map on screen.
+- Matches on a name or title are listed before matches elsewhere in the text.
+- In the form, a layer result places the pin on the feature (the middle of a line, a point inside an area) and uses
+  its title as the place name. In the places list, a layer result zooms to the feature, outlines it and opens its
+  popup; an OpenStreetMap result shows a marker with **Add a place here**.
 
 ### 1.8.0
 

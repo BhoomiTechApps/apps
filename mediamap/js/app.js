@@ -983,7 +983,7 @@ function showForm( entry = null, prefill = {} ) {
                 <legend>Location</legend>
                 <p class="loc-status" data-loc aria-live="polite"></p>
                 <div class="loc-row">
-                    <input type="search" class="field" data-q placeholder="Search for a place" aria-label="Search for a place" autocomplete="off">
+                    <input type="search" class="field" data-q placeholder="Search your places, map layers, OpenStreetMap" aria-label="Search your places, map layers and OpenStreetMap" autocomplete="off">
                     <button type="button" class="btn" data-here>Use my location</button>
                 </div>
                 <ul class="results" data-results hidden></ul>
@@ -1064,12 +1064,12 @@ function showForm( entry = null, prefill = {} ) {
         updateFileName();
     } );
     $( '[data-url]', body ).addEventListener( 'input', debounce( updateUrlHint, 250 ) );
-    $( '[data-q]', body ).addEventListener( 'input', debounce( placeSearch, 600 ) );
+    $( '[data-q]', body ).addEventListener( 'input', debounce( () => placeSearch(), 150 ) );
     const coordsEl = $( '[data-coords]', body );
     coordsEl.addEventListener( 'input', () => { f.coordsTyped = true; } );
     coordsEl.addEventListener( 'keydown', ev => { if ( ev.key === 'Enter' ) { ev.preventDefault(); applyTypedCoords(); } } );
     $( '[data-coords-set]', body ).addEventListener( 'click', applyTypedCoords );
-    $( '[data-q]', body ).addEventListener( 'keydown', ev => { if ( ev.key === 'Enter' ) { ev.preventDefault(); placeSearch(); } } );
+    $( '[data-q]', body ).addEventListener( 'keydown', ev => { if ( ev.key === 'Enter' ) { ev.preventDefault(); placeSearch( { now: true } ); } } );
     form.addEventListener( 'submit', ev => { ev.preventDefault(); saveForm(); } );
     if ( prefill.url ) { f.dirty = true; updateUrlHint(); }
 }
@@ -1272,30 +1272,173 @@ async function nominatim( path, params ) {
 }
 const shortName = s => String( s || '' ).split( ',' ).slice( 0, 3 ).map( x => x.trim() ).join( ', ' );
 
-async function placeSearch() {
+/* ------------------------------------------------------------------ */
+/* Search, in this order: 1. your places, 2. the map layers that are   */
+/* switched on, 3. OpenStreetMap (Nominatim, online only)              */
+/* ------------------------------------------------------------------ */
+const WEB_MIN = 3;   // characters before OpenStreetMap is asked
+const entryText = e => ( e.place + '\n' + e.description + '\n' + e.url + '\n' + ( e.file ? e.file.name : '' ) + '\n' + e.notes.map( n => n.text ).join( '\n' ) + '\n' + e.attachments.map( a => a.name + ' ' + ( a.form ? a.form.name : '' ) ).join( '\n' ) + '\n' + e.author ).toLowerCase();
+
+/** Your places that match, best name matches first, then newest. */
+function searchEntries( query, { limit = Infinity, except = null } = {} ) {
+    const q = query.trim().toLowerCase();
+    if ( ! q ) return [];
+    const rankOf = e => {
+        const p = ( e.place || '' ).toLowerCase();
+        if ( p === q ) return 0;
+        if ( p.startsWith( q ) ) return 1;
+        if ( p.split( /[\s,.;:()\-/]+/ ).some( w => w.startsWith( q ) ) ) return 2;
+        if ( p.includes( q ) ) return 3;
+        return entryText( e ).includes( q ) ? 4 : -1;
+    };
+    return state.index.entries
+        .filter( e => e.id !== except )
+        .map( e => ( { e, r: rankOf( e ) } ) )
+        .filter( x => x.r >= 0 )
+        .sort( ( a, b ) => a.r - b.r || b.e.created.localeCompare( a.e.created ) )
+        .slice( 0, limit )
+        .map( x => x.e );
+}
+
+const searchLayers = ( q, limit ) => ( state.layers ? state.layers.search( q, limit ) : [] );
+const hasActiveLayers = () => ( state.index.layers || [] ).some( l => l.visible );
+const KIND_LABEL = { point: 'Point', line: 'Line', area: 'Area', feature: 'Feature' };
+
+/** OpenStreetMap search, nudged towards the part of the map on screen. */
+function searchWeb( q, limit = 5 ) {
+    const params = { q, limit };
+    const map = state.map;
+    if ( map && map.getZoom() >= 5 ) {
+        const b = map.getBounds();
+        const r = n => n.toFixed( 2 );
+        const clamp = ( n, lo, hi ) => Math.min( hi, Math.max( lo, n ) );
+        params.viewbox = [ r( clamp( b.getWest(), -180, 180 ) ), r( clamp( b.getNorth(), -90, 90 ) ), r( clamp( b.getEast(), -180, 180 ) ), r( clamp( b.getSouth(), -90, 90 ) ) ].join( ',' );
+    }
+    return nominatim( 'search', params );
+}
+
+function fitTo( bounds, maxZoom = 17 ) {
+    const [ ox, oy ] = sheetOffset();
+    state.map.flyToBounds( bounds, { paddingTopLeft: [ 40, 40 ], paddingBottomRight: [ 40 + ox * 2, 40 + oy * 2 ], maxZoom, duration: 0.6 } );
+}
+
+/** Move the map to a layer feature: points are centred, lines and areas fitted. */
+function goToFeature( m, opts ) {
+    const at = state.layers.featureLatLng( m.feature );
+    if ( ! at ) return null;
+    const b = m.kind === 'point' ? null : state.layers.featureBounds( m.feature );
+    if ( b && ! b.getNorthEast().equals( b.getSouthWest() ) ) fitTo( b, 17 );
+    else focusOn( at.lat, at.lng, Math.max( state.map.getZoom(), 16 ) );
+    state.layers.showFeature( m, opts );
+    return at;
+}
+
+/** A temporary marker for an OpenStreetMap result, with "Add a place here". */
+let webHit = null;
+function showWebHit( r ) {
+    const lat = parseFloat( r.lat ), lng = parseFloat( r.lon );
+    if ( webHit ) { state.map.removeLayer( webHit ); webHit = null; }
+    const bb = ( r.boundingbox || [] ).map( Number );
+    if ( bb.length === 4 && bb.every( Number.isFinite ) && ( bb[ 1 ] - bb[ 0 ] > 0.002 || bb[ 3 ] - bb[ 2 ] > 0.002 ) ) fitTo( L.latLngBounds( [ bb[ 0 ], bb[ 2 ] ], [ bb[ 1 ], bb[ 3 ] ] ), 16 );
+    else focusOn( lat, lng, Math.max( state.map.getZoom(), 16 ) );
+    const name = shortName( r.display_name );
+    const div = document.createElement( 'div' );
+    div.className = 'web-pop';
+    div.innerHTML = `<p class="web-pop-title">${ esc( name ) }</p><p class="web-pop-sub">${ esc( r.display_name ) }</p>
+        <button type="button" class="btn btn-primary" data-add-here>Add a place here</button>`;
+    const hit = webHit = L.circleMarker( [ lat, lng ], { radius: 9, className: 'web-hit', interactive: true } ).addTo( state.map );
+    hit.bindPopup( div, { maxWidth: 280, className: 'geo-popup', autoPanPadding: [ 14, 60 ] } );
+    hit.on( 'popupclose', () => { if ( webHit === hit ) { state.map.removeLayer( hit ); webHit = null; } } );
+    $( '[data-add-here]', div ).addEventListener( 'click', () => {
+        state.map.closePopup();
+        if ( ! confirmLeave() ) return;
+        showForm( null, { lat, lng, place: name } );
+    } );
+    let done = false;
+    const open = () => { if ( done ) return; done = true; state.map.off( 'moveend', open ); if ( webHit === hit ) hit.openPopup(); };
+    state.map.once( 'moveend', open );
+    setTimeout( open, 1500 );
+}
+
+/* ---------- the search in the Add / Edit place form ---------- */
+function placeSearch( { now = false } = {} ) {
     const f = state.form;
     if ( ! f ) return;
     const q = $( '[data-q]', f.el ).value.trim();
     const ul = $( '[data-results]', f.el );
-    if ( q.length < 3 ) { ul.hidden = true; return; }
-    if ( ! navigator.onLine ) { ul.innerHTML = '<li class="muted">Place search needs an internet connection. Tap the map instead.</li>'; ul.hidden = false; return; }
-    ul.innerHTML = '<li class="muted">Searching…</li>';
-    ul.hidden = false;
+    if ( q.length < 2 ) { f.search = null; ul.hidden = true; return; }
+    const prevWeb = f.search && f.search.q === q ? f.search.web : null;
+    f.search = {
+        q,
+        entries: searchEntries( q, { limit: 5, except: f.id } ),
+        feats: searchLayers( q, 6 ),
+        web: prevWeb || ( q.length < WEB_MIN ? null : ! navigator.onLine ? { error: 'Needs an internet connection.' } : { loading: true } ),
+    };
+    renderPlaceResults();
+    if ( f.search.web && f.search.web.loading ) now ? formWebSearch() : formWebSearchSoon();
+}
+const formWebSearchSoon = debounce( () => formWebSearch(), 700 );
+async function formWebSearch() {
+    const f = state.form;
+    if ( ! f || ! f.search || ! f.search.web || ! f.search.web.loading ) return;
+    const s = f.search;
     try {
-        const rows = await nominatim( 'search', { q, limit: 6 } );
-        if ( state.form !== f ) return;
-        if ( ! rows.length ) { ul.innerHTML = '<li class="muted">No matching places.</li>'; return; }
-        ul.innerHTML = rows.map( ( r, i ) => `<li><button type="button" data-i="${ i }">${ esc( r.display_name ) }</button></li>` ).join( '' );
-        $$( 'button', ul ).forEach( b => b.addEventListener( 'click', () => {
-            const r = rows[ +b.dataset.i ];
-            $( '[data-place]', f.el ).value = shortName( r.display_name );
-            f.placeAuto = true;
-            ul.hidden = true;
-            setFormLocation( parseFloat( r.lat ), parseFloat( r.lon ), 'search' );
-        } ) );
+        const rows = await searchWeb( s.q, 5 );
+        s.web = { rows };
     } catch ( err ) {
-        if ( err.name !== 'AbortError' && state.form === f ) ul.innerHTML = `<li class="muted">${ esc( err.message ) }</li>`;
+        if ( err.name === 'AbortError' ) return;
+        s.web = { error: err.message };
     }
+    if ( state.form === f && f.search === s ) renderPlaceResults();
+}
+
+function renderPlaceResults() {
+    const f = state.form;
+    const ul = $( '[data-results]', f.el );
+    const s = f.search;
+    const head = t => `<li class="results-head">${ esc( t ) }</li>`;
+    const item = ( k, i, title, sub ) => `<li><button type="button" data-k="${ k }" data-i="${ i }"><span class="res-title">${ esc( title ) }</span>${ sub ? `<span class="res-sub">${ esc( sub ) }</span>` : '' }</button></li>`;
+    let html = '';
+    if ( s.entries.length ) html += head( 'Your places' ) + s.entries.map( ( e, i ) => item( 'e', i, e.place || 'Untitled place', `${ ( TYPES[ e.type ] || TYPES.text ).label }${ e.description ? ', ' + e.description.slice( 0, 80 ) : '' }` ) ).join( '' );
+    if ( s.feats.length ) html += head( 'Map layers' ) + s.feats.map( ( m, i ) => item( 'g', i, m.title || m.detail || `${ KIND_LABEL[ m.kind ] } in ${ m.layerName }`, [ `${ KIND_LABEL[ m.kind ] } in ${ m.layerName }`, m.title ? m.detail : '' ].filter( Boolean ).join( ', ' ) ) ).join( '' );
+    if ( s.web ) {
+        html += head( 'OpenStreetMap' );
+        if ( s.web.loading ) html += '<li class="muted">Searching…</li>';
+        else if ( s.web.error ) html += `<li class="muted">${ esc( s.web.error ) }</li>`;
+        else if ( ! s.web.rows.length ) html += '<li class="muted">No matching places.</li>';
+        else html += s.web.rows.map( ( r, i ) => item( 'w', i, shortName( r.display_name ), r.display_name ) ).join( '' );
+    }
+    if ( ! html ) html = `<li class="muted">No matches in your places${ hasActiveLayers() ? ' or map layers' : '' }. Type at least ${ WEB_MIN } letters to search OpenStreetMap.</li>`;
+    ul.innerHTML = html;
+    ul.hidden = false;
+    $$( 'button[data-k]', ul ).forEach( b => b.addEventListener( 'click', () => pickPlaceResult( b.dataset.k, +b.dataset.i ) ) );
+}
+
+function pickPlaceResult( k, i ) {
+    const f = state.form;
+    const s = f && f.search;
+    if ( ! s ) return;
+    const placeEl = $( '[data-place]', f.el );
+    // Picking a result names the place after it, as OpenStreetMap results always have.
+    const setName = name => { if ( name ) { placeEl.value = String( name ).slice( 0, 500 ); f.placeAuto = true; } };
+    if ( k === 'e' ) {
+        const e = s.entries[ i ];
+        setName( e.place );
+        setFormLocation( e.lat, e.lng, 'search' );
+    } else if ( k === 'g' ) {
+        const m = s.feats[ i ];
+        const at = state.layers.featureLatLng( m.feature );
+        if ( ! at ) return;
+        setName( m.title );
+        setFormLocation( at.lat, at.lng, 'search' );
+        state.layers.showFeature( m, { popup: false } );
+    } else {
+        const r = s.web.rows[ i ];
+        placeEl.value = shortName( r.display_name );
+        f.placeAuto = true;
+        setFormLocation( parseFloat( r.lat ), parseFloat( r.lon ), 'search' );
+    }
+    $( '[data-results]', f.el ).hidden = true;
 }
 
 async function reverseGeocode( lat, lng ) {
@@ -1340,10 +1483,11 @@ let listQuery = '';
 function showList() {
     if ( ! confirmLeave() ) return;
     const body = openSheet( 'list', 'Places', `
-        <input type="search" class="field" data-filter placeholder="Search places and notes" aria-label="Search places and notes" value="${ esc( listQuery ) }">
+        <input type="search" class="field" data-filter placeholder="Search places, notes, map layers, OpenStreetMap" aria-label="Search your places and notes, then map layers, then OpenStreetMap" value="${ esc( listQuery ) }">
         <p class="list-count" data-count aria-live="polite"></p>
         <ul class="entry-list" data-list></ul>` );
     selectMarker( null );
+    listWeb = { q: '' };   // ask again (answers are cached), so an interrupted search doesn't stay "Searching…"
     const input = $( '[data-filter]', body );
     input.addEventListener( 'input', debounce( () => { listQuery = input.value; renderListResults(); }, 120 ) );
     renderListResults();
@@ -1355,15 +1499,20 @@ function renderListResults() {
     if ( ! ul ) return;
     const q = listQuery.trim().toLowerCase();
     const all = [ ...state.index.entries ].sort( ( a, b ) => b.created.localeCompare( a.created ) );
-    const rows = q ? all.filter( e => ( e.place + '\n' + e.description + '\n' + e.url + '\n' + ( e.file ? e.file.name : '' ) + '\n' + e.notes.map( n => n.text ).join( '\n' ) + '\n' + e.attachments.map( a => a.name + ' ' + ( a.form ? a.form.name : '' ) ).join( '\n' ) + '\n' + e.author ).toLowerCase().includes( q ) ) : all;
+    // 1. your places (best name matches first), 2. map layers that are on, 3. OpenStreetMap
+    const rows = q ? searchEntries( q ) : all;
+    const feats = q ? searchLayers( q, 20 ) : [];
+    const webOn = q.length >= WEB_MIN;
     $( '[data-count]', body ).textContent = q
-        ? `${ plural( rows.length, 'match', 'matches' ) } of ${ plural( all.length, 'place', 'places' ) }`
+        ? `${ plural( rows.length, 'match', 'matches' ) } of ${ plural( all.length, 'place', 'places' ) }${ feats.length ? `, ${ plural( feats.length, 'map layer match', 'map layer matches' ) }${ feats.length === 20 ? ' (first 20)' : '' }` : '' }`
         : plural( all.length, 'place', 'places' );
-    if ( ! all.length ) {
+    if ( ! all.length && ! q ) {
         ul.innerHTML = '<li class="empty">No places yet. Use “Add a place”, then tap the map where it belongs.</li>';
         return;
     }
-    ul.innerHTML = rows.slice( 0, 500 ).map( e => {
+    const section = t => q ? `<li class="list-section">${ esc( t ) }</li>` : '';
+    let html = section( 'Your places' ) + ( q && ! rows.length ? '<li class="empty">No matching places.</li>' : '' );
+    html += rows.slice( 0, 500 ).map( e => {
         const t = TYPES[ e.type ] || TYPES.text;
         return `<li><button type="button" data-id="${ esc( e.id ) }">
             <span class="list-pin">${ pinSvg( e.type ) }</span>
@@ -1372,9 +1521,53 @@ function renderListResults() {
                 <span class="list-sub">${ esc( t.label ) }, ${ esc( fmtDate( e.created ) ) }${ e.author ? `, ${ esc( e.author ) }` : '' }${ e.notes.length ? `, ${ plural( e.notes.length, 'note', 'notes' ) }` : '' }${ e.attachments.length ? `, ${ plural( e.attachments.length, 'attachment', 'attachments' ) }` : '' }</span>
                 ${ e.description ? `<span class="list-desc">${ esc( e.description.slice( 0, 140 ) ) }</span>` : '' }
             </span></button></li>`;
-    } ).join( '' ) + ( rows.length > 500 ? `<li class="empty">Showing the newest 500. Search to narrow down.</li>` : '' );
+    } ).join( '' ) + ( rows.length > 500 ? `<li class="empty">Showing the ${ q ? 'first' : 'newest' } 500. Search to narrow down.</li>` : '' );
+
+    if ( q && hasActiveLayers() ) {
+        html += section( 'Map layers' ) + ( feats.length ? feats.map( ( m, i ) => `<li><button type="button" data-feat="${ i }">
+            <span class="list-pin list-glyph">${ icon( 'layers', 20 ) }</span>
+            <span class="list-text">
+                <span class="list-title">${ esc( m.title || m.detail || `${ KIND_LABEL[ m.kind ] } in ${ m.layerName }` ) }</span>
+                <span class="list-sub">${ esc( KIND_LABEL[ m.kind ] ) } in ${ esc( m.layerName ) }</span>
+                ${ m.title && m.detail ? `<span class="list-desc">${ esc( m.detail ) }</span>` : '' }
+            </span></button></li>` ).join( '' ) : '<li class="empty">No matches in the map layers that are on.</li>' );
+    }
+    if ( webOn ) {
+        const w = listWeb.q === q ? listWeb : null;
+        html += section( 'OpenStreetMap' );
+        if ( ! navigator.onLine ) html += '<li class="empty">Searching OpenStreetMap needs an internet connection.</li>';
+        else if ( ! w || w.loading ) html += '<li class="empty">Searching…</li>';
+        else if ( w.error ) html += `<li class="empty">${ esc( w.error ) }</li>`;
+        else if ( ! w.rows.length ) html += '<li class="empty">No matching places.</li>';
+        else html += w.rows.map( ( r, i ) => `<li><button type="button" data-web="${ i }">
+            <span class="list-pin list-glyph">${ icon( 'pin', 20 ) }</span>
+            <span class="list-text">
+                <span class="list-title">${ esc( shortName( r.display_name ) ) }</span>
+                <span class="list-sub">${ esc( r.display_name ) }</span>
+            </span></button></li>` ).join( '' );
+        if ( navigator.onLine && ( ! w ) ) { listWeb = { q, loading: true }; listWebSoon(); }
+    }
+    ul.innerHTML = html;
     $$( 'button[data-id]', ul ).forEach( b => b.addEventListener( 'click', () => showEntry( b.dataset.id, { fly: true, backTo: showList } ) ) );
+    $$( 'button[data-feat]', ul ).forEach( b => b.addEventListener( 'click', () => goToFeature( feats[ +b.dataset.feat ] ) ) );
+    $$( 'button[data-web]', ul ).forEach( b => b.addEventListener( 'click', () => {
+        const w = listWeb.q === q && listWeb.rows;
+        if ( w ) showWebHit( w[ +b.dataset.web ] );
+    } ) );
 }
+let listWeb = { q: '' };
+const listWebSoon = debounce( async () => {
+    const s = listWeb;
+    if ( ! s.loading || sheet.view !== 'list' ) return;
+    try {
+        s.rows = await searchWeb( s.q, 5 );
+    } catch ( err ) {
+        if ( err.name === 'AbortError' ) return;
+        s.error = err.message;
+    }
+    s.loading = false;
+    if ( listWeb === s && sheet.view === 'list' && listQuery.trim().toLowerCase() === s.q ) renderListResults();
+}, 700 );
 
 /* ------------------------------------------------------------------ */
 /* Settings                                                            */

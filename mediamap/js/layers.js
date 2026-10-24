@@ -941,6 +941,143 @@ export function createLayers( ctx ) {
         } );
     }
 
+    /* ---------- search (visible layers only) ---------- */
+    /** Lower-cased property text per feature, built on first search and rebuilt when the file changes. */
+    function searchText( item ) {
+        if ( item.searchKey === item.fileKey && item.searchRows ) return item.searchRows;
+        item.searchRows = item.fc.features.map( f => {
+            const p = f.properties || {};
+            let s = '';
+            for ( const k in p ) {
+                const v = p[ k ];
+                if ( STYLE_KEYS.has( k ) || v == null || v === '' || typeof v === 'object' ) continue;
+                s += '\n' + String( v ).toLowerCase();
+            }
+            return s;
+        } );
+        item.searchKey = item.fileKey;
+        return item.searchRows;
+    }
+
+    /**
+     * Features in the visible ("active") layers whose properties contain `query`.
+     * Ranked: title equals > title starts with > a word in the title starts with > title contains > another field
+     * starts with > another field contains; ties go to the layer higher in the list, then file order.
+     * Returns [{ layerId, layerName, title, detail, kind, feature }].
+     */
+    function search( query, limit = 8 ) {
+        const q = String( query || '' ).trim().toLowerCase();
+        if ( ! q ) return [];
+        const metas = ( ctx.getIndex().layers || [] ).filter( m => m.visible );
+        const found = [];
+        metas.forEach( ( meta, order ) => {
+            const it = items.get( meta.id );
+            if ( ! it || ! it.fc || ! it.group || ! map.hasLayer( it.group ) ) return;
+            const rows = searchText( it );
+            let n = 0;
+            for ( let i = 0; i < rows.length && n < 300; i++ ) {
+                if ( ! rows[ i ].includes( q ) ) continue;
+                const f = it.fc.features[ i ];
+                if ( ! f.geometry ) continue;
+                const p = f.properties || {};
+                const titleKey = autoTitleKey( meta, p );
+                const title = titleKey ? String( p[ titleKey ] ) : '';
+                const t = title.toLowerCase();
+                let rank, detail = '';
+                if ( t === q ) rank = 0;
+                else if ( t.startsWith( q ) ) rank = 1;
+                else if ( t.split( /[\s,.;:()\-/]+/ ).some( w => w.startsWith( q ) ) ) rank = 2;
+                else if ( t.includes( q ) ) rank = 3;
+                else {
+                    const key = Object.keys( p ).find( k => ! STYLE_KEYS.has( k ) && p[ k ] != null && typeof p[ k ] !== 'object' && String( p[ k ] ).toLowerCase().includes( q ) );
+                    if ( ! key ) continue;
+                    const v = String( p[ key ] );
+                    rank = v.toLowerCase().startsWith( q ) ? 4 : 5;
+                    detail = `${ key }: ${ v.length > 90 ? v.slice( 0, 90 ) + '…' : v }`;
+                }
+                const g = f.geometry.type;
+                found.push( { rank, order, i, layerId: meta.id, layerName: meta.name, title, detail, feature: f,
+                    kind: /Point/.test( g ) ? 'point' : /Line/.test( g ) ? 'line' : /Polygon/.test( g ) ? 'area' : 'feature' } );
+                n++;
+            }
+        } );
+        found.sort( ( a, b ) => a.rank - b.rank || a.order - b.order || a.i - b.i );
+        return found.slice( 0, limit ).map( ( { rank, order, i, ...m } ) => m );
+    }
+
+    /** One spot that stands for the feature: the point itself, the middle of a line, a point inside an area. */
+    function featureLatLng( f ) {
+        const parts = [];
+        const walk = g => {
+            if ( ! g ) return;
+            if ( g.type === 'GeometryCollection' ) return ( g.geometries || [] ).forEach( walk );
+            parts.push( g );
+        };
+        walk( f.geometry );
+        const pt = parts.find( g => g.type === 'Point' ) || parts.find( g => g.type === 'MultiPoint' );
+        if ( pt ) { const c = pt.type === 'Point' ? pt.coordinates : pt.coordinates[ 0 ]; return L.latLng( c[ 1 ], c[ 0 ] ); }
+        const line = parts.find( g => /LineString/.test( g.type ) );
+        if ( line ) {
+            const lines = line.type === 'LineString' ? [ line.coordinates ] : line.coordinates;
+            const longest = lines.reduce( ( a, b ) => ( b.length > a.length ? b : a ), [] );
+            if ( longest.length ) { const c = longest[ Math.floor( ( longest.length - 1 ) / 2 ) ]; return L.latLng( c[ 1 ], c[ 0 ] ); }
+        }
+        const poly = parts.find( g => /Polygon/.test( g.type ) );
+        if ( poly ) {
+            const rings = poly.type === 'Polygon' ? [ poly.coordinates ] : poly.coordinates;
+            const outer = rings.map( r => r[ 0 ] || [] ).reduce( ( a, b ) => ( b.length > a.length ? b : a ), [] );
+            if ( outer.length ) {
+                const b = L.latLngBounds( outer.map( c => [ c[ 1 ], c[ 0 ] ] ) );
+                const ctr = b.getCenter();
+                if ( inRing( [ ctr.lng, ctr.lat ], outer ) ) return ctr;
+                const avg = outer.reduce( ( s, c ) => [ s[ 0 ] + c[ 0 ] / outer.length, s[ 1 ] + c[ 1 ] / outer.length ], [ 0, 0 ] );
+                if ( inRing( avg, outer ) ) return L.latLng( avg[ 1 ], avg[ 0 ] );
+                return L.latLng( outer[ 0 ][ 1 ], outer[ 0 ][ 0 ] );
+            }
+        }
+        return null;
+    }
+    function inRing( [ x, y ], ring ) {
+        let inside = false;
+        for ( let i = 0, j = ring.length - 1; i < ring.length; j = i++ ) {
+            const [ xi, yi ] = ring[ i ], [ xj, yj ] = ring[ j ];
+            if ( ( yi > y ) !== ( yj > y ) && x < ( xj - xi ) * ( y - yi ) / ( yj - yi ) + xi ) inside = ! inside;
+        }
+        return inside;
+    }
+    function featureBounds( f ) {
+        try { const b = L.geoJSON( f ).getBounds(); return b.isValid() ? b : null; } catch { return null; }
+    }
+
+    /** Briefly outline a search result on the map and open its popup (unless the layer's popups are off). */
+    let flash = null;
+    function showFeature( match, { popup = true } = {} ) {
+        const it = items.get( match.layerId );
+        const at = featureLatLng( match.feature );
+        if ( ! at ) return;
+        if ( flash ) { map.removeLayer( flash ); flash = null; }
+        flash = L.geoJSON( match.feature, {
+            pane: 'geojson-labels', interactive: false,
+            style: () => ( { className: 'geo-search-hit', color: '#E8A33D', weight: 4, opacity: 1, fillOpacity: 0.12, fillColor: '#E8A33D' } ),
+            pointToLayer: ( f, ll ) => L.circleMarker( ll, { pane: 'geojson-labels', radius: 13, className: 'geo-search-hit', color: '#E8A33D', weight: 3, fillOpacity: 0.15, interactive: false } ),
+        } ).addTo( map );
+        const mine = flash;
+        setTimeout( () => { if ( flash === mine ) { map.removeLayer( flash ); flash = null; } }, 4000 );
+        if ( popup && it && ! ( it.meta.popup && it.meta.popup.enabled === false ) ) {
+            // Open once the map has finished moving there (or soon anyway, if it didn't need to move).
+            let done = false;
+            const open = () => {
+                if ( done ) return;
+                done = true;
+                map.off( 'moveend', open );
+                L.popup( { maxWidth: 324, minWidth: 0, className: 'geo-popup', autoPanPadding: [ 14, 60 ] } )
+                    .setLatLng( at ).setContent( popupHtml( it.meta, match.feature ) ).openOn( map );
+            };
+            map.once( 'moveend', open );
+            setTimeout( open, 1500 );
+        }
+    }
+
     function reset() {
         for ( const it of items.values() ) it.group && map.removeLayer( it.group );
         items.clear();
@@ -948,7 +1085,7 @@ export function createLayers( ctx ) {
         if ( legend ) { legend.remove(); legend = null; }
     }
 
-    return { sync, showPanel, addFromText, addFiles, zoomTo, reset, addToMap, hasPreview: () => [ ...items.values() ].some( i => i.preview ) };
+    return { sync, showPanel, addFromText, addFiles, zoomTo, reset, addToMap, search, featureLatLng, featureBounds, showFeature, hasPreview: () => [ ...items.values() ].some( i => i.preview ) };
 }
 
 function $( sel, root = document ) { return root.querySelector( sel ); }
