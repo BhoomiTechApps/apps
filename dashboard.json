@@ -184,6 +184,14 @@
       "icon": "https://bhoomitechapps.github.io/apps/bhaskarabda-panjika/icons/icon-192.png",
       "tag": "Heritage",
       "desc": "Vernacular Calendar and Almanac based on the Bhaskarabda system."
+    },
+	{
+      "id": "lekhoni",
+      "name": "Lekhoni",
+      "url": "https://bhoomitechapps.github.io/apps/lekhoni/",
+      "icon": "https://bhoomitechapps.github.io/apps/lekhoni/icons/icon-192.png",
+      "tag": "Language",
+      "desc": "Lightweight transliteration driven desktop publishing tool for eastern nagari script."
     }  
   ]
 }
