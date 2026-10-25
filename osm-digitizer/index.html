@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>OSM Digitizer</title>
+<meta name="description" content="Pull roads, rivers, wetlands, land cover and village names from OpenStreetMap, or trace them from a map image, and export GeoJSON, KML, Shapefile or DXF.">
+<meta name="theme-color" content="#d8d5ce">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Digitizer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preload" href="assets/vendor/onest/onest-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="lib/leaflet.css">
+<link rel="stylesheet" href="app.min.css?v=1.2.0">
+</head>
+<body>
+<div class="od-frame od-theme-light" id="odFrame">
+<script>(function(){var t='light',f=document.getElementById('odFrame');try{var p=new URLSearchParams(location.search).get('theme');if(p==='dark'||p==='light')t=p;var s=JSON.parse(localStorage.getItem('digi:theme'));if(s==='dark'||s==='light')t=s;}catch(e){}f.className='od-frame od-theme-'+t;if(window.self!==window.top)document.documentElement.classList.add('od-embedded');})();</script>
+<div class="od-frame-head">
+<span class="od-frame-brand">OSM Digitizer <span class="od-frame-ver">v1.2.0</span></span>
+</div>
+<div class="od-stage" id="odStage">
+<div class="od-mapwrap" id="mapwrap">
+<div id="map" class="mapview" aria-label="Map"></div>
+<div id="imgmap" class="mapview" aria-label="Image" hidden></div>
+<div class="viewtoggle od-seg" id="viewToggle" role="group" aria-label="Show map or image" hidden>
+<button type="button" id="vMap" aria-pressed="true"><span class="ic" data-icon="map"></span>Map</button>
+<button type="button" id="vImg" aria-pressed="false" disabled><span class="ic" data-icon="image"></span>Image</button>
+</div>
+<div class="draw-banner" id="drawBanner" hidden>
+<span class="ic accent" data-icon="crosshair"></span>
+<span id="drawText">Tap the first corner of your box</span>
+<button class="btn small" id="drawCancel" type="button">Cancel</button>
+<form class="coord" id="coordForm" hidden>
+<input type="text" id="coordInput" inputmode="decimal" placeholder="or type: 26.61234, 93.34567" aria-label="Latitude, longitude" autocomplete="off">
+<button class="btn small primary" type="submit">Use</button>
+</form>
+</div>
+</div>
+<aside class="od-panel" aria-label="Digitizer controls">
+<div class="od-head">
+<div class="od-toolbar">
+<span class="net" id="net" data-state="online">Online</span>
+<span class="od-spacer"></span>
+<button class="btn small" id="install" type="button" hidden><span class="ic" data-icon="install"></span>Install</button>
+<button class="btn icon" id="themeBtn" type="button" aria-label="Switch to dark theme" title="Switch theme"><span class="ic" data-icon="moon"></span></button>
+<button class="btn icon" id="fsBtn" type="button" aria-label="Full screen" title="Full screen" hidden><span class="ic" data-icon="maximize"></span></button>
+</div>
+<div class="od-source od-seg" role="group" aria-label="Data source">
+<button type="button" data-src="osm" aria-pressed="true" title="Download data from OpenStreetMap"><span class="ic" data-icon="globe"></span>OSM</button>
+<button type="button" data-src="trace" aria-pressed="false" title="Trace features from a map image"><span class="ic" data-icon="image"></span>Image</button>
+</div>
+</div>
+<div class="od-scroll" id="odScroll">
+<div id="osmFlow">
+<details class="od-acc" data-acc="area">
+<summary><span class="n">1</span><span class="t">Area</span><span class="meta" id="areaMode"></span><span class="chev" data-icon="chevron"></span></summary>
+<div class="od-acc-body">
+<form class="search" id="searchForm">
+<input type="search" id="q" placeholder="Park, village, district…" autocomplete="off" aria-label="Search for a place">
+<button class="btn" id="searchBtn" type="submit" aria-label="Search"><span class="ic" data-icon="search"></span>Search</button>
+</form>
+<ul class="results-list" id="searchResults" hidden></ul>
+<div class="row2">
+<button class="btn" id="drawBtn" type="button" aria-pressed="false"><span class="ic" data-icon="box"></span>Draw a box</button>
+<button class="btn" id="viewBtn" type="button"><span class="ic" data-icon="frame"></span>Use map view</button>
+</div>
+<div class="card" id="areaCard">
+<div class="name" id="areaName">No area chosen</div>
+<div class="meta" id="areaMeta">Search for a place or draw a box on the map.</div>
+</div>
+<div class="warn" id="areaWarn" hidden></div>
+</div>
+</details>
+<details class="od-acc" data-acc="layers">
+<summary><span class="n">2</span><span class="t">Layers</span><span class="meta" id="layersMeta"></span><span class="chev" data-icon="chevron"></span></summary>
+<div class="od-acc-body">
+<div class="layers" id="layers"></div>
+<div class="row-end"><button class="linkbtn" id="toggleAll" type="button">Select all</button></div>
+</div>
+</details>
+</div>
+<div id="traceFlow" hidden>
+<details class="od-acc" data-acc="image">
+<summary><span class="n">1</span><span class="t">Image</span><span class="meta" id="imgAside"></span><span class="chev" data-icon="chevron"></span></summary>
+<div class="od-acc-body">
+<p class="hint">A screenshot, scanned toposheet or photo of a map, as PNG or JPG. Images with labels hidden trace best.</p>
+<label class="btn wide filebtn" for="imgFile"><input type="file" id="imgFile" accept="image/*"><span class="ic" data-icon="upload"></span><span id="imgBtnText">Choose image…</span></label>
+<div class="card" id="imgCard" hidden><div class="name" id="imgName"></div><div class="meta" id="imgMeta"></div></div>
+</div>
+</details>
+<details class="od-acc" data-acc="place">
+<summary><span class="n">2</span><span class="t">Place it on the map</span><span class="meta" id="geoAside"></span><span class="chev" data-icon="chevron"></span></summary>
+<div class="od-acc-body">
+<p class="hint">Mark spots you can find on both the image and the map, spread far apart: road junctions, bridges, building corners. A screenshot of a web map needs 2. A scan or photo needs 3 or more.</p>
+<ol class="cps" id="cps"></ol>
+<button class="btn" id="addCp" type="button" disabled><span class="ic" data-icon="pin"></span><span class="lbl">Add a point</span></button>
+<div class="card" id="geoCard" hidden><div class="name" id="geoName"></div><div class="meta" id="geoMeta"></div></div>
+</div>
+</details>
+<details class="od-acc" data-acc="colours">
+<summary><span class="n">3</span><span class="t">Colours to trace</span><span class="meta" id="clsMeta"></span><span class="chev" data-icon="chevron"></span></summary>
+<div class="od-acc-body">
+<p class="hint">Pick the colour of each kind of feature on the image. Zoom in first so you tap the middle of a road or river, not its edge.</p>
+<div class="classes" id="classes"></div>
+<div class="row2">
+<button class="btn" id="addClass" type="button" disabled><span class="ic" data-icon="dropper"></span><span class="lbl">Pick a colour</span></button>
+<button class="btn" id="previewBtn" type="button" aria-pressed="false" disabled><span class="ic" data-icon="eye"></span><span class="lbl">Show matches</span></button>
+</div>
+<details class="tune" id="tune">
+<summary><span class="ic" data-icon="sliders"></span>Fine-tune<span class="chev" data-icon="chevron"></span></summary>
+<div class="grid">
+<label for="opt-gap">Bridge gaps up to (px)</label><input type="range" id="opt-gap" min="0" max="6" step="1"><output for="opt-gap"></output>
+<label for="opt-minPx">Ignore specks under (px)</label><input type="range" id="opt-minPx" min="0" max="400" step="10"><output for="opt-minPx"></output>
+<label for="opt-spur">Trim side spurs under (px)</label><input type="range" id="opt-spur" min="0" max="40" step="1"><output for="opt-spur"></output>
+<label for="opt-tangle">Drop label outlines under (px)</label><input type="range" id="opt-tangle" min="0" max="400" step="10"><output for="opt-tangle"></output>
+<label for="opt-smooth">Straighten lines (px)</label><input type="range" id="opt-smooth" min="0.5" max="5" step="0.5"><output for="opt-smooth"></output>
+</div>
+</details>
+</div>
+</details>
+</div>
+<details class="od-acc" data-acc="results">
+<summary><span class="n" id="exportN">3</span><span class="t">Results and export</span><span class="meta" id="exportAside"></span><span class="chev" data-icon="chevron"></span></summary>
+<div class="od-acc-body">
+<div id="summary"><div class="empty" id="emptyNote">Feature counts, line lengths and polygon areas appear here after you extract.</div></div>
+<div class="exports">
+<button class="btn" type="button" data-fmt="geojson" disabled><span class="ic" data-icon="file"></span><b>GeoJSON</b><span>One file, all layers · WGS84</span></button>
+<button class="btn" type="button" data-fmt="kml" disabled><span class="ic" data-icon="globe"></span><b>KML</b><span>Google Earth, folder per layer</span></button>
+<button class="btn" type="button" data-fmt="shp" disabled><span class="ic" data-icon="archive"></span><b>Shapefile</b><span>ZIP, one set per layer · WGS84</span></button>
+<button class="btn" type="button" data-fmt="dxf" disabled><span class="ic" data-icon="ruler"></span><b>DXF</b><span id="dxfNote">CAD, UTM metres</span></button>
+</div>
+</div>
+</details>
+<details class="od-acc" data-acc="saved">
+<summary><span class="n"><span class="ic" data-icon="history"></span></span><span class="t">Saved on this device</span><span class="meta" id="savedMeta"></span><span class="chev" data-icon="chevron"></span></summary>
+<div class="od-acc-body">
+<p class="hint">Every extraction and trace is kept here (the latest 20), so you can reopen and export it later without a connection.</p>
+<ul class="saved" id="saved"></ul>
+</div>
+</details>
+<details class="od-acc" data-acc="mapview">
+<summary><span class="n"><span class="ic" data-icon="layers"></span></span><span class="t">Map view</span><span class="meta" id="baseMeta"></span><span class="chev" data-icon="chevron"></span></summary>
+<div class="od-acc-body">
+<div class="od-seg" id="baseSeg" role="group" aria-label="Basemap">
+<button type="button" data-base="Streets" aria-pressed="true">Streets</button>
+<button type="button" data-base="Satellite" aria-pressed="false">Satellite</button>
+</div>
+<div class="row2">
+<button class="btn" id="fitArea" type="button"><span class="ic" data-icon="frame"></span>Zoom to area</button>
+<button class="btn" id="fitData" type="button" disabled><span class="ic" data-icon="target"></span>Zoom to results</button>
+</div>
+<div class="row-end"><button class="linkbtn" id="clearTiles" type="button">Clear cached map tiles</button></div>
+</div>
+</details>
+<details class="od-acc" data-acc="about">
+<summary><span class="n"><span class="ic" data-icon="info"></span></span><span class="t">About the data</span><span class="chev" data-icon="chevron"></span></summary>
+<div class="od-acc-body attr">
+<p>Map data © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap contributors</a>, ODbL. Credit OSM on anything you make with these layers.</p>
+<p>Search by Nominatim · Data by the Overpass API · Imagery basemap © Esri. These are free, shared services; please keep requests reasonable.</p>
+<p>Box areas are clipped to the box. Boundary areas keep features that cross the boundary whole.</p>
+</div>
+</details>
+</div>
+<div class="od-actionbar">
+<div class="status" id="status" role="status" aria-live="polite"></div>
+<div class="actions" id="osmActions">
+<button class="btn primary" id="extractBtn" type="button"><span class="ic" data-icon="download"></span><span class="lbl">Extract from OpenStreetMap</span></button>
+<button class="btn danger" id="cancelBtn" type="button" hidden>Cancel</button>
+</div>
+<div class="actions" id="traceActions" hidden>
+<button class="btn primary" id="traceBtn" type="button" disabled><span class="ic" data-icon="trace"></span><span class="lbl">Trace layers</span></button>
+</div>
+</div>
+</aside>
+</div>
+<div class="od-frame-foot">Web app developed by <strong>Shankar Sinha</strong> for <strong>BhoomiTech Heritage and Development Foundation</strong> under <strong>CDEP</strong></div>
+<div class="od-ctx" id="odCtx" role="menu" hidden>
+<button type="button" role="menuitem" data-cmd="copy"><span class="ic" data-icon="copy"></span>Copy<kbd>Ctrl C</kbd></button>
+<button type="button" role="menuitem" data-cmd="paste"><span class="ic" data-icon="paste"></span>Paste<kbd>Ctrl V</kbd></button>
+</div>
+<div class="od-toast" id="odToast" role="status" hidden></div>
+</div>
+<script src="lib/leaflet.js"></script>
+<script src="lib/turf.min.js"></script>
+<script src="lib/proj4.js"></script>
+<script src="lib/osmtogeojson.js"></script>
+<script src="lib/jszip.min.js"></script>
+<script src="app.min.js?v=1.2.0"></script>
+</body>
+</html>
