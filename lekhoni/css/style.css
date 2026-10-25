@@ -1,0 +1,1030 @@
+:root {
+  /* ---- Surfaces (warm daylight paper, not stark white) ---- */
+  --surface: #FBF9F3;        /* toolbar, modal, elevated chrome */
+  --surface-2: #F1EADB;      /* pages rail, secondary panels, hovers */
+  --canvas: #DCD3BC;         /* backdrop behind the sheet — lets the page pop */
+  --page: #FFFFFF;           /* the document page itself */
+  --page-edge: #D6CCAF;
+
+  /* ---- Ink (text & icons) ---- */
+  --ink: #262019;
+  --ink-soft: #766B58;
+  --ink-faint: #A79C84;
+
+  /* ---- Hairlines ---- */
+  --line: #E7DFCA;
+  --line-strong: rgba(38, 32, 25, 0.16);
+
+  /* ---- Accents: red-ink for primary actions, teal for proofing marks/focus ---- */
+  --accent: #A6402D;
+  --accent-hover: #8A3325;
+  --accent-soft: #F3E1D6;
+  --accent-ink: #FFF9F4;
+  --teal: #2C6E67;
+  --teal-soft: #E2EEEB;
+
+  --ui-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --bn-font-default: "Noto Serif Bengali", "Noto Sans Bengali", Vrinda, "Shonar Bangla", serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--ui-font);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, select, input {
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+}
+
+#app {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ---------- Toolbar ---------- */
+
+.toolbar {
+  background: var(--surface);
+  border-top: 3px solid var(--accent);
+  border-bottom: 1px solid var(--line-strong);
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  padding: 4px 8px 2px;
+  z-index: 20;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  flex: none;
+  gap: 7px;
+  margin-right: 6px;
+  padding-right: 10px;
+  border-right: 1px solid var(--line);
+}
+
+.brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--bn-font-default);
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  box-shadow: 0 1px 2px rgba(38, 32, 25, 0.22);
+}
+
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: block;
+  filter: drop-shadow(0 1px 1.5px rgba(38, 32, 25, 0.25));
+}
+.brand-ver {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.02em;
+  vertical-align: 2px;
+}
+
+.brand-text {
+  font-size: 12.5px;
+  line-height: 1.3;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.brand-text b {
+  font-family: var(--bn-font-default);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+}
+.brand-text span {
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  letter-spacing: 0.01em;
+}
+
+.tool-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  flex: none;
+  padding: 0 6px;
+  border-right: 1px solid var(--line);
+}
+.tool-group:last-of-type { border-right: none; }
+.tg-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+.tg-label {
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 2px 0 1px;
+  white-space: nowrap;
+}
+.tg-sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 4px 4px;
+  background: var(--line);
+}
+
+/* Icon-over-label buttons in the top bar */
+.tbtn.rbtn {
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-width: 40px;
+  padding: 5px 5px 4px;
+  font-size: 10.5px;
+  line-height: 1;
+}
+.tbtn.rbtn svg { width: 19px; height: 19px; }
+.tbtn.rbtn .glyph {
+  font-family: var(--bn-font-default);
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 19px;
+  height: 19px;
+  letter-spacing: -0.02em;
+}
+.script-btn {
+  font-family: var(--bn-font-default);
+  font-size: 13px;
+  padding: 11px 9px;
+}
+.zoom-label {
+  min-width: 42px;
+  text-align: center;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* Line icons share one stroke style */
+.toolbar svg:not(.brand-logo), .props-panel svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+svg .fill { fill: currentColor; }
+svg .knock { fill: var(--surface); }
+
+.tbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12.5px;
+  cursor: pointer;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.tbtn:hover { background: var(--surface-2); }
+.tbtn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+.tbtn:disabled { opacity: 0.4; cursor: default; }
+.tbtn:disabled:hover { background: transparent; }
+
+.tbtn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.tbtn svg {
+  width: 15px;
+  height: 15px;
+  display: block;
+  flex: none;
+}
+
+select.tsel, input.tnum, input.tcolor {
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12.5px;
+  height: 30px;
+}
+select.tsel { min-width: 100px; cursor: pointer; }
+input.tnum { width: 52px; }
+input.tcolor { width: 30px; padding: 2px; cursor: pointer; border-radius: 6px; }
+
+.seg {
+  display: flex;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.seg .tbtn { border-radius: 0; border-right: 1px solid var(--line-strong); }
+.seg .tbtn:last-child { border-right: none; }
+
+.toolbar-spacer { flex: 1; }
+
+/* Save status sits under the app name */
+.brand-text .autosave-note {
+  display: inline-block;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  min-width: 84px;
+}
+
+/* Ruler Scales */
+.page-stage {
+  position: relative;
+}
+
+.pub-ruler {
+  position: absolute;
+  pointer-events: none;
+  z-index: 100;
+  font-family: var(--ui-font);
+  font-size: 8px;
+  color: var(--ink-soft);
+}
+
+.pub-ruler-h, .pub-ruler-v { touch-action: none; }
+.pub-guide { touch-action: none; }
+
+.pub-ruler-h {
+  top: -18px;
+  left: 0;
+  right: 0;
+  height: 18px;
+  border-bottom: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.pub-ruler-v {
+  top: 0;
+  bottom: 0;
+  left: -20px;
+  width: 20px;
+  border-right: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.ruler-mark {
+  position: absolute;
+}
+
+.h-mark {
+  top: 0;
+  height: 100%;
+  border-left: 1px solid var(--ink-faint);
+}
+
+.v-mark {
+  left: 0;
+  width: 100%;
+  border-top: 1px solid var(--ink-faint);
+}
+
+.ruler-label {
+  position: absolute;
+  padding: 1px 2px;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.h-mark .ruler-label {
+  top: 0;
+  left: 2px;
+}
+
+.v-mark .ruler-label {
+  top: 1px;
+  left: 1px;
+}
+
+/* Hide rulers during print */
+@media print {
+  .pub-ruler {
+    display: none !important;
+  }
+}
+
+/* PageMaker-style guidelines — teal like a proofreader's second ink */
+.pub-guide {
+  position: absolute;
+  z-index: 99;
+  background-color: var(--teal);
+  box-shadow: 0 0 1px rgba(44, 110, 103, 0.8);
+}
+
+.pub-guide-h {
+  left: 0;
+  right: 0;
+  height: 1px;
+  cursor: ns-resize;
+}
+
+.pub-guide-v {
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  cursor: ew-resize;
+}
+
+.pub-guide:hover {
+  background-color: var(--accent);
+  box-shadow: 0 0 3px rgba(166, 64, 45, 0.8);
+}
+
+/* Hide guides when printing */
+@media print {
+  .pub-guide {
+    display: none !important;
+  }
+}
+
+/* ---------- Layout body ---------- */
+
+.workspace {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr) 280px;
+  height: 100%;
+  overflow: hidden;
+}
+.workspace.panel-hidden { grid-template-columns: 180px minmax(0, 1fr) 0; }
+.workspace.panel-hidden .props-panel { visibility: hidden; }
+
+/* ---------- Properties panel ---------- */
+
+.props-panel {
+  background: var(--surface);
+  border-left: 1px solid var(--line-strong);
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.props-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--surface-2);
+  flex: none;
+}
+.ptab {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 10px 4px 8px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.ptab:hover { color: var(--ink); }
+.ptab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  background: var(--surface);
+  font-weight: 600;
+}
+
+.props-body {
+  overflow-y: auto;
+  padding: 4px 14px 18px;
+  flex: 1;
+}
+
+.psec {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  transition: opacity 0.12s ease;
+}
+.psec:last-child { border-bottom: none; }
+.psec.is-off { opacity: 0.4; }
+.psec h4 {
+  margin: 10px 0 7px;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--ink-soft);
+}
+.psec h4:first-child { margin-top: 0; }
+
+.pane-hint {
+  display: none;
+  margin: 12px 0 0;
+  padding: 9px 11px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  background: var(--surface-2);
+  border-radius: 6px;
+}
+.props-panel:not([data-sel="text"]):not([data-sel="table"]) [data-pane="text"] .pane-hint,
+.props-panel:not([data-sel="shape"]) [data-pane="shape"] .pane-hint,
+.props-panel[data-sel="none"] [data-pane="arrange"] .pane-hint { display: block; }
+
+.pfield {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+.pfield.inline { flex-direction: row; align-items: center; gap: 7px; }
+.pfield .tnum { width: 100%; }
+.pfield-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  margin-top: 9px;
+}
+.pfield-row .pfield { width: 70px; flex: none; }
+.pfield-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: end;
+  gap: 10px;
+}
+.props-panel .seg { display: inline-flex; }
+select.tsel.full { width: 100%; min-width: 0; }
+#units-slot .tsel { width: 100%; }
+
+.tbtn.pbtn {
+  border: 1px solid var(--line-strong);
+  padding: 7px 10px;
+  gap: 8px;
+  justify-content: flex-start;
+  font-size: 12px;
+}
+.pbtn-col { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.psec > .tbtn.pbtn { width: 100%; margin-top: 10px; }
+.tbtn.pbtn.danger { color: var(--accent); }
+.tbtn.pbtn.danger:hover:not(:disabled) { background: var(--accent-soft); }
+.pnote { margin: 8px 0 0; font-size: 11px; color: var(--ink-faint); }
+
+.props-panel .seg .tbtn { padding: 7px 11px; }
+.props-panel .seg .tbtn svg { width: 15px; height: 15px; }
+
+.shortcuts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 5px 12px;
+  margin: 0;
+  font-size: 11.5px;
+}
+.shortcuts dt {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 10.5px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.shortcuts dd { margin: 0; color: var(--ink-soft); }
+
+@media (max-width: 900px) {
+  .workspace { grid-template-columns: 120px minmax(0, 1fr) 260px; }
+  .workspace.panel-hidden { grid-template-columns: 120px minmax(0, 1fr) 0; }
+}
+
+.pages-rail {
+  background: var(--surface-2);
+  border-right: 1px solid var(--line-strong);
+  overflow-y: auto;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.page-thumb-wrap { text-align: center; }
+
+.page-thumb {
+  width: 128px;
+  height: 181px;
+  background: var(--page);
+  border: 2px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(38, 32, 25, 0.12), 0 1px 1px rgba(38, 32, 25, 0.08);
+  transition: box-shadow 0.12s ease, border-color 0.12s ease;
+}
+.page-thumb:hover { box-shadow: 0 2px 6px rgba(38, 32, 25, 0.18); }
+.page-thumb.current { border-color: var(--accent); box-shadow: 0 2px 10px rgba(166, 64, 45, 0.28); }
+.page-thumb .mini-box {
+  position: absolute;
+  background: rgba(166, 64, 45, 0.16);
+  border: 1px solid rgba(166, 64, 45, 0.55);
+}
+.page-num {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 6px;
+}
+
+.add-page-btn {
+  width: 128px;
+  height: 42px;
+  background: transparent;
+  border: 1.5px dashed var(--line-strong);
+  color: var(--ink-soft);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: color 0.12s ease, border-color 0.12s ease, background 0.12s ease;
+}
+.add-page-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+
+.page-thumb-delete {
+  position: absolute;
+  top: 5px; right: 5px;
+  width: 19px; height: 19px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(38, 32, 25, 0.55);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.12s ease, background 0.12s ease;
+}
+.page-thumb:hover .page-thumb-delete { opacity: 1; }
+.page-thumb-delete:hover { background: var(--accent); }
+
+/* ---------- Canvas ---------- */
+
+.canvas-scroll {
+  background: var(--canvas);
+  overflow: auto;
+  position: relative;
+  padding: 44px;
+}
+
+/* Sized by app.js to the zoomed page, so scrolling reaches every edge. */
+.zoom-sizer {
+  margin: 0 auto;
+  position: relative;
+}
+
+.page-stage {
+  transform-origin: 0 0;
+  width: max-content;
+}
+.page-stage.placing .page { cursor: crosshair; }
+
+.page {
+  width: 210mm;   /* fallback; actual size is set inline from the doc's page setup */
+  height: 297mm;
+  background: var(--page);
+  position: relative;
+  box-shadow: 0 1px 2px rgba(38, 32, 25, 0.10), 0 14px 34px rgba(38, 32, 25, 0.22);
+  outline: 1px solid var(--page-edge);
+}
+
+/* Ruler scales sit just outside the page edge (negative top/left), so the
+   page itself must not clip its own overflow on screen. Print rules below
+   force this back to hidden for output. */
+.page {
+  overflow: visible !important;
+}
+
+.box {
+  position: absolute;
+  border: 1px solid transparent;
+}
+.box.selected { border-color: var(--accent); }
+.box .grip {
+  touch-action: none;
+  position: absolute;
+  top: -1px; left: -1px;
+  width: 100%;
+  height: 14px;
+  background: transparent;
+  cursor: grab;
+  z-index: 5;
+}
+.box.selected .grip { background: rgba(166, 64, 45, 0.85); }
+.box .resize-handle {
+  touch-action: none;
+  position: absolute;
+  right: -5px; bottom: -5px;
+  width: 10px; height: 10px;
+  background: var(--accent);
+  border-radius: 2px;
+  cursor: nwse-resize;
+  display: none;
+  z-index: 6;
+}
+.box.selected .resize-handle { display: block; }
+
+/* Hidden boxes: a faint outline on screen so they can be selected and shown
+   again; left out of print entirely. */
+.box.is-hidden {
+  opacity: 0.25;
+  outline: 1px dashed var(--ink-soft);
+}
+.page-thumb .mini-box.is-hidden { opacity: 0.35; border-style: dashed; }
+
+.box-text {
+  width: 100%;
+  height: 100%;
+  padding: 4mm 3mm 2mm 3mm;
+  outline: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: var(--bn-font-default);
+}
+
+.box-image {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #fff;
+}
+.box-image img { width: 100%; height: 100%; display: block; object-fit: contain; }
+.box-image .placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-faint); font-size: 12px; text-align: center; padding: 10px;
+  border: 1.5px dashed var(--line-strong);
+  background: var(--surface-2);
+  font-family: var(--ui-font);
+}
+
+/* ---------- Margins, header/footer, page numbers ---------- */
+
+.page-margin-guide {
+  position: absolute;
+  pointer-events: none;
+  border: 1px dashed var(--line-strong);
+  box-sizing: border-box;
+}
+.page-col-guide {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-left: 1px dashed var(--line-strong);
+}
+
+.page-header, .page-footer {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  overflow: hidden;
+  padding: 0 2mm;
+  font-size: 9pt;
+  color: var(--ink-soft);
+  font-family: var(--bn-font-default);
+  white-space: pre-wrap;
+  pointer-events: none;
+}
+
+.page-number {
+  position: absolute;
+  font-size: 9pt;
+  color: var(--ink-soft);
+  font-family: var(--bn-font-default);
+  pointer-events: none;
+}
+
+/* ---------- Page setup modal ---------- */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(38, 32, 25, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 20px;
+}
+.modal-overlay[hidden] { display: none !important; }
+
+.modal {
+  background: var(--surface);
+  color: var(--ink);
+  width: 480px;
+  max-width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: 10px;
+  border: 1px solid var(--line-strong);
+  box-shadow: 0 24px 60px rgba(38, 32, 25, 0.28);
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+.modal-head h2 {
+  margin: 0;
+  font-size: 15px;
+  font-family: var(--bn-font-default);
+  font-weight: 700;
+}
+
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--ink-soft);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 5px 7px;
+  border-radius: 6px;
+}
+.modal-close:hover { background: var(--surface-2); color: var(--ink); }
+
+.modal-body { padding: 6px 18px 18px; }
+
+.modal-section {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.modal-section:last-child { border-bottom: none; }
+.modal-section h3 {
+  margin: 0 0 12px;
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+}
+
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-bottom: 10px;
+}
+.field-row:last-child { margin-bottom: 0; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.field .tsel, .field .tnum { width: auto; }
+.field .tnum { width: 84px; }
+
+.field-check {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--ink);
+  margin: 7px 0;
+  cursor: pointer;
+}
+.field-check input { cursor: pointer; accent-color: var(--accent); }
+
+.modal-text-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12.5px;
+  margin-top: 5px;
+}
+
+/* ==========================================
+   TABLE STYLING
+   ========================================== */
+
+.box-table {
+  table-layout: fixed;
+  border-collapse: collapse;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-size: inherit;
+}
+
+.table-cell {
+  border: 1px solid #cccccc;
+  padding: 4px;
+  overflow: hidden;
+  word-wrap: break-word;
+  vertical-align: top;
+  white-space: pre-wrap;
+  outline: none;
+}
+
+.table-cell:focus {
+  outline: 2px solid var(--teal);
+  outline-offset: -1px;
+}
+
+/* ==========================================
+   PRINT / PRINT PREVIEW OVERRIDES
+   ========================================== */
+@media print {
+  /* 1. Reset document root to full width & auto height */
+  html, body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* 2. Hide all non-printable UI and auxiliary guidelines */
+  .toolbar,
+  #toolbar,
+  .props-panel,
+  #sidebar,
+  .pages-rail,
+  .pub-ruler,
+  .pub-guide,
+  .page-margin-guide,
+  .add-page-btn,
+  .empty-hint,
+  .resize-handle,
+  .grip,
+  .modal-overlay {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* 3. Reset outer stage containers so paper flows natively */
+  #app,
+  .workspace,
+  .canvas-scroll,
+  .zoom-sizer,
+  .page-stage {
+    display: block !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    transform: none !important; /* Clears zoom */
+    width: auto !important;
+    height: auto !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  /* 4. One page per sheet (app.js draws every page just before printing) */
+  .page {
+    display: block !important;
+    position: relative !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    outline: none !important;
+    overflow: hidden !important;
+    break-after: page;
+    break-inside: avoid;
+  }
+  .page:last-child { break-after: auto; }
+
+  .box.is-hidden { display: none !important; }
+
+  /* 6. Strip selection outlines from elements on the active page */
+  .box {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  .box.selected {
+    border-color: transparent !important;
+  }
+}
+
+/* ---------- Empty state ---------- */
+
+.empty-hint {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink-faint);
+  font-size: 13px;
+  text-align: center;
+  padding: 20% 15%;
+  pointer-events: none;
+  font-family: var(--ui-font);
+}
+
+/* scrollbars, minimal */
+.canvas-scroll::-webkit-scrollbar, .pages-rail::-webkit-scrollbar { width: 10px; height: 10px; }
+.canvas-scroll::-webkit-scrollbar-thumb, .pages-rail::-webkit-scrollbar-thumb {
+  background: rgba(38, 32, 25, 0.20);
+  border-radius: 6px;
+}
+.canvas-scroll::-webkit-scrollbar-thumb:hover, .pages-rail::-webkit-scrollbar-thumb:hover {
+  background: rgba(38, 32, 25, 0.32);
+}
+.canvas-scroll::-webkit-scrollbar-track, .pages-rail::-webkit-scrollbar-track { background: transparent; }
+
+
+/* NEW v3.0 UI Elements */
+.tbtn-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 6px;
+  font-size: 11px;
+  color: var(--ink);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: default;
+}
+
+/* Narrow screens: tighten the top bar so it still fits on one row. */
+@media (max-width: 1150px) {
+  .brand { margin-right: 2px; padding-right: 6px; }
+  .brand-text b, .brand-text br, .brand-ver { display: none; }
+  .tool-group { padding: 0 3px; }
+  .tbtn.rbtn { min-width: 35px; padding: 5px 3px 4px; }
+  .script-btn { padding: 11px 6px; }
+  .zoom-label { min-width: 36px; }
+}
+
+/* ---------- Table column / row resizing ---------- */
+
+.tbl-resizers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 4;
+}
+.tbl-rz {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+}
+.tbl-rz-col { width: 9px; margin-left: -5px; cursor: col-resize; }
+.tbl-rz-row { height: 9px; margin-top: -5px; cursor: row-resize; }
+.tbl-rz::after {
+  content: "";
+  position: absolute;
+  background: var(--teal);
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+.tbl-rz-col::after { left: 4px; top: 0; bottom: 0; width: 2px; }
+.tbl-rz-row::after { top: 4px; left: 0; right: 0; height: 2px; }
+.tbl-rz:hover::after, .tbl-rz.dragging::after { opacity: 1; }
+body.resizing-col, body.resizing-col * { cursor: col-resize !important; }
+body.resizing-row, body.resizing-row * { cursor: row-resize !important; }
+
+@media print {
+  .tbl-resizers { display: none !important; }
+}

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Translit Engine Test Suite</title>
+	<style>
+		* { box-sizing: border-box; }
+		body {
+			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+			padding: 20px;
+			line-height: 1.6;
+			background: #f5f5f5;
+		}
+		.container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+		h1 { color: #333; border-bottom: 3px solid #2196F3; padding-bottom: 10px; }
+		h2 { color: #555; margin-top: 30px; }
+		.section { margin-bottom: 40px; }
+		.test-group { margin-bottom: 20px; }
+		.test-case {
+			display: flex;
+			gap: 10px;
+			align-items: center;
+			padding: 10px;
+			background: #f9f9f9;
+			border-left: 4px solid #2196F3;
+			margin-bottom: 8px;
+			border-radius: 4px;
+			font-size: 14px;
+		}
+		.test-case.pass { border-left-color: #4CAF50; background: #f1f8f5; }
+		.test-case.fail { border-left-color: #f44336; background: #fef1f0; }
+		.input-text { font-family: 'Courier New', monospace; background: #e3f2fd; padding: 2px 6px; border-radius: 3px; color: #d32f2f; min-width: 120px; }
+		.arrow { color: #666; font-weight: bold; }
+		.output-text { font-family: 'Noto Serif Bengali', serif; font-size: 16px; color: #1976d2; font-weight: 500; min-width: 120px; }
+		.status { font-size: 12px; font-weight: bold; padding: 2px 8px; border-radius: 12px; }
+		.status.pass { background: #4CAF50; color: white; }
+		.status.fail { background: #f44336; color: white; }
+		.interactive { background: #f0f4ff; border: 1px solid #2196F3; padding: 15px; border-radius: 6px; }
+		input[type="text"] { width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ddd; border-radius: 4px; font-family: 'Courier New', monospace; }
+		.preview {
+			font-family: 'Noto Serif Bengali', serif;
+			font-size: 24px;
+			padding: 15px;
+			background: white;
+			border: 1px solid #2196F3;
+			border-radius: 4px;
+			margin-top: 10px;
+			min-height: 50px;
+			color: #1976d2;
+		}
+		.logs {
+			background: #263238;
+			color: #aed581;
+			padding: 10px;
+			border-radius: 4px;
+			font-family: 'Courier New', monospace;
+			font-size: 12px;
+			max-height: 200px;
+			overflow-y: auto;
+			line-height: 1.4;
+			margin-top: 10px;
+		}
+		.log-line { margin: 2px 0; }
+		.status-banner {
+			padding: 15px;
+			border-radius: 4px;
+			margin-bottom: 20px;
+			font-weight: bold;
+		}
+		.status-banner.loading { background: #e1f5fe; color: #01579b; }
+		.status-banner.ready { background: #e8f5e9; color: #1b5e20; }
+		.status-banner.error { background: #ffebee; color: #b71c1c; }
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>🔤 Translit Engine Test Suite</h1>
+		<p>Testing CompLing AI transliteration engine for Lekhoni integration.</p>
+
+		<div id="status" class="status-banner loading">⏳ Loading engine and mapping data...</div>
+
+		<!-- Section: Automated Tests -->
+		<div class="section">
+			<h2>Automated Test Cases</h2>
+			<div id="test-results"></div>
+		</div>
+
+		<!-- Section: Interactive Tester -->
+		<div class="section">
+			<h2>Interactive Tester</h2>
+			<div class="interactive">
+				<label for="roman-input"><strong>Type Roman text:</strong></label>
+				<input type="text" id="roman-input" placeholder="Try: amarta, amarrta, kromo, bangla, kkh..." autofocus>
+				<div class="preview" id="preview">অপেক্ষা করুন...</div>
+				<label style="margin-top: 10px; display: block;"><strong>Debug Logs:</strong></label>
+				<div class="logs" id="debug-logs"></div>
+			</div>
+		</div>
+
+		<!-- Section: Summary -->
+		<div class="section">
+			<h2>Summary</h2>
+			<div id="summary" style="color: #666;">Waiting for tests to complete...</div>
+		</div>
+	</div>
+
+	<script>
+		// Test data: [input, expected_output, description]
+		const TEST_CASES = [
+			// Independent vowels
+			['a', 'আ', 'Independent vowel: a'],
+			['o', 'অ', 'Independent vowel: o'],
+			['i', 'ই', 'Independent vowel: i'],
+			['u', 'উ', 'Independent vowel: u'],
+			['e', 'এ', 'Independent vowel: e'],
+			['ai', 'আই', 'Vowel after vowel → independent'],
+
+			// Consonants
+			['k', 'ক', 'Consonant: k'],
+			['g', 'গ', 'Consonant: g'],
+			['r', 'ৰ', 'Consonant: r (Assamese)'],
+			['kh', 'খ', 'Aspirated: kh'],
+			['sh', 'শ', 'Sibilant: sh'],
+
+			// Consonant + matra
+			['ka', 'কা', 'Matra: ka'],
+			['ki', 'কি', 'Matra: ki'],
+			['ko', 'ক', 'Inherent vowel: ko'],
+			['kO', 'কো', 'Matra: kO'],
+			['kia', 'কিআ', 'Matra then vowel'],
+
+			// Clusters, reph, ra-phala
+			['pr', 'প্ৰ', 'Ra-phala: pr'],
+			['kromo', 'ক্ৰম', 'Ra-phala in word'],
+			['amarta', 'আমাৰতা', 'Plain r: no reph'],
+			['amarrta', 'আমাৰ্তা', 'rr: explicit reph'],
+			['kkh', 'ক্ষ', 'Conjunct: kkh'],
+			['ngg', 'ঙ্গ', 'Conjunct: ngg'],
+			['aNgk', 'আঙ্ক', 'Conjunct: Ngk'],
+			["k'Sh", 'ক\u200Cষ', 'Apostrophe breaks conjunct'],
+			['krri', 'কৃ', 'Matra: rri'],
+
+			// Words
+			['amar', 'আমাৰ', 'Word: amar'],
+			['name', 'নামে', 'Word: name'],
+			['bangla', 'বাংলা', 'Word: bangla (anusvara)'],
+			['bhalO', 'ভালো', 'Word: bhalO'],
+
+			// Digits
+			['0', '০', 'Digit: 0'],
+			['9', '৯', 'Digit: 9'],
+			['123', '১২৩', 'Digits only'],
+
+			// Punctuation
+			['.', '।', 'Danda'],
+			['..', '॥', 'Double danda'],
+			['a.', 'আ।', 'Vowel + danda'],
+
+			// Signs
+			['M', 'ং', 'Anusvara (M)'],
+			['H', 'ঃ', 'Visarga (H)'],
+			['^', 'ঁ', 'Chandrabindu (^)'],
+			['ka^', 'কাঁ', 'Chandrabindu after matra'],
+
+			// Edge
+			['', '', 'Empty string'],
+		];
+
+		// Bengali override cases: [input, expected]
+		const BN_CASES = [
+			['amarta', 'আমারতা'],
+			['amarrta', 'আমার্তা'],
+			['pra', 'প্রা'],
+		];
+
+
+		// Status tracking
+		let passed = 0, failed = 0;
+
+		// Initialize and run tests
+		async function init() {
+			try {
+				// Fetch mapping data from data/ folder
+				const response = await fetch('data/translit-forward-map.json');
+				if (!response.ok) throw new Error('Failed to fetch data/translit-forward-map.json');
+				const mapData = await response.json();
+
+				// Initialize engine
+				Translit.init(mapData);
+				updateStatus('ready', '✅ Engine ready! Running tests...');
+
+				// Run tests
+				runTests();
+			} catch (e) {
+				updateStatus('error', '❌ Initialization failed: ' + e.message);
+				console.error(e);
+			}
+		}
+
+		function updateStatus(type, message) {
+			const banner = document.getElementById('status');
+			banner.className = 'status-banner ' + type;
+			banner.textContent = message;
+		}
+
+		function runTests() {
+			const resultsDiv = document.getElementById('test-results');
+			resultsDiv.innerHTML = '';
+
+			passed = 0;
+			failed = 0;
+
+			for (const [input, expected, description] of TEST_CASES) {
+				const output = Translit.parse(input);
+				const isPass = output === expected;
+
+				if (isPass) {
+					passed++;
+				} else {
+					failed++;
+				}
+
+				const testDiv = document.createElement('div');
+				testDiv.className = 'test-case ' + (isPass ? 'pass' : 'fail');
+				testDiv.innerHTML = `
+					<span class="input-text">"${input}"</span>
+					<span class="arrow">→</span>
+					<span class="output-text">${output}</span>
+					<span class="arrow">${isPass ? '✓' : '✗'}</span>
+					<span style="flex: 1;">${description}</span>
+					<span class="status ${isPass ? 'pass' : 'fail'}">${isPass ? 'PASS' : 'FAIL'}</span>
+				`;
+				resultsDiv.appendChild(testDiv);
+			}
+
+			Translit.setLanguage('bn');
+			for (const [input, expected] of BN_CASES) {
+				const output = Translit.parse(input);
+				const isPass = output === expected;
+				isPass ? passed++ : failed++;
+				const testDiv = document.createElement('div');
+				testDiv.className = 'test-case ' + (isPass ? 'pass' : 'fail');
+				testDiv.innerHTML = `<span class="input-text">"${input}"</span><span class="arrow">→</span><span class="output-text">${output}</span><span style="flex: 1;">Bengali (bn): ${expected}</span><span class="status ${isPass ? 'pass' : 'fail'}">${isPass ? 'PASS' : 'FAIL'}</span>`;
+				resultsDiv.appendChild(testDiv);
+			}
+			Translit.setLanguage('as');
+
+			// Update summary
+			const summaryDiv = document.getElementById('summary');
+			const total = TEST_CASES.length + BN_CASES.length;
+			const percentage = total > 0 ? Math.round((passed / total) * 100) : 0;
+			summaryDiv.innerHTML = `
+				<strong>Tests completed:</strong> ${passed}/${total} passed (${percentage}%)<br>
+				<strong>Failures:</strong> ${failed}<br>
+				${failed === 0 ? '✅ All tests passed!' : '⚠️ Some tests failed. Check the mappings.'}
+			`;
+
+			updateStatus('ready', `✅ Tests complete: ${passed}/${total} passed`);
+		}
+
+		// Interactive input handler
+		document.getElementById('roman-input').addEventListener('input', (e) => {
+			const input = e.target.value;
+			const output = Translit.parse(input);
+			const logs = Translit.debug(input);
+
+			document.getElementById('preview').textContent = output || 'ফলাফল এখানে প্রদর্শিত হবে';
+
+			const logsDiv = document.getElementById('debug-logs');
+			logsDiv.innerHTML = logs.map(log => `<div class="log-line">${log}</div>`).join('');
+		});
+
+		// Start when DOM is ready
+		window.addEventListener('DOMContentLoaded', init);
+	</script>
+
+	<!-- Fonts for Bengali rendering -->
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600&display=swap" rel="stylesheet">
+
+	<!-- Load Translit engine and wrapper -->
+	<script src="js/translit-engine.js?v=4.3.0"></script>
+	<script src="js/translit-hooks.js?v=4.3.0"></script>
+	<script src="js/translit-wrapper.js?v=4.3.0"></script>
+</body>
+</html>
