@@ -192,6 +192,14 @@
       "icon": "https://bhoomitechapps.github.io/apps/lekhoni/icons/icon-192.png",
       "tag": "Language",
       "desc": "Lightweight transliteration driven desktop publishing tool for eastern nagari script."
+    },
+	{
+      "id": "osm-digitizer",
+      "name": "OSM Digitizer",
+      "url": "https://bhoomitechapps.github.io/apps/osm-digitizer/",
+      "icon": "https://bhoomitechapps.github.io/apps/osm-digitizer/icons/icon-192.png",
+      "tag": "Maps",
+      "desc": "Instantly digitize map from OSM basemaps into GIS geometry layers."
     }  
   ]
 }
