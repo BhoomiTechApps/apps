@@ -1,0 +1,255 @@
+{
+  "version": 3,
+  "topics": [
+    {
+      "id": "t-india",
+      "name": "Indian history",
+      "description": "Archives and scholarship on the history of India and South Asia."
+    },
+    {
+      "id": "t-diplomacy",
+      "name": "Treaties and diplomacy",
+      "description": "Treaties, charters and diplomatic records."
+    },
+    {
+      "id": "t-reference",
+      "name": "General reference",
+      "description": "Encyclopedias and broad reference works."
+    },
+    {
+      "id": "t-science",
+      "name": "Science and logic",
+      "description": "Research literature, scientific bodies and reference works on logic."
+    }
+  ],
+  "sources": [
+    {
+      "id": "src-britannica",
+      "domain": "britannica.com",
+      "label": "Encyclopaedia Britannica",
+      "category": "reference",
+      "notes": "Edited reference work; good for dates, names and established narratives.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-india",
+        "t-diplomacy",
+        "t-reference",
+        "t-science"
+      ]
+    },
+    {
+      "id": "src-archive",
+      "domain": "archive.org",
+      "label": "Internet Archive",
+      "category": "archive",
+      "notes": "Digitised books, gazetteers and periodicals. Check the uploader and edition.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-india",
+        "t-reference"
+      ]
+    },
+    {
+      "id": "src-avalon",
+      "domain": "avalon.law.yale.edu",
+      "label": "Avalon Project (Yale Law School)",
+      "category": "primary",
+      "notes": "Treaties, charters and diplomatic documents in full text.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-diplomacy"
+      ]
+    },
+    {
+      "id": "src-loc",
+      "domain": "loc.gov",
+      "label": "Library of Congress",
+      "category": "archive",
+      "notes": "Manuscripts, maps, newspapers and research guides.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-diplomacy",
+        "t-reference"
+      ]
+    },
+    {
+      "id": "src-tna",
+      "domain": "nationalarchives.gov.uk",
+      "label": "The National Archives (UK)",
+      "category": "primary",
+      "notes": "Colonial Office and India Office material, with teaching guides.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-india",
+        "t-diplomacy"
+      ]
+    },
+    {
+      "id": "src-abhilekh",
+      "domain": "abhilekh-patal.in",
+      "label": "Abhilekh Patal (National Archives of India)",
+      "category": "primary",
+      "notes": "Catalogue and digitised records of the National Archives of India.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-india"
+      ]
+    },
+    {
+      "id": "src-indianculture",
+      "domain": "indianculture.gov.in",
+      "label": "Indian Culture Portal",
+      "category": "archive",
+      "notes": "Government of India portal for rare books, manuscripts and gazetteers.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-india"
+      ]
+    },
+    {
+      "id": "src-jstor",
+      "domain": "jstor.org",
+      "label": "JSTOR",
+      "category": "academic",
+      "notes": "Peer-reviewed journals. Many full texts are paywalled, so results may rely on abstracts.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-india",
+        "t-diplomacy"
+      ]
+    },
+    {
+      "id": "src-wikipedia",
+      "domain": "en.wikipedia.org",
+      "label": "Wikipedia (English)",
+      "category": "reference",
+      "notes": "Useful for leads, not as final evidence. Switched off by default.",
+      "enabled": false,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-reference"
+      ]
+    },
+    {
+      "id": "src-pubmed",
+      "domain": "pubmed.ncbi.nlm.nih.gov",
+      "label": "PubMed",
+      "category": "academic",
+      "notes": "Abstracts of biomedical and life-science research. Check the study type before relying on a result.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-science"
+      ]
+    },
+    {
+      "id": "src-cochrane",
+      "domain": "cochranelibrary.com",
+      "label": "Cochrane Library",
+      "category": "academic",
+      "notes": "Systematic reviews of health interventions: among the strongest kinds of evidence.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-science"
+      ]
+    },
+    {
+      "id": "src-nature",
+      "domain": "nature.com",
+      "label": "Nature journals",
+      "category": "academic",
+      "notes": "Peer-reviewed research across the sciences. Some articles are paywalled.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-science"
+      ]
+    },
+    {
+      "id": "src-science",
+      "domain": "science.org",
+      "label": "Science (AAAS)",
+      "category": "academic",
+      "notes": "Peer-reviewed research and news from the AAAS. Some articles are paywalled.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-science"
+      ]
+    },
+    {
+      "id": "src-nasa",
+      "domain": "nasa.gov",
+      "label": "NASA",
+      "category": "reference",
+      "notes": "Space, Earth and climate science data and explainers.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-science"
+      ]
+    },
+    {
+      "id": "src-who",
+      "domain": "who.int",
+      "label": "World Health Organization",
+      "category": "reference",
+      "notes": "Health guidelines, fact sheets and statistics.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-science"
+      ]
+    },
+    {
+      "id": "src-nist",
+      "domain": "nist.gov",
+      "label": "NIST",
+      "category": "reference",
+      "notes": "Physical constants, units and measurement standards.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-science"
+      ]
+    },
+    {
+      "id": "src-sep",
+      "domain": "plato.stanford.edu",
+      "label": "Stanford Encyclopedia of Philosophy",
+      "category": "reference",
+      "notes": "Peer-reviewed entries on logic, reasoning and philosophy of science.",
+      "enabled": true,
+      "addedAt": "2026-09-27T00:00:00.000Z",
+      "updatedAt": "2026-09-27T00:00:00.000Z",
+      "topics": [
+        "t-science"
+      ]
+    }
+  ]
+}
