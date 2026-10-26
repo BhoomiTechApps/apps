@@ -1,0 +1,21 @@
+:root { color-scheme: light dark; --bg: #f4f3ef; --text: #1c2530; --muted: #56626c; --accent: #d9a33a; --accent-ink: #1c2530; --line: #d8d6cf; --ok: #1f5c38; --bad: #8e3428; }
+@media (prefers-color-scheme: dark) { :root { --bg: #1d1e20; --text: #ecebe6; --muted: #b0afa9; --line: #3a3b3e; --ok: #8fd0a8; --bad: #ef9d92; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.5 system-ui, 'Noto Sans', 'Noto Sans Bengali', sans-serif; }
+h1 { display: flex; align-items: center; gap: 8px; font-size: 16px; margin: 0 0 10px; }
+button { font: inherit; border: 1px solid var(--line); background: transparent; color: var(--text); border-radius: 4px; padding: 7px 10px; cursor: pointer; text-align: left; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a { color: inherit; }
+.hint, .small { color: var(--muted); font-size: 12.5px; }
+.popup { width: 300px; padding: 14px; }
+.popup #actions, .popup #setup { display: grid; gap: 8px; }
+.popup #actions[hidden], .popup #setup[hidden] { display: none; }
+.popup p { margin: 0; }
+.options main { max-width: 640px; margin: 0 auto; padding: 32px 20px; }
+.options label { display: block; margin: 16px 0 4px; font-weight: 600; }
+.options label.check { font-weight: 400; display: flex; gap: 8px; align-items: flex-start; }
+.options input[type=url] { width: 100%; font: inherit; padding: 8px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--text); }
+.options #save { margin-top: 12px; }
+.ok { color: var(--ok); } .bad { color: var(--bad); }
+code { font-size: 12.5px; }

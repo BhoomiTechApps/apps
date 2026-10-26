@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Evaluator</title>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body class="popup">
+  <h1><img src="icons/icon-32.png" alt="" width="20" height="20"> Evaluator</h1>
+  <div id="setup" hidden>
+    <p>Tell the extension where your Evaluator app is first.</p>
+    <button type="button" id="open-options" class="primary">Set the app's address</button>
+  </div>
+  <div id="actions" hidden>
+    <button type="button" id="check-selection" class="primary">Check the selected text</button>
+    <button type="button" id="find-page">Find claims on this page</button>
+    <button type="button" id="screenshot">Find claims in a screenshot of this tab</button>
+    <p class="hint" id="msg" role="status" aria-live="polite"></p>
+    <p class="hint">Or select text on any page, right-click, and choose <strong>Check this claim with Evaluator</strong>.</p>
+    <p class="small"><a href="#" id="options-link">Options</a> · <a href="#" id="app-link">Open Evaluator</a></p>
+  </div>
+<script src="common.js"></script>
+<script src="popup.js"></script>
+</body>
+</html>

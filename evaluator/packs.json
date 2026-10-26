@@ -1,0 +1,144 @@
+{
+  "version": 1,
+  "about": "Starter source packs. Each pack adds one topic and the trusted websites mapped to it. Sites you already have are mapped to the topic, not added twice.",
+  "packs": [
+    {
+      "id": "pack-south-asia",
+      "name": "South Asian history",
+      "audience": "History students and researchers",
+      "description": "National archives, digital libraries and reference works on India, Bangladesh and the wider region.",
+      "topic": { "id": "t-pack-south-asia", "name": "South Asian history", "description": "Archives, digital libraries and reference works on the history of South Asia." },
+      "exampleClaim": "The Permanent Settlement of 1793 impoverished the peasantry of Bengal.",
+      "sources": [
+        { "domain": "en.banglapedia.org", "label": "Banglapedia", "category": "reference", "notes": "National Encyclopedia of Bangladesh, published by the Asiatic Society of Bangladesh. Strong on Bengal." },
+        { "domain": "dsal.uchicago.edu", "label": "Digital South Asia Library", "category": "archive", "notes": "University of Chicago: gazetteers, maps, dictionaries and statistical records." },
+        { "domain": "indianculture.gov.in", "label": "Indian Culture portal", "category": "archive", "notes": "Government of India portal: rare books, manuscripts, archival records." },
+        { "domain": "abhilekh-patal.in", "label": "Abhilekh Patal (National Archives of India)", "category": "primary", "notes": "Digitised records from the National Archives of India." },
+        { "domain": "archive.org", "label": "Internet Archive", "category": "archive", "notes": "Digitised books, gazetteers and periodicals. Check the uploader and edition." },
+        { "domain": "jstor.org", "label": "JSTOR", "category": "academic", "notes": "Peer-reviewed journals. Often only abstracts are searchable." },
+        { "domain": "britannica.com", "label": "Encyclopaedia Britannica", "category": "reference", "notes": "Edited reference work; good for dates, names and established narratives." }
+      ]
+    },
+    {
+      "id": "pack-world-history",
+      "name": "World history",
+      "audience": "History students, Model UN, quiz teams",
+      "description": "Primary-source collections, national archives and edited reference works.",
+      "topic": { "id": "t-pack-world-history", "name": "World history", "description": "Primary-source collections, national archives and reference works on world history." },
+      "exampleClaim": "The Treaty of Versailles required Germany to accept sole responsibility for the First World War.",
+      "sources": [
+        { "domain": "avalon.law.yale.edu", "label": "Avalon Project (Yale Law School)", "category": "primary", "notes": "Full texts of treaties, charters and other documents in law, history and diplomacy." },
+        { "domain": "sourcebooks.fordham.edu", "label": "Internet History Sourcebooks (Fordham)", "category": "primary", "notes": "Translated primary texts for ancient, medieval and modern history." },
+        { "domain": "archives.gov", "label": "US National Archives", "category": "primary", "notes": "Founding documents and US government records." },
+        { "domain": "nationalarchives.gov.uk", "label": "The National Archives (UK)", "category": "primary", "notes": "UK government records, including colonial administration." },
+        { "domain": "loc.gov", "label": "Library of Congress", "category": "archive", "notes": "Digitised collections, maps and newspapers." },
+        { "domain": "metmuseum.org/toah", "label": "Heilbrunn Timeline of Art History (The Met)", "category": "reference", "notes": "Curator-written essays on cultures and periods worldwide." },
+        { "domain": "britannica.com", "label": "Encyclopaedia Britannica", "category": "reference", "notes": "Edited reference work; good for dates, names and established narratives." },
+        { "domain": "worldhistory.org", "label": "World History Encyclopedia", "category": "reference", "notes": "Edited, non-profit encyclopedia. Quality varies by author: follow its own citations." }
+      ]
+    },
+    {
+      "id": "pack-india-law",
+      "name": "Indian law and policy",
+      "audience": "Law students, journalists, civic educators",
+      "description": "Statutes, gazettes, court judgments and independent legislative research for India.",
+      "topic": { "id": "t-pack-india-law", "name": "Indian law and policy", "description": "Statutes, gazettes, judgments and legislative research for India." },
+      "exampleClaim": "The Right to Information Act, 2005 requires public authorities to answer requests within 30 days.",
+      "sources": [
+        { "domain": "indiacode.nic.in", "label": "India Code", "category": "primary", "notes": "Official repository of central and state Acts, with amendments." },
+        { "domain": "egazette.gov.in", "label": "e-Gazette of India", "category": "primary", "notes": "Official notifications, rules and orders as published." },
+        { "domain": "legislative.gov.in", "label": "Legislative Department", "category": "primary", "notes": "The Constitution of India and central legislation." },
+        { "domain": "sci.gov.in", "label": "Supreme Court of India", "category": "primary", "notes": "Judgments and orders of the Supreme Court." },
+        { "domain": "indiankanoon.org", "label": "Indian Kanoon", "category": "primary", "notes": "Searchable judgments and statutes. Unofficial: check important text against the court's own copy." },
+        { "domain": "prsindia.org", "label": "PRS Legislative Research", "category": "academic", "notes": "Independent, non-partisan summaries of bills, budgets and policy." },
+        { "domain": "lawcommissionofindia.nic.in", "label": "Law Commission of India", "category": "primary", "notes": "Reports recommending legal reform." },
+        { "domain": "pib.gov.in", "label": "Press Information Bureau", "category": "primary", "notes": "Official government statements. Shows what the government says, not independent confirmation." }
+      ]
+    },
+    {
+      "id": "pack-health",
+      "name": "Health and medicine",
+      "audience": "Students, health workers, anyone checking a health claim",
+      "description": "Systematic reviews, research databases and public-health bodies.",
+      "topic": { "id": "t-pack-health", "name": "Health and medicine", "description": "Systematic reviews, research databases and public-health bodies." },
+      "exampleClaim": "Antibiotics are effective against the common cold.",
+      "sources": [
+        { "domain": "cochranelibrary.com", "label": "Cochrane Library", "category": "academic", "notes": "Systematic reviews: the strongest level of evidence for treatments." },
+        { "domain": "pubmed.ncbi.nlm.nih.gov", "label": "PubMed", "category": "academic", "notes": "Abstracts of biomedical research. Check study type and size." },
+        { "domain": "who.int", "label": "World Health Organization", "category": "reference", "notes": "International guidance and fact sheets." },
+        { "domain": "cdc.gov", "label": "US Centers for Disease Control and Prevention", "category": "reference", "notes": "Public-health guidance and data." },
+        { "domain": "nhs.uk", "label": "NHS (UK)", "category": "reference", "notes": "Plain-language condition and treatment pages, clinically reviewed." },
+        { "domain": "medlineplus.gov", "label": "MedlinePlus", "category": "reference", "notes": "US National Library of Medicine's plain-language health information." },
+        { "domain": "icmr.gov.in", "label": "Indian Council of Medical Research", "category": "reference", "notes": "Indian research body: guidelines and studies." },
+        { "domain": "mohfw.gov.in", "label": "Ministry of Health and Family Welfare", "category": "primary", "notes": "Official Indian health policy and advisories." }
+      ]
+    },
+    {
+      "id": "pack-economics",
+      "name": "Economics and development",
+      "audience": "Economics students, journalists, policy readers",
+      "description": "Central banks, official statistics and international institutions.",
+      "topic": { "id": "t-pack-economics", "name": "Economics and development", "description": "Central banks, official statistics and international institutions." },
+      "exampleClaim": "India's economy grew faster than China's in 2023.",
+      "sources": [
+        { "domain": "rbi.org.in", "label": "Reserve Bank of India", "category": "primary", "notes": "Monetary policy, bulletins and the Handbook of Statistics on the Indian Economy." },
+        { "domain": "mospi.gov.in", "label": "Ministry of Statistics (MoSPI)", "category": "primary", "notes": "Official GDP, price and survey data for India." },
+        { "domain": "indiabudget.gov.in", "label": "Union Budget and Economic Survey", "category": "primary", "notes": "Budget documents and the annual Economic Survey." },
+        { "domain": "worldbank.org", "label": "World Bank", "category": "reference", "notes": "Development data and reports (includes data.worldbank.org)." },
+        { "domain": "imf.org", "label": "International Monetary Fund", "category": "reference", "notes": "World Economic Outlook and country reports. Forecasts are revised often: check the date." },
+        { "domain": "oecd.org", "label": "OECD", "category": "reference", "notes": "Comparative economic and social statistics." },
+        { "domain": "nber.org", "label": "National Bureau of Economic Research", "category": "academic", "notes": "Working papers: research quality, but not yet peer reviewed." }
+      ]
+    },
+    {
+      "id": "pack-climate",
+      "name": "Climate and environment",
+      "audience": "Science students, journalists, environmental groups",
+      "description": "Scientific assessments, weather and climate agencies, and environmental regulators.",
+      "topic": { "id": "t-pack-climate", "name": "Climate and environment", "description": "Climate assessments, weather agencies and environmental bodies." },
+      "exampleClaim": "The last decade was the warmest on record globally.",
+      "sources": [
+        { "domain": "ipcc.ch", "label": "IPCC", "category": "academic", "notes": "Assessment reports summarising the peer-reviewed climate science." },
+        { "domain": "wmo.int", "label": "World Meteorological Organization", "category": "reference", "notes": "State of the Global Climate reports and records." },
+        { "domain": "noaa.gov", "label": "NOAA", "category": "reference", "notes": "US climate and ocean data." },
+        { "domain": "nasa.gov", "label": "NASA", "category": "reference", "notes": "Climate and Earth-observation data and explainers." },
+        { "domain": "unep.org", "label": "UN Environment Programme", "category": "reference", "notes": "Emissions Gap reports and environmental assessments." },
+        { "domain": "mausam.imd.gov.in", "label": "India Meteorological Department", "category": "primary", "notes": "Official weather and climate records for India." },
+        { "domain": "cpcb.nic.in", "label": "Central Pollution Control Board", "category": "primary", "notes": "Air and water quality data for India." }
+      ]
+    },
+    {
+      "id": "pack-factcheck",
+      "name": "News fact-checks",
+      "audience": "Anyone checking a viral post or forward",
+      "description": "Independent fact-checkers in India and abroad. Useful for viral claims, forwards and quotes.",
+      "topic": { "id": "t-pack-factcheck", "name": "News fact-checks", "description": "Independent fact-checking organisations." },
+      "exampleClaim": "The new ₹2000 note has a GPS nano-chip that tracks where it is.",
+      "sources": [
+        { "domain": "altnews.in", "label": "Alt News", "category": "journalism", "notes": "Indian fact-checker, signatory of the IFCN code of principles." },
+        { "domain": "boomlive.in", "label": "BOOM", "category": "journalism", "notes": "Indian fact-checker, signatory of the IFCN code of principles." },
+        { "domain": "factly.in", "label": "Factly", "category": "journalism", "notes": "Indian fact-checker focused on public data and government claims." },
+        { "domain": "factcheck.afp.com", "label": "AFP Fact Check", "category": "journalism", "notes": "Global news agency's fact-checking service, with Indian coverage." },
+        { "domain": "reuters.com/fact-check", "label": "Reuters Fact Check", "category": "journalism", "notes": "News agency fact-checks." },
+        { "domain": "fullfact.org", "label": "Full Fact", "category": "journalism", "notes": "UK independent fact-checker." },
+        { "domain": "factcheck.org", "label": "FactCheck.org", "category": "journalism", "notes": "US non-partisan fact-checker (Annenberg Public Policy Center)." }
+      ]
+    },
+    {
+      "id": "pack-math-logic",
+      "name": "Mathematics and logic",
+      "audience": "Maths and philosophy students",
+      "description": "Reference works on mathematics, logic and the philosophy of reasoning.",
+      "topic": { "id": "t-pack-math-logic", "name": "Mathematics and logic", "description": "Reference works on mathematics and logic." },
+      "exampleClaim": "If all squares are rectangles and this shape is a rectangle, then it is a square.",
+      "sources": [
+        { "domain": "mathworld.wolfram.com", "label": "Wolfram MathWorld", "category": "reference", "notes": "Edited mathematics encyclopedia." },
+        { "domain": "plato.stanford.edu", "label": "Stanford Encyclopedia of Philosophy", "category": "reference", "notes": "Peer-reviewed entries, including logic and reasoning." },
+        { "domain": "iep.utm.edu", "label": "Internet Encyclopedia of Philosophy", "category": "reference", "notes": "Peer-reviewed philosophy encyclopedia, including fallacies." },
+        { "domain": "dlmf.nist.gov", "label": "NIST Digital Library of Mathematical Functions", "category": "reference", "notes": "Authoritative reference for special functions and formulas." },
+        { "domain": "oeis.org", "label": "OEIS", "category": "reference", "notes": "The On-Line Encyclopedia of Integer Sequences." },
+        { "domain": "arxiv.org", "label": "arXiv", "category": "academic", "notes": "Preprints: often important, but not peer reviewed." }
+      ]
+    }
+  ]
+}

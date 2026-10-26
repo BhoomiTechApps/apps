@@ -1,0 +1,21 @@
+# Cloudflare Worker for the Evaluator organisation server.
+# 1. npm install -g wrangler && wrangler login
+# 2. wrangler kv namespace create COUNTS   (paste the id below)
+# 3. wrangler secret put UPSTREAM_KEY ; wrangler secret put TAVILY_KEY ; wrangler secret put ACCESS_CODES
+# 4. wrangler deploy
+name = "evaluator-server"
+main = "worker.mjs"
+compatibility_date = "2026-06-01"
+
+[vars]
+NAME = "Our school"
+NOTE = ""
+MODELS = "gemini-2.5-flash,gemini-2.5-flash-lite"
+ALLOWED_ORIGINS = "https://evaluator.example.org"
+DAILY_CALLS = "300"
+DAILY_SEARCHES = "120"
+DAILY_TOTAL_CALLS = "6000"
+
+# [[kv_namespaces]]
+# binding = "COUNTS"
+# id = "paste-the-namespace-id-here"

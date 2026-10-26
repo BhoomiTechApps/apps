@@ -1,0 +1,21 @@
+{
+  "kind": "evaluator-list",
+  "v": 1,
+  "id": "india-fact-checkers",
+  "name": "Indian fact-checkers",
+  "description": "Published fact-checks of viral claims, forwards and doctored images, from Indian fact-checking organisations. Good for WhatsApp forwards; check how each one reached its verdict.",
+  "author": "Evaluator community lists",
+  "language": "en, hi, bn, as",
+  "updated": "2026-10-26",
+  "exampleClaim": "A viral video shows floods in Guwahati this week.",
+  "topic": { "name": "Fact-checks (India)", "description": "Fact-checking organisations' published checks." },
+  "sources": [
+    { "domain": "altnews.in", "label": "Alt News", "category": "journalism", "notes": "Fact-checks of viral claims and images, in English and Hindi." },
+    { "domain": "boomlive.in", "label": "BOOM", "category": "journalism", "notes": "Fact-checks in English, Hindi and Bangla." },
+    { "domain": "factly.in", "label": "Factly", "category": "journalism", "notes": "Fact-checks and explainers based on public data." },
+    { "domain": "newschecker.in", "label": "Newschecker", "category": "journalism", "notes": "Fact-checks in several Indian languages, including Bengali." },
+    { "domain": "vishvasnews.com", "label": "Vishvas News", "category": "journalism", "notes": "Fact-checks in Hindi, English and other Indian languages, including Assamese." },
+    { "domain": "thequint.com/news/webqoof", "label": "The Quint WebQoof", "category": "journalism", "notes": "The Quint's fact-checking section." },
+    { "domain": "indiatoday.in/fact-check", "label": "India Today Fact Check", "category": "journalism", "notes": "India Today's fact-checking section." }
+  ]
+}

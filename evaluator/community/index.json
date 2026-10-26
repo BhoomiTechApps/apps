@@ -1,0 +1,38 @@
+{
+  "kind": "evaluator-list-index",
+  "v": 1,
+  "name": "Evaluator community lists",
+  "updated": "2026-10-26",
+  "lists": [
+    {
+      "id": "india-fact-checkers",
+      "name": "Indian fact-checkers",
+      "description": "Published fact-checks of viral claims, forwards and doctored images, from Indian fact-checking organisations. Good for WhatsApp forwards; check how each one reached its verdict.",
+      "author": "Evaluator community lists",
+      "language": "en, hi, bn, as",
+      "updated": "2026-10-26",
+      "count": 7,
+      "url": "india-fact-checkers.json"
+    },
+    {
+      "id": "india-official-statistics",
+      "name": "Indian official statistics",
+      "description": "Government statistics and data: census, surveys, prices, budgets and the economy. Good for claims with numbers in them.",
+      "author": "Evaluator community lists",
+      "language": "en",
+      "updated": "2026-10-26",
+      "count": 6,
+      "url": "india-official-statistics.json"
+    },
+    {
+      "id": "northeast-india",
+      "name": "Assam and Northeast India",
+      "description": "History, culture and current affairs of Assam and the Northeast: government portals, the national culture portal, and Indian theses and scholarship.",
+      "author": "Evaluator community lists",
+      "language": "en",
+      "updated": "2026-10-26",
+      "count": 6,
+      "url": "northeast-india.json"
+    }
+  ]
+}

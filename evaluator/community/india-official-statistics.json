@@ -1,0 +1,20 @@
+{
+  "kind": "evaluator-list",
+  "v": 1,
+  "id": "india-official-statistics",
+  "name": "Indian official statistics",
+  "description": "Government statistics and data: census, surveys, prices, budgets and the economy. Good for claims with numbers in them.",
+  "author": "Evaluator community lists",
+  "language": "en",
+  "updated": "2026-10-26",
+  "exampleClaim": "India's literacy rate was below 50 per cent in the 1991 census.",
+  "topic": { "name": "Official statistics (India)", "description": "Census, surveys and official data." },
+  "sources": [
+    { "domain": "censusindia.gov.in", "label": "Census of India", "category": "primary", "notes": "Census tables and reports." },
+    { "domain": "mospi.gov.in", "label": "Ministry of Statistics (MoSPI)", "category": "primary", "notes": "National surveys, GDP, prices and other official statistics." },
+    { "domain": "data.gov.in", "label": "Open Government Data Platform", "category": "primary", "notes": "Datasets published by government departments." },
+    { "domain": "rbi.org.in", "label": "Reserve Bank of India", "category": "primary", "notes": "Monetary data, banking statistics and reports." },
+    { "domain": "indiabudget.gov.in", "label": "Union Budget", "category": "primary", "notes": "Budget documents and the Economic Survey." },
+    { "domain": "prsindia.org", "label": "PRS Legislative Research", "category": "reference", "notes": "Independent summaries of bills, budgets and data." }
+  ]
+}

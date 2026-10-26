@@ -1,0 +1,20 @@
+{
+  "kind": "evaluator-list",
+  "v": 1,
+  "id": "northeast-india",
+  "name": "Assam and Northeast India",
+  "description": "History, culture and current affairs of Assam and the Northeast: government portals, the national culture portal, and Indian theses and scholarship.",
+  "author": "Evaluator community lists",
+  "language": "en",
+  "updated": "2026-10-26",
+  "exampleClaim": "The Ahom kingdom ruled the Brahmaputra valley for about six hundred years.",
+  "topic": { "name": "Assam and Northeast India", "description": "Government, culture portal and scholarship on the region." },
+  "sources": [
+    { "domain": "assam.gov.in", "label": "Government of Assam", "category": "primary", "notes": "Official portal: departments, schemes and notifications." },
+    { "domain": "mdoner.gov.in", "label": "Ministry of Development of North Eastern Region", "category": "primary", "notes": "Central government programmes for the Northeast." },
+    { "domain": "indianculture.gov.in", "label": "Indian Culture Portal", "category": "archive", "notes": "Digitised manuscripts, rare books and archives, including Northeast collections." },
+    { "domain": "shodhganga.inflibnet.ac.in", "label": "Shodhganga", "category": "academic", "notes": "Indian PhD theses in full text, including many on the Northeast." },
+    { "domain": "abhilekh-patal.in", "label": "Abhilekh Patal (National Archives of India)", "category": "archive", "notes": "Colonial-era records and files." },
+    { "domain": "britannica.com", "label": "Encyclopaedia Britannica", "category": "reference", "notes": "Overviews of the region's history and peoples." }
+  ]
+}

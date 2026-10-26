@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Evaluator extension options</title>
+<link rel="stylesheet" href="ui.css">
+</head>
+<body class="options">
+<main>
+  <h1><img src="icons/icon-48.png" alt="" width="32" height="32"> Evaluator extension</h1>
+  <p>This extension sends what you select, the page you are on, or a screenshot to <strong>your</strong> Evaluator app, which then checks it against the sources you trust, with your own keys. The extension itself reads nothing until you use it, and sends nothing anywhere else.</p>
+  <label for="app-url">Address of your Evaluator app</label>
+  <input type="url" id="app-url" placeholder="https://evaluator.example.org/" autocomplete="off" spellcheck="false">
+  <p class="hint">The address you open Evaluator at, for example the one your school or organisation gave you. For a copy on this computer: <code>http://localhost:8080/</code>.</p>
+  <label class="check"><input type="checkbox" id="allow-screens" checked> Pass screenshots to the app (asks your browser for permission to run a small helper on the app's pages only)</label>
+  <button type="button" id="save" class="primary">Save</button>
+  <p id="msg" role="status" aria-live="polite"></p>
+  <h2>How to use it</h2>
+  <ul>
+    <li>Select a sentence on any web page, right-click, and choose <strong>Check this claim with Evaluator</strong>. Evaluator opens with the claim filled in; press Support, Challenge, Evaluate or Verify.</li>
+    <li>Right-click a page or a link and choose <strong>Find claims on this page</strong> to have Evaluator pick out the claims worth checking.</li>
+    <li>From the toolbar button, <strong>Find claims in a screenshot of this tab</strong> works for images and posts too (your AI model must be able to read pictures).</li>
+  </ul>
+</main>
+<script src="common.js"></script>
+<script src="options.js"></script>
+</body>
+</html>
