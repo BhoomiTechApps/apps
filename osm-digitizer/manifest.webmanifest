@@ -2,7 +2,7 @@
   "name": "OSM Digitizer",
   "short_name": "Digitizer",
   "description": "Pull roads, rivers, wetlands, land cover and village names from OpenStreetMap, or trace them from a map image, and export GeoJSON, KML, Shapefile or DXF.",
-  "id": "./",
+  "id": "/apps/osm-digitizer",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
