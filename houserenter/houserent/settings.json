@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "landlord": {
+    "name": "Sagarika Sinha",
+    "addressLines": [
+      "#H47, West By Lane, 12",
+      "Rajgarh Road, Guwahati",
+      "Assam - 781007"
+    ],
+    "phone": "9401036595"
+  },
+  "propertyAddressLines": [
+    "House No 47",
+    "West Bye Lane 12",
+    "Rajgarh Road",
+    "Guwahati, Assam"
+  ],
+  "invoice": {
+    "title": "House Rent Invoice",
+    "prefix": "HRC",
+    "numberFormat": "{prefix}-{seq}/{year}",
+    "seqDigits": 2,
+    "numbering": "perProperty",
+    "dueDays": 2,
+    "rounding": "nearest",
+    "fileNameFormat": "{mon} {year} - {tenant}"
+  },
+  "rates": {
+    "electricityPerUnit": 9.95,
+    "waterPerLitre": 0.045
+  },
+  "defaultCharges": [
+    {
+      "label": "Electricity Meter Rent",
+      "amount": 5,
+      "on": true
+    },
+    {
+      "label": "Trash",
+      "amount": 25,
+      "on": true
+    },
+    {
+      "label": "WiFi",
+      "amount": 25,
+      "on": true
+    }
+  ],
+  "payment": {
+    "note": "Payment to be made online to the following account",
+    "accountNo": "10055673092",
+    "bankName": "State Bank of India",
+    "branch": "Lachit Nagar Personal Banking Branch",
+    "ifsc": "SBIN0014255",
+    "upiId": "sagarika75ght@oksbi",
+    "showQr": true,
+    "qrUpiId": "sagarika75ght@oksbi",
+    "qrPayeeName": "Sagarika Sinha",
+    "qrIncludeAmount": true
+  },
+  "whatsapp": {
+    "countryCode": "91",
+    "message": "Dear {tenant},\n\nYour house rent invoice {invoiceNo} for {period} is attached.\nTotal payable: Rs. {total}\nDue date: {dueDate}\n\nPay by UPI: {upi}\nor A/c {accountNo}, {bank}, IFSC {ifsc}\n\nThank you,\n{landlord}",
+    "receiptMessage": "Dear {tenant},\n\nReceived Rs. {amount} on {date} by {mode}{reference} towards invoice {invoiceNo} ({period}).\nBalance due: Rs. {balance}\n\nThank you,\n{landlord}"
+  },
+  "paymentModes": [
+    "UPI",
+    "Bank transfer",
+    "Cash",
+    "Cheque",
+    "Other"
+  ],
+  "theme": {
+    "accent": "#0f766e",
+    "soft": "#edf5f4"
+  }
+}

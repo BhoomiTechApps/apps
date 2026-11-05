@@ -1,0 +1,86 @@
+{
+  "propertyId": "p1",
+  "invoices": [
+    {
+      "id": "p1_2026-10",
+      "propertyId": "p1",
+      "propertyCode": "RC 1BH 1F",
+      "propertyAddressLines": [
+        "House No 47",
+        "West Bye Lane 12",
+        "Rajgarh Road",
+        "Guwahati, Assam"
+      ],
+      "invoiceNo": "HRC-09/2026",
+      "invoiceSeq": 9,
+      "invoiceDate": "2026-11-05",
+      "dueDate": "2026-11-07",
+      "billPeriod": "2026-10",
+      "billMonth": "2026-11",
+      "tenantName": "Anthony Bannerjee",
+      "tenantPhone": "",
+      "electricMeterNo": "423363",
+      "waterTankCapacity": 200,
+      "rent": {
+        "qty": 1,
+        "rate": 5500,
+        "amount": 5500
+      },
+      "electricity": {
+        "previous": 2394,
+        "current": 2463,
+        "units": 69,
+        "rate": 9.95,
+        "amount": 686.55
+      },
+      "water": {
+        "capacity": 200,
+        "days": 31,
+        "units": 6200,
+        "rate": 0.045,
+        "amount": 279
+      },
+      "charges": [
+        {
+          "label": "Electricity Meter Rent",
+          "amount": 5
+        },
+        {
+          "label": "Trash",
+          "amount": 50
+        }
+      ],
+      "adjustment": null,
+      "subtotal": 6520.55,
+      "roundOff": 0.45,
+      "total": 6521,
+      "amountInWords": "Rupees Six Thousand Five Hundred Twenty One Only",
+      "createdAt": "2026-11-05T10:00:00.000Z",
+      "updatedAt": "2026-11-05T19:17:16.242Z",
+      "issuer": {
+        "landlord": {
+          "name": "Sagarika Sinha",
+          "addressLines": [
+            "#H47, West By Lane, 12",
+            "Rajgarh Road, Guwahati",
+            "Assam - 781007"
+          ],
+          "phone": "9401036595"
+        },
+        "payment": {
+          "note": "Payment to be made online to the following account",
+          "accountNo": "10055673092",
+          "bankName": "State Bank of India",
+          "branch": "Lachit Nagar Personal Banking Branch",
+          "ifsc": "SBIN0014255",
+          "upiId": "sagarika75ght@oksbi",
+          "showQr": true,
+          "qrUpiId": "sagarika75ght@oksbi",
+          "qrPayeeName": "Sagarika Sinha",
+          "qrIncludeAmount": true
+        }
+      },
+      "pdfFile": "pdf/p1/Oct 2026 - Anthony Bannerjee.pdf"
+    }
+  ]
+}

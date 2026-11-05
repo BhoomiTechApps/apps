@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "properties": [
+    {
+      "id": "p1",
+      "code": "RCC 1BH 1F",
+      "name": "1 BHK, First Floor",
+      "tenantName": "Anthony Bannerjee",
+      "tenantPhone": "9854124386",
+      "addressLines": ["Gokila", "Patharkandi", "Sribhumi", "Assam"],
+      "electricMeterNo": "423363",
+      "waterTankCapacity": 200,
+      "rent": 5500,
+      "electricityRate": 9.95,
+      "waterRate": 0.045,
+      "openingMeterReading": 2394,
+      "charges": [
+        {
+          "label": "Electricity Meter Rent",
+          "amount": 5,
+          "on": true
+        },
+        {
+          "label": "Trash",
+          "amount": 50,
+          "on": true
+        },
+        {
+          "label": "WiFi",
+          "amount": 0,
+          "on": true
+        }
+      ],
+      "enableElectricity": true,
+      "enableWater": true,
+      "active": true,
+      "notes": ""
+    },
+	{
+      "id": "p2",
+      "code": "RCC 2BH 1F",
+      "name": "2 BHK, First Floor",
+      "tenantName": "Debashis Sinha",
+      "tenantPhone": "9859425565",
+      "addressLines": ["Tinokhal", "Patharkandi", "Sribhumi", "Assam"],
+      "electricMeterNo": "285814",
+      "waterTankCapacity": 400,
+      "rent": 6600,
+      "electricityRate": 9.95,
+      "waterRate": 0.045,
+      "openingMeterReading": 9375,
+      "charges": [
+        {
+          "label": "Electricity Meter Rent",
+          "amount": 5,
+          "on": true
+        },
+        {
+          "label": "Trash",
+          "amount": 50,
+          "on": true
+        },
+        {
+          "label": "WiFi",
+          "amount": 0,
+          "on": true
+        }
+      ],
+      "enableElectricity": true,
+      "enableWater": true,
+      "active": true,
+      "notes": ""
+    },
+	{
+      "id": "p3",
+      "code": "RCC 3BH 1F",
+      "name": "3 BHK, First Floor",
+      "tenantName": "Sharat Sinha",
+      "tenantPhone": "9014292113",
+      "addressLines": ["Rajgarh", "Guwahati", "Assam"],
+      "electricMeterNo": "468968",
+      "waterTankCapacity": 500,
+      "rent": 0,
+      "electricityRate": 9.95,
+      "waterRate": 0.045,
+      "openingMeterReading": 7508,
+      "charges": [
+        {
+          "label": "Electricity Meter Rent",
+          "amount": 0,
+          "on": true
+        },
+        {
+          "label": "Trash",
+          "amount": 50,
+          "on": true
+        },
+        {
+          "label": "WiFi",
+          "amount": 190,
+          "on": true
+        }
+      ],
+      "enableElectricity": true,
+      "enableWater": true,
+      "active": true,
+      "notes": ""
+    },
+	{
+      "id": "p4",
+      "code": "AT 2BH GF",
+      "name": "2 BHK, Ground Floor",
+      "tenantName": "Garima Kalita",
+      "tenantPhone": "8638027624",
+      "addressLines": ["Nalbari", "Assam"],
+      "electricMeterNo": "484658",
+      "waterTankCapacity": 250,
+      "rent": 6000,
+      "electricityRate": 9.95,
+      "waterRate": 0.045,
+      "openingMeterReading": 3221,
+      "charges": [
+        {
+          "label": "Electricity Meter Rent",
+          "amount": 0,
+          "on": true
+        },
+        {
+          "label": "Trash",
+          "amount": 50,
+          "on": true
+        },
+        {
+          "label": "WiFi",
+          "amount": 0,
+          "on": true
+        }
+      ],
+      "enableElectricity": true,
+      "enableWater": true,
+      "active": true,
+      "notes": ""
+    }
+  ]
+}
