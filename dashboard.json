@@ -200,6 +200,14 @@
       "icon": "https://bhoomitechapps.github.io/apps/osm-digitizer/icons/icon-192.png",
       "tag": "Maps",
       "desc": "Instantly digitize map from OSM basemaps into GIS geometry layers."
+    },
+	{
+      "id": "jhola",
+      "name": "Jhola Shopper",
+      "url": "https://bhoomitechapps.github.io/apps/jhola/",
+      "icon": "https://bhoomitechapps.github.io/apps/jhola/icons/icon-192.png",
+      "tag": "Utility",
+      "desc": "Prepare instant shopping list from custom catalog and share online."
     }  
   ]
 }
