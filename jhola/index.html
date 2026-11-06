@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Jhola</title>
+<meta name="description" content="Make shopping lists from your own picture catalog and share them on WhatsApp.">
+<meta name="theme-color" content="#d8d5ce">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jhola">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preload" href="vendor/onest/onest-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="jh-frame jh-theme-light" id="frame">
+  <div class="jh-frame-head">
+    <span class="jh-frame-brand">Jhola <span class="jh-frame-ver" id="frameVer"></span></span>
+  </div>
+  <div class="jh-stage">
+    <header class="top">
+      <span class="logo" aria-hidden="true"></span>
+      <span class="top-meta" id="topMeta"></span>
+      <span class="pill warn" id="netPill" hidden>Offline</span>
+      <button class="icon-btn" id="btnSettings" type="button" aria-label="Settings"><span data-icon="settings"></span></button>
+    </header>
+    <main>
+      <section id="view-shop" class="view" data-view="shop">
+        <div class="search-wrap"><span data-icon="search"></span><input id="shopSearch" type="search" placeholder="Search items" autocomplete="off" enterkeyhint="search" aria-label="Search items"></div>
+        <div class="chips" id="shopChips" role="tablist" aria-label="Filter"></div>
+        <div class="grid" id="shopGrid"></div>
+        <div class="empty" id="shopNoMatch" hidden>
+          <p id="shopNoMatchText"></p>
+          <button class="btn primary" id="btnQuickAdd" type="button"><span data-icon="plus"></span><span id="quickAddText"></span></button>
+        </div>
+        <div class="empty" id="shopEmpty" hidden>
+          <p>Your catalog is empty.</p>
+          <button class="btn primary" type="button" data-goto="catalog"><span data-icon="plus"></span>Add your first item</button>
+        </div>
+        <p class="hint center" id="shopHint">Tap a picture to add it. Long-press to edit the item.</p>
+      </section>
+      <section id="view-list" class="view" data-view="list" hidden>
+        <div class="list-head">
+          <label class="sr" for="listName">List name</label>
+          <input id="listName" class="list-name" type="text" maxlength="60" enterkeyhint="done">
+          <button class="btn" id="btnLists" type="button"><span data-icon="list"></span>All lists</button>
+        </div>
+        <div class="list-tools" role="group" aria-label="List options">
+          <button class="toggle" id="tGroup" type="button" aria-pressed="false">Group by category</button>
+          <button class="toggle" id="tHidePicked" type="button" aria-pressed="false">Hide picked</button>
+          <button class="toggle" id="tAwake" type="button" aria-pressed="false" hidden>Keep screen on</button>
+        </div>
+        <div class="stale-bar" id="staleBar" hidden>
+          <span id="staleText"></span>
+          <button class="btn" id="btnCheckStale" type="button"><span data-icon="tag"></span>Check now</button>
+        </div>
+        <ol class="rows" id="listRows"></ol>
+        <div class="empty" id="listEmpty" hidden>
+          <p>This list is empty.</p>
+          <button class="btn primary" type="button" data-goto="shop"><span data-icon="bag"></span>Pick items</button>
+        </div>
+        <div class="summary" id="listSummary" hidden>
+          <div class="sum-top"><span id="sumCount"></span><b id="sumTotal" class="num"></b></div>
+          <div class="sum-sub" id="sumSub"></div>
+          <div class="budget" id="budgetWrap">
+            <div class="bar"><span id="budgetBar"></span></div>
+            <div class="sum-sub"><span id="budgetText"></span><button class="linkish" id="btnBudget" type="button">Set budget</button></div>
+          </div>
+        </div>
+        <div class="actions" id="listActions">
+          <button class="btn primary wide" id="btnShareImg" type="button"><span data-icon="share"></span>Share with pictures</button>
+          <button class="btn" id="btnShareText" type="button"><span data-icon="message"></span>Share as text</button>
+          <button class="btn" id="btnSaveImg" type="button"><span data-icon="image"></span>Save picture</button>
+          <button class="btn" id="btnSaveList" type="button"><span data-icon="download"></span>Save list file</button>
+          <label class="btn" for="fileOpenList"><span data-icon="upload"></span>Open list file</label>
+          <input id="fileOpenList" type="file" accept=".json,application/json" hidden>
+          <button class="btn danger" id="btnClearList" type="button"><span data-icon="trash"></span>Clear</button>
+        </div>
+      </section>
+      <section id="view-catalog" class="view" data-view="catalog" hidden>
+        <div class="toolbar">
+          <div class="search-wrap"><span data-icon="search"></span><input id="catSearch" type="search" placeholder="Filter catalog" autocomplete="off" aria-label="Filter catalog"></div>
+          <button class="btn primary" id="btnAddItem" type="button"><span data-icon="plus"></span>Add item</button>
+        </div>
+        <div class="cat-meta">
+          <span id="catCount"></span>
+          <label class="sort" for="catSort">Sort
+            <select id="catSort">
+              <option value="name">Name</option>
+              <option value="category">Category</option>
+              <option value="checked">Price check due</option>
+              <option value="recent">Recently added</option>
+            </select>
+          </label>
+        </div>
+        <p class="nudge" id="backupNudge" hidden></p>
+        <ul class="cat-rows" id="catRows"></ul>
+      </section>
+    </main>
+    <nav class="tabs" aria-label="Sections">
+      <button type="button" data-tab="shop" class="on"><span data-icon="bag"></span>Shop</button>
+      <button type="button" data-tab="list"><span data-icon="list"></span>List <span class="badge num" id="badge" hidden>0</span></button>
+      <button type="button" data-tab="catalog"><span data-icon="grid"></span>Catalog</button>
+    </nav>
+  </div>
+  <div class="jh-frame-foot" id="frameFoot">Web app developed by <strong>Shankar Sinha</strong> for <strong>BhoomiTech Heritage and Development Foundation</strong> under <strong>CDEP</strong></div>
+  <dialog id="editor" class="sheet">
+    <form id="editorForm" method="dialog">
+      <div class="sheet-head">
+        <h2 id="editorTitle">Add item</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button>
+      </div>
+      <label class="field" for="fName">Name
+        <input id="fName" required maxlength="80" placeholder="Tomatoes" autocomplete="off">
+      </label>
+      <div class="img-zone" id="imgZone" tabindex="0" aria-label="Item picture. You can paste a picture here.">
+        <img id="imgPreview" alt="" hidden>
+        <span id="imgPlaceholder">No picture yet. Search Google below, paste one, or take a photo.</span>
+        <button type="button" class="img-remove" id="btnRemoveImg" hidden aria-label="Remove picture"><span data-icon="close"></span></button>
+        <span class="img-note" id="imgNote" hidden></span>
+      </div>
+      <div class="img-tools">
+        <div class="row">
+          <input id="imgQuery" type="search" placeholder="Search Google Images" enterkeyhint="search" aria-label="Search Google Images">
+          <button type="button" class="btn primary" id="btnImgSearch"><span data-icon="search"></span>Search</button>
+        </div>
+        <div class="gbox" id="gBox" hidden>
+          <p class="gmsg" id="gMsg" hidden></p>
+          <div id="gResults"></div>
+        </div>
+        <div class="row wrap">
+          <button type="button" class="btn small" id="btnPaste"><span data-icon="clipboard"></span>Paste</button>
+          <label class="btn small" for="fileCam"><span data-icon="camera"></span>Camera</label>
+          <input id="fileCam" type="file" accept="image/*" capture="environment" hidden>
+          <label class="btn small" for="fileGal"><span data-icon="image"></span>Gallery</label>
+          <input id="fileGal" type="file" accept="image/*" hidden>
+          <a class="btn small ghost" id="lnkGoogle" target="_blank" rel="noopener"><span data-icon="external"></span>Open in Google</a>
+        </div>
+        <div class="row">
+          <input id="imgUrl" type="url" placeholder="…or paste a picture address (https://…)" aria-label="Picture address">
+          <button type="button" class="btn small" id="btnImgUrl">Use</button>
+        </div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="fPrice">Price</label>
+          <input id="fPrice" class="num" type="number" inputmode="decimal" min="0" step="0.01" placeholder="40">
+          <span class="field-note" id="fPriceAge"></span>
+          <button type="button" class="linkish" id="btnEditorPrice">Check price online</button>
+        </div>
+        <label class="field" for="fUnit">Per
+          <input id="fUnit" maxlength="20" placeholder="kg" list="unitList">
+        </label>
+      </div>
+      <datalist id="unitList"><option>kg</option><option>500 g</option><option>250 g</option><option>100 g</option><option>litre</option><option>500 ml</option><option>packet</option><option>piece</option><option>dozen</option><option>bottle</option><option>bunch</option></datalist>
+      <label class="field" for="fCat">Category
+        <input id="fCat" maxlength="30" placeholder="Vegetables" list="catList" autocomplete="off">
+      </label>
+      <datalist id="catList"></datalist>
+      <label class="field" for="fAka">Also called
+        <input id="fAka" maxlength="120" placeholder="Aloo, আলু" autocomplete="off">
+      </label>
+      <label class="field" for="fDesc">Description
+        <textarea id="fDesc" rows="2" maxlength="300" placeholder="Brand, size, where to find it…"></textarea>
+      </label>
+      <div class="sheet-foot">
+        <button type="button" class="btn danger" id="btnDeleteItem" hidden><span data-icon="trash"></span>Delete</button>
+        <span class="spacer"></span>
+        <button type="submit" class="btn primary" id="btnSaveItem">Save item</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="priceSheet" class="sheet">
+    <form id="priceForm" method="dialog">
+      <div class="sheet-head">
+        <h2>Price check</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button>
+      </div>
+      <div class="ps-item" id="psItem"></div>
+      <div class="field">
+        <label for="psPrice">Today’s price <span id="psUnit"></span></label>
+        <div class="row">
+          <input id="psPrice" class="num" type="number" inputmode="decimal" min="0" step="0.01" enterkeyhint="done">
+          <button type="submit" class="btn primary">Save price</button>
+        </div>
+        <button type="button" class="linkish" id="psSame">Price is unchanged</button>
+      </div>
+      <div class="field">
+        <label for="psQuery">Check online</label>
+        <div class="row">
+          <input id="psQuery" type="search" enterkeyhint="search">
+          <button type="button" class="btn" id="psCheck"><span data-icon="search"></span>Search</button>
+        </div>
+      </div>
+      <div class="offers" id="psOffers"></div>
+      <div class="gbox" id="pBox" hidden>
+        <p class="gmsg" id="pMsg" hidden></p>
+        <div id="pResults"></div>
+      </div>
+      <div class="hist" id="psHistWrap" hidden>
+        <h3>Price history</h3>
+        <ol id="psHist"></ol>
+      </div>
+      <div class="sheet-foot">
+        <span class="muted num" id="psQueue"></span>
+        <span class="spacer"></span>
+        <button type="button" class="btn ghost" id="psNext" hidden>Skip</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="lineSheet" class="sheet">
+    <form id="lineForm" method="dialog">
+      <div class="sheet-head">
+        <div class="ps-item" id="lnItem"></div>
+        <button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button>
+      </div>
+      <div class="field">
+        <label for="lnQty">Quantity <span id="lnUnit"></span></label>
+        <input id="lnQty" class="num" type="number" inputmode="decimal" min="0" step="any" enterkeyhint="done">
+        <div class="qchips" id="lnChips">
+          <button type="button" data-q="0.25">¼</button><button type="button" data-q="0.5">½</button><button type="button" data-q="1">1</button><button type="button" data-q="1.5">1½</button><button type="button" data-q="2">2</button><button type="button" data-q="3">3</button><button type="button" data-q="5">5</button><button type="button" data-q="10">10</button>
+        </div>
+      </div>
+      <label class="field" for="lnNote">Note
+        <input id="lnNote" maxlength="120" placeholder="e.g. ripe ones, small packet" autocomplete="off" enterkeyhint="done">
+      </label>
+      <div class="sheet-foot">
+        <button type="button" class="btn danger" id="lnRemove"><span data-icon="trash"></span>Remove</button>
+        <button type="button" class="btn ghost" id="lnEdit"><span data-icon="edit"></span>Edit item</button>
+        <span class="spacer"></span>
+        <button type="submit" class="btn primary">Done</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="listsSheet" class="sheet">
+    <div class="sheet-body">
+      <div class="sheet-head">
+        <h2>Your lists</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button>
+      </div>
+      <ul class="lists" id="listsRows"></ul>
+      <div class="sheet-foot">
+        <span class="spacer"></span>
+        <button type="button" class="btn primary" id="btnNewList"><span data-icon="plus"></span>New list</button>
+      </div>
+    </div>
+  </dialog>
+  <dialog id="settingsSheet" class="sheet">
+    <div class="sheet-body">
+      <div class="sheet-head">
+        <h2>Settings</h2>
+        <button type="button" class="icon-btn" data-close aria-label="Close"><span data-icon="close"></span></button>
+      </div>
+      <details class="acc" data-acc="appearance">
+        <summary><span class="acc-title">Interface theme</span><span class="acc-meta" id="accTheme"></span><span class="chev" data-icon="chevron"></span></summary>
+        <div class="acc-body">
+          <fieldset class="choices">
+            <legend class="sr">Interface theme</legend>
+            <label class="choice"><input type="radio" name="sTheme" value="light"><span><b>Light</b> (stone, matte)</span></label>
+            <label class="choice"><input type="radio" name="sTheme" value="dark"><span><b>Dark</b> (graphite, matte)</span></label>
+          </fieldset>
+          <p class="hint">To open Jhola in the other theme for one visit, add <code>?theme=dark</code> or <code>?theme=light</code> to its link.</p>
+        </div>
+      </details>
+      <details class="acc" data-acc="shopping">
+        <summary><span class="acc-title">Shopping</span><span class="acc-meta" id="accShopping"></span><span class="chev" data-icon="chevron"></span></summary>
+        <div class="acc-body">
+          <label class="set-row" for="sCurrency"><span>Currency symbol</span><input id="sCurrency" class="narrow" maxlength="4"></label>
+          <label class="set-row" for="sStale"><span>Flag prices not checked for<small>days · 0 turns it off</small></span><input id="sStale" class="narrow num" type="number" inputmode="numeric" min="0" max="365"></label>
+          <label class="set-row" for="sHaptics"><span>Vibrate on tap</span><input id="sHaptics" class="switch" type="checkbox"></label>
+        </div>
+      </details>
+      <details class="acc" data-acc="sharing">
+        <summary><span class="acc-title">Sharing</span><span class="acc-meta" id="accSharing"></span><span class="chev" data-icon="chevron"></span></summary>
+        <div class="acc-body">
+          <label class="set-row" for="sSharePrices"><span>Include prices<small>Turn off when sending a list to a shop or helper</small></span><input id="sSharePrices" class="switch" type="checkbox"></label>
+          <label class="set-row" for="sSkipPicked"><span>Leave out picked items</span><input id="sSkipPicked" class="switch" type="checkbox"></label>
+        </div>
+      </details>
+      <details class="acc" data-acc="search">
+        <summary><span class="acc-title">Picture search</span><span class="acc-meta" id="accSearch"></span><span class="chev" data-icon="chevron"></span></summary>
+        <div class="acc-body">
+          <label class="field" for="gcx">Google search engine ID
+            <input id="gcx" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. 0123456789abcdef0">
+          </label>
+          <p class="hint">Create one free at <a href="https://programmablesearchengine.google.com/controlpanel/create" target="_blank" rel="noopener">programmablesearchengine.google.com</a>, add your shopping sites and turn on Image search. Steps are in the README.</p>
+        </div>
+      </details>
+      <details class="acc" data-acc="data">
+        <summary><span class="acc-title">Your data</span><span class="acc-meta" id="accData"></span><span class="chev" data-icon="chevron"></span></summary>
+        <div class="acc-body">
+          <p class="hint" id="backupAge"></p>
+          <div class="actions">
+            <button class="btn" id="btnExportDb" type="button"><span data-icon="download"></span>Back up (export)</button>
+            <label class="btn" for="fileImportDb"><span data-icon="upload"></span>Restore (import)</label>
+            <input id="fileImportDb" type="file" accept=".json,application/json" hidden>
+            <button class="btn ghost" id="btnLoadSample" type="button">Load starter items</button>
+          </div>
+          <p class="hint" id="storageUsed"></p>
+        </div>
+      </details>
+      <details class="acc" data-acc="app">
+        <summary><span class="acc-title">App</span><span class="acc-meta num" id="accApp"></span><span class="chev" data-icon="chevron"></span></summary>
+        <div class="acc-body">
+          <div class="actions">
+            <button class="btn primary" id="btnInstall" type="button" hidden><span data-icon="download"></span>Install Jhola</button>
+            <button class="btn" id="btnCheckUpdate" type="button"><span data-icon="refresh"></span>Check for update</button>
+            <button class="btn danger" id="btnErase" type="button"><span data-icon="trash"></span>Erase all data</button>
+          </div>
+          <p class="hint">Everything stays on this phone. Nothing is sent to a server.</p>
+        </div>
+      </details>
+    </div>
+  </dialog>
+  <dialog id="confirm" class="mini">
+    <form method="dialog" id="confirmForm">
+      <p id="confirmText"></p>
+      <input id="confirmInput" hidden autocomplete="off">
+      <div class="actions end" id="confirmBtns"></div>
+    </form>
+  </dialog>
+  <div class="ctx" id="ctxMenu" role="menu" hidden>
+    <button type="button" role="menuitem" data-act="copy"><span data-icon="copy"></span>Copy</button>
+    <button type="button" role="menuitem" data-act="paste"><span data-icon="clipboard"></span>Paste</button>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button type="button" id="toastBtn" hidden></button></div>
+</div>
+<noscript><p style="padding:2em;text-align:center">Jhola needs JavaScript turned on.</p></noscript>
+<script src="app.js"></script>
+</body>
+</html>
