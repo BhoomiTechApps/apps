@@ -208,6 +208,14 @@
       "icon": "https://bhoomitechapps.github.io/apps/jhola/icons/icon-192.png",
       "tag": "Utility",
       "desc": "Prepare instant shopping list from custom catalog and share online."
+    },
+	{
+      "id": "houserenter",
+      "name": "Houserent Invoicer",
+      "url": "https://bhoomitechapps.github.io/apps/houserenter/",
+      "icon": "https://bhoomitechapps.github.io/apps/houserenter/icons/icon-192.png",
+      "tag": "Utility",
+      "desc": "Make easy houserent bills and payment history for rented assets."
     }  
   ]
 }
