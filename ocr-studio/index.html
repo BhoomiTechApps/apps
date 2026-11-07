@@ -161,7 +161,7 @@
           <span>Listen</span>
         </button>
         <select id="voiceSelect" class="custom-select voice-select" aria-label="Machine voice" style="display:none;"></select>
-        <button id="keyboardBtn" class="icon-btn" onclick="toggleKeyboard()" title="Eastern Nagari keyboard (for typing handwritten pages)" aria-label="Eastern Nagari keyboard" aria-pressed="false">
+        <button id="keyboardBtn" class="icon-btn" onclick="toggleKeyboard()" title="Type in Eastern Nagari directly in the text box" aria-label="Eastern Nagari typing" aria-pressed="false">
           <i data-lucide="keyboard"></i>
         </button>
         <button class="icon-btn" onclick="openSource()" title="Source details" aria-label="Source details">
@@ -198,13 +198,10 @@
 
     <textarea id="output" lang="bn" placeholder="Text will appear here… You can also type or correct it yourself." spellcheck="false"></textarea>
 
-    <div id="keyboardBar" class="keyboard-bar" style="display:none;">
-      <div class="keyboard-row">
-        <input type="text" id="kbRoman" placeholder="Type in Roman letters, e.g. bishnupriya" autocomplete="off" autocapitalize="off" spellcheck="false">
-        <button class="primary-btn" onclick="insertFromKeyboard()"><i data-lucide="corner-down-left"></i> Insert</button>
-      </div>
-      <div id="kbPreview" class="kb-preview" aria-live="polite"></div>
-      <div class="kb-hint">Enter inserts the word at the cursor. Shift+Enter starts a new line. For handwritten pages, zoom the image on the left and type what you read.</div>
+    <div id="kbHint" class="kb-hint-bar" style="display:none;" aria-live="polite">
+      <i data-lucide="keyboard"></i>
+      <span>Eastern Nagari typing is on. Type Roman letters; Space or Enter finishes a word. Esc turns it off.</span>
+      <span id="kbWord" class="kb-word" style="display:none;"></span>
     </div>
 
     <div id="textStatus" class="text-status"></div>

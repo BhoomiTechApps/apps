@@ -1,8 +1,13 @@
 # OCR Studio 3.0
 
-Version: 3.0.0
+Version: 3.0.1
 
 Offline OCR for printed Eastern Nagari (Bengali–Assamese script) and English, for community heritage and corpus work. Everything runs in the browser; nothing is uploaded.
+
+## What's new in 3.0.1
+
+- **Eastern Nagari typing directly in the text box.** The keyboard button no longer opens a separate input bar. It switches the extracted-text box itself into Eastern Nagari typing: type in Roman letters (e.g. `bishnupriya`) and the word appears in script at the cursor as you type. Space, Enter, a click or an arrow key finishes a word; Backspace corrects the Roman spelling of the word still being typed. Press the button again, or Esc, to go back to normal typing.
+- Service worker cache renamed to `ocr-studio-v3.0.1`.
 
 ## What's new in 3.0.0
 
@@ -62,7 +67,7 @@ Offline OCR for printed Eastern Nagari (Bengali–Assamese script) and English, 
   - **Site default:** set `data-default-theme="light"` (the default) or `"dark"` on the `os-frame` element in `index.html`.
   - **Per-link override:** add `?theme=light` or `?theme=dark` to the address, for example to embed or share a light version.
 - **Frame.** Every screen sits in the BhoomiTech frame, with the app name and running version at the top right and the credit line underneath.
-- **Copy and Paste menu.** Right-clicking in a text field (the extracted text, the keyboard box, the source and model fields) shows a small menu with only Copy and Paste. Right-click is off everywhere else.
+- **Copy and Paste menu.** Right-clicking in a text field (the extracted text, the source and model fields) shows a small menu with only Copy and Paste. Right-click is off everywhere else.
 - **Code protection.** Developer-tools, view-source and save-page shortcuts, developer tools found open, opening a script or style file directly, and fetching those files from the console all return to `index.html`. Text in the extracted-text box is kept and restored. See "Code protection" below for what this can and cannot do.
 - The controls panel remembers whether it was open or closed.
 
@@ -101,7 +106,7 @@ Offline OCR for printed Eastern Nagari (Bengali–Assamese script) and English, 
 - **Collection.** "Add" keeps pages on the device. The collection exports as one corpus: `corpus.txt`, `corpus.jsonl` (text plus source details per page), `pages/` and `training/`.
 - **Source details.** Title, author, year, edition, publisher or source, language, script, permission, digitised by, place, notes. These are remembered per file and written into every export. Pages marked "Community use only" are flagged in the collection README.
 - **Custom language models.** You can add a Tesseract `.traineddata` (or `.gz`) file, for example a Bishnupriya Manipuri model trained from this app's training lines. Damaged or unsuitable files are reported instead of hanging.
-- **Handwriting.** No available model reads handwritten Eastern Nagari reliably, so version 2 speeds up manual transcription instead. The keyboard button opens a Roman-to-script keyboard (the LexiPic Bishnupriya Manipuri rules) that types into the text beside the zoomable page.
+- **Handwriting.** No available model reads handwritten Eastern Nagari reliably, so version 2 speeds up manual transcription instead. The keyboard button turns on Roman-to-script typing (the LexiPic Bishnupriya Manipuri rules) directly in the text box beside the zoomable page.
 - **Image tools:** Enhance (greyscale and contrast stretch), B/W (Otsu threshold) and Reset, alongside Deskew and Perspective.
 - **Recordings** now stay with the page (playback, save, bundle and collection) instead of downloading immediately.
 - **Fixes:**
