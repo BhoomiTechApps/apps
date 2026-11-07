@@ -13,7 +13,7 @@
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="preload" href="vendor/onest/onest-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=1.2.2">
 </head>
 <body>
 <div class="jh-frame jh-theme-light" id="frame">
@@ -288,6 +288,17 @@
           <p class="hint">Create one free at <a href="https://programmablesearchengine.google.com/controlpanel/create" target="_blank" rel="noopener">programmablesearchengine.google.com</a>, add your shopping sites and turn on Image search. Steps are in the README.</p>
         </div>
       </details>
+      <details class="acc" data-acc="storage">
+        <summary><span class="acc-title">Storage</span><span class="acc-meta" id="accStorage"></span><span class="chev" data-icon="chevron"></span></summary>
+        <div class="acc-body">
+          <p class="hint" id="folderInfo"></p>
+          <div class="actions">
+            <button class="btn" id="btnFolder" type="button"><span data-icon="folder"></span>Choose folder</button>
+            <button class="btn ghost" id="btnFolderOff" type="button" hidden>Use browser storage</button>
+          </div>
+          <p class="hint">Pick a folder you made for Jhola, such as Documents/Jhola. Android doesn’t allow the top of Downloads or internal storage.</p>
+        </div>
+      </details>
       <details class="acc" data-acc="data">
         <summary><span class="acc-title">Your data</span><span class="acc-meta" id="accData"></span><span class="chev" data-icon="chevron"></span></summary>
         <div class="acc-body">
@@ -314,6 +325,16 @@
       </details>
     </div>
   </dialog>
+  <dialog id="folderGate" class="mini">
+    <form method="dialog">
+      <p id="folderGateText"></p>
+      <div class="actions end">
+        <button type="button" class="btn ghost" id="gateBrowser">Use this browser</button>
+        <button type="button" class="btn" id="gatePick">Choose folder</button>
+        <button type="button" class="btn primary" id="gateOpen" autofocus>Open folder</button>
+      </div>
+    </form>
+  </dialog>
   <dialog id="confirm" class="mini">
     <form method="dialog" id="confirmForm">
       <p id="confirmText"></p>
@@ -328,6 +349,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite"><span id="toastMsg"></span><button type="button" id="toastBtn" hidden></button></div>
 </div>
 <noscript><p style="padding:2em;text-align:center">Jhola needs JavaScript turned on.</p></noscript>
-<script src="app.js"></script>
+<script src="app.js?v=1.2.2"></script>
 </body>
 </html>
