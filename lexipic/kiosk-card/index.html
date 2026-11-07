@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#3d2c1f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>LexiPic Kiosk</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;1,9..144,400&display=swap" rel="stylesheet">
+  <!-- Vendored locally (not loaded from a CDN) so every icon glyph in
+       the app — many of which carry meaning, not just decoration —
+       still renders correctly on a kiosk's very first launch with zero
+       network connectivity. See vendor/README.md. Fraunces above is
+       left CDN-loaded: it's purely a decorative heading font with a
+       solid serif fallback already in place, so losing it offline is
+       a much smaller cosmetic hit than icons silently turning into
+       words like "folder_open". -->
+  <link rel="stylesheet" href="vendor/material-icons/material-icons.css">
+  <link rel="stylesheet" href="kiosk.css">
+</head>
+<body>
+
+<!-- =====================================================================
+     SETUP SCREEN
+     Shown on first launch and whenever the user taps "Change source".
+     Hidden once data loads successfully.
+     ===================================================================== -->
+<div id="screen-setup" style="display:none;">
+  <div class="setup-card">
+
+    <div class="setup-logo">
+      <span class="material-icons">auto_stories</span>
+      <div>
+        <h1>LexiPic</h1>
+        <p>Heritage Archive · Kiosk</p>
+      </div>
+    </div>
+
+    <div class="setup-modes">
+      <button class="mode-tab active" data-mode="url">🌐 Remote URL</button>
+      <button class="mode-tab" data-mode="usb">💾 USB Drive</button>
+    </div>
+
+    <!-- URL panel -->
+    <div class="setup-panel active" id="panel-url">
+      <label class="setup-label" for="input-url">Page URL to display</label>
+      <input class="setup-input" id="input-url" type="url"
+             placeholder="https://example.com/?lexipic_kiosk=1"
+             autocomplete="off" spellcheck="false">
+      <p class="setup-hint">
+        Enter the full URL of any kiosk page — for example, a LexiPic Kiosk
+        site's fullscreen URL or shortcode page. The PWA displays that page
+        directly, fullscreen, with auto-reload to recover from connection
+        drops. An internet connection is required.
+      </p>
+      <button class="setup-btn" id="btn-start-url">Display This URL</button>
+    </div>
+
+    <!-- USB panel -->
+    <div class="setup-panel" id="panel-usb">
+      <p class="setup-hint">
+        Plug in your USB drive and click the button below to select the
+        <code>lexipic-kiosk-data</code> folder from it. The folder must contain
+        a <code>settings.json</code> file that lists which word sets to show.
+      </p>
+      <button class="setup-btn" id="btn-reconnect-usb" style="display:none;margin-bottom:10px;">
+        <span class="material-icons" style="font-size:18px;vertical-align:middle;margin-right:6px;">link</span>
+        Reconnect to saved USB folder
+      </button>
+      <button class="setup-btn" id="btn-start-usb">
+        <span class="material-icons" style="font-size:18px;vertical-align:middle;margin-right:6px;">folder_open</span>
+        Select folder…
+      </button>
+      <details style="margin-top:20px;">
+        <summary style="font-size:0.78rem;color:#8a7560;cursor:pointer;font-weight:600;">
+          settings.json format
+        </summary>
+        <pre style="margin-top:10px;background:#1e1e1e;color:#d4d4d4;padding:12px;border-radius:10px;font-size:11px;line-height:1.6;overflow-x:auto;">{
+  "layers": [
+    { "slug": "domestic-animals", "name": "Domestic Animals",
+      "enabled": true, "group": "Nature" },
+    { "slug": "numbers", "name": "Numbers 1–10",
+      "enabled": true, "group": "Learning" },
+    { "slug": "colours", "name": "Colours",
+      "enabled": false, "group": "Learning" }
+  ],
+  "kiosk": {
+    "idle_time_seconds": 90,
+    "autoplay_audio": false
+  }
+}</pre>
+        <p style="font-size:0.74rem;color:#8a7560;margin-top:8px;line-height:1.5;">
+          Each <code>slug</code> maps to a <code>{slug}.json</code> file in the same directory.
+          Sets with <code>"enabled": false</code> are hidden. <code>name</code> overrides the
+          set's own name. <code>group</code> labels are shown as section headers on the tile grid.
+          Images and audio can be <code>data:</code> URIs embedded in the set JSON, or plain
+          filenames relative to the data folder (e.g. <code>"image": "cat.jpg"</code>).
+        </p>
+      </details>
+    </div>
+
+    <div id="setup-status" class="setup-status"></div>
+  </div>
+</div>
+
+
+<!-- =====================================================================
+     IFRAME SCREEN — URL mode
+     Displays a remote kiosk page directly, fullscreen, with reload
+     recovery if the connection drops.
+     ===================================================================== -->
+<div id="screen-iframe" style="display:none;">
+  <iframe id="kiosk-iframe" title="LexiPic Kiosk" allow="autoplay"></iframe>
+  <div id="iframe-error" style="display:none;">
+    <span class="material-icons">wifi_off</span>
+    <h2>Can't reach the page</h2>
+    <p id="iframe-error-msg">Retrying…</p>
+  </div>
+</div>
+
+
+<!-- =====================================================================
+     KIOSK APP — USB mode
+     Hidden until data loads.
+     ===================================================================== -->
+<div id="kiosk-root">
+
+  <header>
+    <div class="header-inner">
+      <div class="header-logo">
+        <span class="material-icons">auto_stories</span>
+        <div class="header-title">
+          <h1>LexiPic</h1>
+          <p>Heritage Archive</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <button id="back-to-sets-btn" style="display:none;">
+          <span class="material-icons">arrow_back</span> All Sets
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Sets grid -->
+    <section id="screen-sets">
+      <div class="sets-grid" id="sets-grid"></div>
+      <div id="sets-empty">
+        <span class="material-icons">menu_book</span>
+        <h2>No sets available</h2>
+        <p id="sets-empty-msg">No active word sets were found in the data source.</p>
+      </div>
+    </section>
+
+    <!-- Archive / card slider -->
+    <section id="screen-archive">
+      <div class="archive-header">
+        <div>
+          <h2 id="archive-set-title"><span class="material-icons">menu_book</span><span id="archive-set-title-text">Set name</span></h2>
+          <p id="archive-set-meta">Language · 0 words</p>
+        </div>
+        <div id="archive-progress"></div>
+      </div>
+      <div class="lp-slider-wrapper">
+        <button id="lp-prev-btn" class="lp-nav-btn lp-prev" type="button" aria-label="Previous">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        <div id="lp-archive-slider" class="lp-slider-container" role="list" aria-label="Word archive"></div>
+        <button id="lp-next-btn" class="lp-nav-btn lp-next" type="button" aria-label="Next">
+          <span class="material-icons">chevron_right</span>
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+</div>
+
+<!-- Subtle "change source" escape hatch — visible only when kiosk is active -->
+<button id="btn-change-source" title="Change data source">⚙ source</button>
+
+<script src="app.js"></script>
+</body>
+</html>
