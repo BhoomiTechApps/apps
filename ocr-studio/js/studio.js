@@ -9,7 +9,7 @@
 ( function () {
 	'use strict';
 
-	const APP_VERSION = typeof OCR_STUDIO_VERSION !== 'undefined' ? OCR_STUDIO_VERSION : '3.0.0';
+	const APP_VERSION = typeof OCR_STUDIO_VERSION !== 'undefined' ? OCR_STUDIO_VERSION : '3.0.1';
 	const ENGINE_LABEL = 'Tesseract 5 LSTM (tesseract.js 5.1.1, tessdata 4.0.0 best_int)';
 	const abs = p => new URL( p, location.href ).href;
 	const TESS_PATHS = {
@@ -833,40 +833,107 @@
 		return kbEngine;
 	}
 
-	window.toggleKeyboard = async function () {
-		const bar = $( 'keyboardBar' ), btn = $( 'keyboardBtn' );
-		const show = bar.style.display === 'none';
-		bar.style.display = show ? '' : 'none';
-		btn.setAttribute( 'aria-pressed', show ? 'true' : 'false' );
-		btn.classList.toggle( 'active', show );
-		if ( show ) {
-			try { await loadKeyboard(); } catch ( e ) { showToast( 'The keyboard could not load.' ); }
-			$( 'kbRoman' ).focus();
-		}
-	};
+	// Typing goes straight into the extracted-text box. While the keyboard is
+	// on, Roman letters are collected into the word being typed and that word
+	// is re-transliterated in place on every keystroke, so "b", "bi", "bish"…
+	// grow into the script word at the cursor. Space, Enter, a click or an
+	// arrow key finishes the word. Backspace edits the Roman spelling of the
+	// unfinished word; after that it deletes script characters as usual.
 
-	function insertAtCursor( str ) {
-		const s = output.selectionStart ?? output.value.length, e = output.selectionEnd ?? s;
-		output.setRangeText( str, s, e, 'end' );
-		output.dispatchEvent( new Event( 'input' ) );
+	let kbOn = false;
+	let comp = null; // { start, roman, out } — the unfinished word
+	const ROMAN = /^[\x21-\x7e]+$/; // printable ASCII, no space
+
+	function compIsLive() {
+		if ( ! comp ) return false;
+		const end = comp.start + comp.out.length;
+		return output.selectionStart === end && output.selectionEnd === end &&
+			output.value.slice( comp.start, end ) === comp.out;
 	}
 
-	window.insertFromKeyboard = function ( newline ) {
-		const roman = $( 'kbRoman' ).value;
-		const script = kbEngine ? kbEngine( roman ) : roman;
-		if ( script ) insertAtCursor( script + ( newline ? '\n' : ' ' ) );
-		else if ( newline ) insertAtCursor( '\n' );
-		$( 'kbRoman' ).value = '';
-		$( 'kbPreview' ).textContent = '';
-		$( 'kbRoman' ).focus();
-	};
+	function renderComp() {
+		const script = kbEngine ? kbEngine( comp.roman ) : comp.roman;
+		output.setRangeText( script, comp.start, comp.start + comp.out.length, 'end' );
+		comp.out = script;
+		if ( ! comp.roman ) comp = null;
+		output.dispatchEvent( new Event( 'input' ) );
+		showKbHint();
+	}
 
-	$( 'kbRoman' ).addEventListener( 'input', () => {
-		$( 'kbPreview' ).textContent = kbEngine ? kbEngine( $( 'kbRoman' ).value ) : '';
+	function commitComp() {
+		if ( comp ) { comp = null; showKbHint(); }
+	}
+
+	function showKbHint() {
+		const el = $( 'kbHint' );
+		if ( ! el ) return;
+		el.style.display = kbOn ? '' : 'none';
+		const word = $( 'kbWord' );
+		word.textContent = comp ? comp.roman : '';
+		word.style.display = comp ? '' : 'none';
+	}
+
+	output.addEventListener( 'beforeinput', ( e ) => {
+		if ( ! kbOn || e.isComposing ) return;
+		const t = e.inputType;
+		if ( t === 'insertText' && e.data && ROMAN.test( e.data ) ) {
+			e.preventDefault();
+			if ( ! compIsLive() ) {
+				const s = output.selectionStart, en = output.selectionEnd;
+				if ( en > s ) output.setRangeText( '', s, en, 'start' );
+				comp = { start: s, roman: '', out: '' };
+			}
+			comp.roman += e.data;
+			renderComp();
+		} else if ( t === 'deleteContentBackward' && compIsLive() ) {
+			e.preventDefault();
+			comp.roman = comp.roman.slice( 0, -1 );
+			renderComp();
+		} else {
+			commitComp();
+		}
 	} );
-	$( 'kbRoman' ).addEventListener( 'keydown', ( e ) => {
-		if ( e.key === 'Enter' ) { e.preventDefault(); window.insertFromKeyboard( e.shiftKey ); }
+
+	// Phone keyboards send whole words through composition events, which
+	// cannot be cancelled; convert the finished Roman word once it lands.
+	output.addEventListener( 'compositionend', ( e ) => {
+		if ( ! kbOn || ! e.data || ! ROMAN.test( e.data ) ) return;
+		const data = e.data;
+		setTimeout( () => {
+			const end = output.selectionStart;
+			const start = end - data.length;
+			if ( start < 0 || output.value.slice( start, end ) !== data ) return;
+			comp = { start, roman: data, out: data };
+			renderComp();
+			comp = null; showKbHint();
+		}, 0 );
 	} );
+
+	output.addEventListener( 'keydown', ( e ) => {
+		if ( ! kbOn ) return;
+		if ( e.key === 'Escape' ) { e.preventDefault(); window.toggleKeyboard(); return; }
+		if ( /^(Arrow|Home|End|Page)/.test( e.key ) || e.key === 'Tab' ) commitComp();
+	} );
+	output.addEventListener( 'pointerdown', commitComp );
+	output.addEventListener( 'blur', commitComp );
+
+	window.toggleKeyboard = async function () {
+		const btn = $( 'keyboardBtn' );
+		if ( ! kbOn ) {
+			try { await loadKeyboard(); } catch ( e ) { showToast( 'The keyboard could not load.' ); return; }
+		}
+		kbOn = ! kbOn;
+		comp = null;
+		btn.setAttribute( 'aria-pressed', kbOn ? 'true' : 'false' );
+		btn.classList.toggle( 'active', kbOn );
+		btn.title = kbOn ? 'Eastern Nagari typing is on (click or press Esc to turn off)' : 'Type in Eastern Nagari directly in the text box';
+		output.classList.toggle( 'kb-on', kbOn );
+		output.placeholder = kbOn
+			? 'Type in Roman letters, e.g. bishnupriya — it appears here in Eastern Nagari.'
+			: 'Text will appear here… You can also type or correct it yourself.';
+		showKbHint();
+		output.focus();
+	};
 
 	// ── Image enhancement ───────────────────────────────────────────────────
 
