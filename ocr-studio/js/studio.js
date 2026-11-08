@@ -9,7 +9,7 @@
 ( function () {
 	'use strict';
 
-	const APP_VERSION = typeof OCR_STUDIO_VERSION !== 'undefined' ? OCR_STUDIO_VERSION : '3.0.1';
+	const APP_VERSION = typeof OCR_STUDIO_VERSION !== 'undefined' ? OCR_STUDIO_VERSION : '3.2.0';
 	const ENGINE_LABEL = 'Tesseract 5 LSTM (tesseract.js 5.1.1, tessdata 4.0.0 best_int)';
 	const abs = p => new URL( p, location.href ).href;
 	const TESS_PATHS = {
@@ -241,6 +241,44 @@
 		return out;
 	}
 
+	// ── Scan clean-up (js/prep.js) ──────────────────────────────────────────
+	// A cleaned copy of the page is what the engine reads; the page on screen,
+	// the searchable PDF and the training-line images keep the original.
+
+	const CLEANUP_MODES = [ 'auto', 'off', 'faded', 'lowres', 'heavy', 'specks' ];
+	function cleanupMode() {
+		const v = $( 'cleanup' ) ? $( 'cleanup' ).value : 'auto';
+		return CLEANUP_MODES.includes( v ) ? v : 'auto';
+	}
+	if ( $( 'cleanup' ) ) {
+		try { const v = localStorage.getItem( 'ocr-studio:cleanup' ); if ( CLEANUP_MODES.includes( v ) ) $( 'cleanup' ).value = v; } catch ( e ) { /* ignore */ }
+		$( 'cleanup' ).addEventListener( 'change', () => { try { localStorage.setItem( 'ocr-studio:cleanup', cleanupMode() ); } catch ( e ) { /* ignore */ } } );
+	}
+
+	// Word and line boxes found on an enlarged copy, mapped back to the page.
+	function scaleBoxes( data, f ) {
+		if ( f === 1 ) return;
+		const seen = new Set();
+		const fix = o => {
+			if ( ! o || ! o.bbox || seen.has( o.bbox ) ) return;
+			seen.add( o.bbox );
+			[ 'x0', 'y0', 'x1', 'y1' ].forEach( k => { o.bbox[ k ] = Math.round( o.bbox[ k ] * f ); } );
+		};
+		( data.blocks || [] ).forEach( b => { fix( b ); ( b.paragraphs || [] ).forEach( p => { fix( p ); ( p.lines || [] ).forEach( l => { fix( l ); ( l.words || [] ).forEach( w => { fix( w ); ( w.symbols || [] ).forEach( fix ); } ); } ); } ); } );
+		[ 'lines', 'words', 'symbols', 'paragraphs' ].forEach( k => ( data[ k ] || [] ).forEach( fix ) );
+	}
+
+	window.viewCleanPage = function () {
+		const c = state.result && state.result.cleanCanvas;
+		if ( ! c ) return;
+		c.toBlob( b => {
+			const url = URL.createObjectURL( b );
+			const win = window.open( url, '_blank' );
+			if ( ! win ) download( b, 'cleaned-page.png' );
+			setTimeout( () => URL.revokeObjectURL( url ), 60000 );
+		}, 'image/png' );
+	};
+
 	window.runRecognition = async function () {
 		if ( state.busy ) return;
 		const canvas = $( 'canvas' );
@@ -253,10 +291,20 @@
 			const w = await getWorker( lang );
 			const snapshot = cloneCanvas( canvas );
 			const page = currentPageNo();
+			let input = snapshot, cleanup = null;
+			if ( cleanupMode() !== 'off' && typeof OCRPrep !== 'undefined' ) {
+				setProgress( 'Cleaning up the scan…' );
+				await new Promise( r => setTimeout( r, 30 ) ); // let the label paint
+				try {
+					cleanup = OCRPrep.prepare( snapshot, cleanupMode() );
+					input = cleanup.canvas;
+				} catch ( e ) { console.warn( 'Clean-up skipped:', e ); cleanup = null; }
+			}
 			const { data } = await Promise.race( [
-				w.recognize( snapshot, { pdfTitle: state.source.title || fileName() || 'OCR Studio' }, { text: true, blocks: true } ),
+				w.recognize( input, { pdfTitle: state.source.title || fileName() || 'OCR Studio' }, { text: true, blocks: true } ),
 				state.workerFailed,
 			] );
+			if ( cleanup ) scaleBoxes( data, 1 / cleanup.scale );
 			state.result = {
 				page,
 				fileName: fileName(),
@@ -266,6 +314,8 @@
 				snapshot,
 				confidence: Math.round( data.confidence || 0 ),
 				at: new Date().toISOString(),
+				cleanup: cleanup ? cleanup.info : null,
+				cleanCanvas: cleanup ? cleanup.canvas : null,
 			};
 			output.value = state.result.rawText;
 			if ( state.audio && state.audio.page !== page ) {
@@ -342,6 +392,20 @@
 			? 'Training lines ready (' + a.pairs.length + ').'
 			: ( a.detected ? 'Text has ' + a.typed + ' lines, page has ' + a.detected + ': training lines need one text line per printed line.' : '' );
 		el.append( span );
+		const cu = state.result.cleanup;
+		if ( cu ) {
+			const note = document.createElement( 'div' );
+			note.className = 'cleanup-note';
+			const what = cu.steps.length ? cu.steps.join( ', ' ) : 'nothing needed';
+			note.append( 'Scan clean-up' + ( cu.kind && cu.kind.length ? ' (' + cu.kind.join( ', ' ) + ')' : '' ) + ': ' + what + '. ' );
+			if ( cu.steps.length ) {
+				const b = document.createElement( 'button' );
+				b.className = 'link-btn'; b.textContent = 'View cleaned page';
+				b.onclick = window.viewCleanPage;
+				note.append( b );
+			}
+			el.append( note );
+		}
 	}
 
 	output.addEventListener( 'input', () => {
