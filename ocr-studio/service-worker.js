@@ -3,7 +3,7 @@
  * Bengali, Assamese and English models, so OCR works fully offline after
  * the first visit. Bump CACHE on every release. Machine voices are cached
  * separately, on first use (see VOICE_CACHE). */
-const CACHE = "ocr-studio-v3.0.1";
+const CACHE = "ocr-studio-v3.2.0";
 
 // Machine voices and the speech engine (vendor/tts/) are large, so they are
 // not precached. They are downloaded the first time someone presses Listen
@@ -21,6 +21,7 @@ const SHELL = [
   "./style.css",
   "./app.js",
   "./js/studio.js",
+  "./js/prep.js",
   "./js/theme.js",
   "./js/protect.js",
   "./js/voice.js",

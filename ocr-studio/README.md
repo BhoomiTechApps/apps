@@ -1,8 +1,20 @@
 # OCR Studio 3.0
 
-Version: 3.0.1
+Version: 3.2.0
 
 Offline OCR for printed Eastern Nagari (Bengali–Assamese script) and English, for community heritage and corpus work. Everything runs in the browser; nothing is uploaded.
+
+## What's new in 3.2.0
+
+- **Scan clean-up for poor print and scans** (`js/prep.js`). Before recognition, the app measures the scan (line spacing, stroke thickness, paper evenness, ink contrast, specks) and cleans a *copy* of the page to suit it. The picture on screen, the searchable PDF and the training-line images keep the original.
+  - Faded print, uneven or yellowed paper, shadows: the background is evened out.
+  - Small or low-resolution text: the copy is enlarged so lines reach the size the models were trained on.
+  - Thin, faint or blurred strokes: the ink is strengthened slightly.
+  - Specks and broken print: specks are smoothed away.
+- The setting beside Language (scan icon) is **Auto** by default. **Off** reads the page exactly as before; **Faded**, **Low-res**, **Heavy ink** and **Specks** force one treatment when Auto picks wrongly for a book. Under the text, a note says what was detected and done, and *View cleaned page* shows the copy the engine read.
+- Tested on degraded copies of a Bishnupriya Manipuri page (BN/AS/EN, character error rate before → after): faded 27 % → 7 %, low resolution 20 % → 9 %, blur + JPEG 12 % → 8 %, broken print with specks 51 % → 39 %, ink bleed 15 % → 14 %, phone shadow 6 % → 4 %, clean original 4.0 % → 3.6 %. Black-and-white conversion, sharpening and stroke thinning made results worse and are not used.
+- The auto-correct of 3.1.0 has been removed.
+- Service worker cache renamed to `ocr-studio-v3.2.0`.
 
 ## What's new in 3.0.1
 
