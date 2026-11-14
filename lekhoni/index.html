@@ -1,0 +1,1049 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>লেখনী v5.3.5 — Bengali &amp; Assamese DTP</title>
+<meta name="description" content="Offline desktop publishing for Bengali and Assamese, with phonetic typing.">
+<meta name="theme-color" content="#FBF9F3">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="icon" href="icons/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Bengali:wght@400;600;700&family=Noto+Sans+Bengali:wght@400;600;700&family=Tiro+Bangla&family=Hind+Siliguri:wght@400;600;700&family=Baloo+Da+2:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=5.3.5">
+</head>
+<body>
+<div id="app">
+
+  <header class="toolbar" id="toolbar">
+    <div class="brand">
+      <svg class="brand-logo" viewBox="0 0 64 64" aria-hidden="true"> <rect width="64" height="64" rx="14" fill="#A6402D"/> <path d="M30.5 39 C28.5 27, 37.5 13.5, 55 6 C52.5 19.5, 45 30, 30.5 39 Z" fill="#FFF9F4"/> <path d="M30 41.5 L53 8.5" fill="none" stroke="#A6402D" stroke-width="1.6" stroke-linecap="round"/> <path d="M36.2 27.6 L33 26.4 M41.3 20.2 L38.6 18.4 M46.4 13.6 L44.4 11.6 M44.7 23.6 L48.1 24.2 M39.4 31 L42.6 31.9" fill="none" stroke="#A6402D" stroke-width="1.3" stroke-linecap="round"/> <rect x="21" y="35" width="20" height="4" rx="2" fill="#FFF9F4"/> <path d="M24 39h14v2.5c4.5 1.3 7 4.4 7 8.5v4.5a3 3 0 0 1-3 3H20a3 3 0 0 1-3-3V50c0-4.1 2.5-7.2 7-8.5z" fill="#FFF9F4"/> <rect x="19.5" y="48" width="23" height="3" rx="1.5" fill="#A6402D" opacity="0.35"/> </svg>
+      <span class="brand-text"><b>লেখনী</b> <span class="brand-ver" id="brand-ver">v5.3.5</span></span>
+    </div>
+
+    <div class="tool-group">
+      <div class="tg-row">
+        <button class="tbtn rbtn" id="btn-open-project" title="Open a project file (.pub)">
+          <svg viewBox="0 0 20 20"><path d="M2.5 6V4.5a1 1 0 0 1 1-1h4l1.5 2h7.5a1 1 0 0 1 1 1V7"/><path d="M2.5 7h15l-1.4 8.2a1 1 0 0 1-1 .8H4.9a1 1 0 0 1-1-.8z"/></svg>
+          <span>Open</span>
+        </button>
+        <button class="tbtn rbtn" id="btn-save-project" title="Save project file (.pub) — Ctrl+S">
+          <svg viewBox="0 0 20 20"><path d="M4 3h9.5L17 6.5V16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M6.5 3v4h6V3M6 17v-5.5h8V17"/></svg>
+          <span>Save</span>
+        </button>
+        <button class="tbtn rbtn" id="btn-save-as" title="Save a copy as Word (.docx), InDesign (.idml) or plain text (.txt)">
+          <svg viewBox="0 0 20 20"><path d="M4 3h9.5L17 6.5V16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M7 10.5h6M10 7.5v6"/></svg>
+          <span>Save as</span>
+        </button>
+        <button class="tbtn rbtn" id="btn-close-project" title="Close this project and start a new one">
+          <svg viewBox="0 0 20 20"><path d="M5 2.5h6.5L15 6v11.5H5z"/><path d="M8 9.5l4 4m0-4l-4 4"/></svg>
+          <span>Close</span>
+        </button>
+      </div>
+      <div class="tg-label">Project</div>
+    </div>
+
+    <div class="tool-group">
+      <div class="tg-row">
+        <button class="tbtn rbtn" id="print-doc" title="Print every page">
+          <svg viewBox="0 0 20 20"><path d="M5.5 7V3h9v4"/><rect x="2.5" y="7" width="15" height="7" rx="1.5"/><path d="M5.5 11.5h9V17h-9z"/></svg>
+          <span>Print</span>
+        </button>
+        <button class="tbtn rbtn" id="btn-save-pdf" title="Export every page to PDF (choose “Save as PDF” in the print dialog)">
+          <svg viewBox="0 0 20 20"><path d="M5 2.5h6.5L15 6v11.5H5z"/><path d="M10 8v6m-2.5-2.5L10 14l2.5-2.5"/></svg>
+          <span>PDF</span>
+        </button>
+      </div>
+      <div class="tg-label">Output</div>
+    </div>
+
+    <div class="tool-group">
+      <div class="tg-row">
+        <button class="tbtn rbtn" id="btn-undo" title="Undo — Ctrl+Z" disabled>
+          <svg viewBox="0 0 20 20"><path d="M7.5 4.5L4 8l3.5 3.5"/><path d="M4 8h8a4 4 0 0 1 0 8h-2"/></svg>
+          <span>Undo</span>
+        </button>
+        <button class="tbtn rbtn" id="btn-redo" title="Redo — Ctrl+Y" disabled>
+          <svg viewBox="0 0 20 20"><path d="M12.5 4.5L16 8l-3.5 3.5"/><path d="M16 8H8a4 4 0 0 0 0 8h2"/></svg>
+          <span>Redo</span>
+        </button>
+        <button class="tbtn rbtn danger" id="btn-delete-obj" title="Delete the selected object(s) — Delete key" disabled>
+          <svg viewBox="0 0 20 20"><path d="M3.5 5.5h13M8 5.5V3.5h4v2"/><path d="M5 5.5l.9 11a1 1 0 0 0 1 .9h6.2a1 1 0 0 0 1-.9l.9-11"/><path d="M8.3 8.5v6M11.7 8.5v6"/></svg>
+          <span>Delete</span>
+        </button>
+        <button class="tbtn rbtn" id="btn-find" title="Find &amp; replace — Ctrl+F">
+          <svg viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5"/><path d="M12.3 12.3L17 17"/></svg>
+          <span>Find</span>
+        </button>
+      </div>
+      <div class="tg-label">Edit</div>
+    </div>
+
+    <div class="tool-group">
+      <div class="tg-row">
+        <button class="tbtn rbtn" id="tool-text" title="Text box — then click on the page">
+          <svg viewBox="0 0 20 20"><path d="M4 5.5V3.5h12v2M10 3.5v13M7.5 16.5h5"/></svg>
+          <span>Text</span>
+        </button>
+        <button class="tbtn rbtn" id="tool-image" title="Image — then click on the page">
+          <svg viewBox="0 0 20 20"><rect x="2.5" y="4" width="15" height="12" rx="1.5"/><circle cx="7" cy="8" r="1.5"/><path d="M3 15l4.5-4.5 3 3 2.5-2.5L17 15"/></svg>
+          <span>Image</span>
+        </button>
+        <button class="tbtn rbtn" id="tool-table" title="Table — then click on the page">
+          <svg viewBox="0 0 20 20"><rect x="2.5" y="3.5" width="15" height="13" rx="1"/><path d="M2.5 8h15M2.5 12.5h15M8 3.5v13"/></svg>
+          <span>Table</span>
+        </button>
+        <span class="tg-sep" aria-hidden="true"></span>
+        <button class="tbtn rbtn" id="tool-rectangle" title="Rectangle — then click on the page">
+          <svg viewBox="0 0 20 20"><rect x="3" y="5" width="14" height="10" rx="0.5"/></svg>
+          <span>Box</span>
+        </button>
+        <button class="tbtn rbtn" id="tool-circle" title="Circle / ellipse — then click on the page">
+          <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.5"/></svg>
+          <span>Circle</span>
+        </button>
+        <button class="tbtn rbtn" id="tool-star" title="Star — then click on the page">
+          <svg viewBox="0 0 20 20"><path d="M10 3l1.9 4.9 5.2.3-4.1 3.3 1.4 5.1L10 13.7l-4.4 2.9 1.4-5.1-4.1-3.3 5.2-.3z"/></svg>
+          <span>Star</span>
+        </button>
+        <button class="tbtn rbtn" id="tool-line" title="Line — then click on the page">
+          <svg viewBox="0 0 20 20"><path d="M4 16L16 4"/></svg>
+          <span>Line</span>
+        </button>
+      </div>
+      <div class="tg-label">Insert</div>
+    </div>
+
+    <div class="toolbar-spacer"></div>
+
+    <div class="tool-group">
+      <div class="tg-row">
+        <div class="seg" role="group" aria-label="Script">
+          <button class="tbtn script-btn" id="lang-bn" title="Bengali script (র)">বাংলা</button>
+          <button class="tbtn script-btn" id="lang-as" title="Assamese script (ৰ, ৱ)">অসমীয়া</button>
+        </div>
+        <button class="tbtn rbtn" id="toggle-phonetic" title="Phonetic typing: type roman letters, get Bengali/Assamese — Ctrl+M">
+          <span class="glyph" aria-hidden="true">A→অ</span>
+          <span>Phonetic</span>
+        </button>
+      </div>
+      <div class="tg-label">Typing</div>
+    </div>
+
+    <div class="tool-group">
+      <div class="tg-row">
+        <button class="tbtn rbtn" id="zoom-out" title="Zoom out (Ctrl + scroll)">
+          <svg viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5"/><path d="M12.3 12.3L17 17M6.5 8.5h4"/></svg>
+          <span>Out</span>
+        </button>
+        <select class="tsel zoom-select" id="zoom-select" title="Zoom">
+          <option value="0.5">50%</option>
+          <option value="0.75">75%</option>
+          <option value="1">100%</option>
+          <option value="1.25">125%</option>
+          <option value="1.5">150%</option>
+          <option value="2">200%</option>
+          <option value="3">300%</option>
+          <option value="fit-page">Fit page</option>
+          <option value="fit-width">Fit width</option>
+          <option value="custom" id="zoom-custom" hidden>100%</option>
+        </select>
+        <button class="tbtn rbtn" id="zoom-in" title="Zoom in (Ctrl + scroll)">
+          <svg viewBox="0 0 20 20"><circle cx="8.5" cy="8.5" r="5"/><path d="M12.3 12.3L17 17M6.5 8.5h4M8.5 6.5v4"/></svg>
+          <span>In</span>
+        </button>
+        <button class="tbtn rbtn" id="toggle-panel" title="Show or hide the Properties panel">
+          <svg viewBox="0 0 20 20"><rect x="2.5" y="3.5" width="15" height="13" rx="1.5"/><path d="M12.5 3.5v13"/></svg>
+          <span>Panel</span>
+        </button>
+        <a class="tbtn rbtn" id="btn-help" href="https://bhoomitechapps.github.io/documentation/lekhoni/" target="_blank" rel="noopener" title="User manual (opens in a new tab) — F1">
+          <svg viewBox="0 0 20 20"><circle cx="10" cy="10" r="7.5"/><path d="M7.8 7.6a2.3 2.3 0 0 1 4.4.9c0 1.6-2.2 1.9-2.2 3.3"/><path d="M10 14.6v.2"/></svg>
+          <span>Help</span>
+        </a>
+      </div>
+      <div class="tg-label">View</div>
+    </div>
+
+  </header>
+
+  <div class="workspace" id="workspace">
+    <nav class="pages-rail" id="pages-rail" aria-label="Pages"></nav>
+
+    <div class="canvas-scroll" id="canvas-scroll">
+      <div class="page-stage" id="page-stage"></div>
+    </div>
+
+    <aside class="props-panel" id="props-panel" aria-label="Properties" data-sel="none">
+      <div class="props-tabs" role="tablist">
+        <button class="ptab" role="tab" data-tab="text">Text</button>
+        <button class="ptab" role="tab" data-tab="frame">Frame</button>
+        <button class="ptab" role="tab" data-tab="arrange">Arrange</button>
+        <button class="ptab" role="tab" data-tab="page">Page</button>
+      </div>
+
+      <div class="props-body">
+
+        <!-- ───────────── TEXT ───────────── -->
+        <section class="ppane" data-pane="text" role="tabpanel">
+          <p class="pane-hint">Select a text box or table to format it.</p>
+
+          <div class="psec" data-for="text" id="group-pstyle">
+            <h4>Paragraph style</h4>
+            <select class="tsel full" id="para-style" title="Apply a saved paragraph style to this box"></select>
+            <div class="pbtn-row">
+              <button class="tbtn pbtn sm" id="style-new" title="Save this box's formatting as a new style">Save as style…</button>
+              <button class="tbtn pbtn sm" id="style-update" title="Redefine the style from this box and update every box that uses it">Update style</button>
+              <button class="tbtn pbtn sm" id="style-delete" title="Delete the selected style">Delete</button>
+            </div>
+          </div>
+
+          <div class="psec" data-for="text table" id="group-font">
+            <h4>Font</h4>
+            <select class="tsel full" id="font-family" title="Typeface">
+              <option value="'Noto Serif Bengali', serif">Noto Serif Bengali</option>
+              <option value="'Noto Sans Bengali', sans-serif">Noto Sans Bengali</option>
+              <option value="'Tiro Bangla', serif">Tiro Bangla</option>
+              <option value="'Hind Siliguri', sans-serif">Hind Siliguri</option>
+              <option value="'Baloo Da 2', sans-serif">Baloo Da 2</option>
+            </select>
+            <div class="pfield-row">
+              <label class="pfield">Size (pt)
+                <input class="tnum" id="font-size" type="number" min="4" max="400" step="0.5" value="14" list="size-list">
+              </label>
+              <datalist id="size-list">
+                <option value="8"></option><option value="9"></option><option value="10"></option><option value="11"></option>
+                <option value="12"></option><option value="14"></option><option value="16"></option><option value="18"></option>
+                <option value="20"></option><option value="24"></option><option value="28"></option><option value="36"></option>
+                <option value="48"></option><option value="60"></option><option value="72"></option>
+              </datalist>
+              <div class="seg" role="group" aria-label="Font size steps">
+                <button class="tbtn" id="size-down" title="Smaller (Ctrl+[)">A−</button>
+                <button class="tbtn" id="size-up" title="Larger (Ctrl+])">A+</button>
+              </div>
+            </div>
+            <button class="tbtn pbtn" id="add-font" title="Add a font file (.ttf, .otf, .woff, .woff2)">+ Add font file</button>
+          </div>
+
+          <div class="psec" data-for="text table" id="group-style">
+            <h4>Character</h4>
+            <div class="pfield-row tight">
+              <div class="seg" role="group" aria-label="Text style">
+                <button class="tbtn" id="style-bold" title="Bold — Ctrl+B"><b>B</b></button>
+                <button class="tbtn" id="style-italic" title="Italic — Ctrl+I"><i>I</i></button>
+                <button class="tbtn" id="style-underline" title="Underline — Ctrl+U"><u>U</u></button>
+                <button class="tbtn" id="style-strike" title="Strikethrough"><s>S</s></button>
+              </div>
+              <div class="seg" role="group" aria-label="Baseline">
+                <button class="tbtn" id="style-sup" title="Superscript (highlight text first)">x<sup>2</sup></button>
+                <button class="tbtn" id="style-sub" title="Subscript (highlight text first)">x<sub>2</sub></button>
+              </div>
+            </div>
+            <div class="pfield-row tight">
+              <label class="pfield inline">Colour
+                <input class="tcolor" id="text-color" type="color" value="#1b1d22">
+              </label>
+              <label class="pfield inline">Highlight
+                <input class="tcolor" id="text-highlight" type="color" value="#fff176">
+              </label>
+              <button class="tbtn pbtn sm" id="highlight-none" title="Remove highlight">None</button>
+            </div>
+            <div class="pfield-row tight">
+              <label class="pfield grow">Case
+                <select class="tsel" id="text-case">
+                  <option value="none">As typed</option>
+                  <option value="uppercase">UPPERCASE</option>
+                  <option value="lowercase">lowercase</option>
+                  <option value="capitalize">Title Case</option>
+                  <option value="smallcaps">Small Caps</option>
+                </select>
+              </label>
+              <button class="tbtn pbtn sm" id="clear-format" title="Remove character formatting (bold, colours, sizes…)">Clear formatting</button>
+            </div>
+            <div class="pfield-row tight">
+              <button class="tbtn pbtn sm" id="link-edit" title="Add or edit a hyperlink on the highlighted text — Ctrl+K">
+                <svg viewBox="0 0 16 16"><path d="M6.5 9.5l3-3M7 4.5l1-1a2.8 2.8 0 0 1 4 4l-1 1M9 11.5l-1 1a2.8 2.8 0 0 1-4-4l1-1"/></svg> Hyperlink…</button>
+              <button class="tbtn pbtn sm" id="link-remove" title="Remove the hyperlink at the cursor">Remove link</button>
+            </div>
+            <p class="pnote">Highlight words to format just them; with nothing highlighted the whole box changes.</p>
+          </div>
+
+          <div class="psec" data-for="text table" id="group-para">
+            <h4>Alignment <span class="h4-note">· cursor in text: that paragraph</span></h4>
+            <div class="seg" role="group" aria-label="Alignment">
+              <button class="tbtn" id="align-left" title="Align left"><svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h8M2 12h10"/></svg></button>
+              <button class="tbtn" id="align-center" title="Align centre"><svg viewBox="0 0 16 16"><path d="M2 4h12M4 8h8M3 12h10"/></svg></button>
+              <button class="tbtn" id="align-right" title="Align right"><svg viewBox="0 0 16 16"><path d="M2 4h12M6 8h8M4 12h10"/></svg></button>
+              <button class="tbtn" id="align-justify" title="Justify"><svg viewBox="0 0 16 16"><path d="M2 4h12M2 8h12M2 12h12"/></svg></button>
+            </div>
+
+            <h4>Lists</h4>
+            <div class="pfield-row tight">
+              <div class="seg" role="group" aria-label="Lists">
+                <button class="tbtn" id="list-bullet" title="Bulleted list"><svg viewBox="0 0 16 16"><circle cx="3" cy="4" r="1" class="fill"/><circle cx="3" cy="8" r="1" class="fill"/><circle cx="3" cy="12" r="1" class="fill"/><path d="M6 4h8M6 8h8M6 12h8"/></svg></button>
+                <button class="tbtn" id="list-number" title="Numbered list"><svg viewBox="0 0 16 16"><path d="M2.5 2.8l1-.6v3.6M2 9.3c.3-.6 1.9-.8 1.9.3 0 .8-1.9 1.4-1.9 2.2h2M6 4h8M6 8h8M6 12h8"/></svg></button>
+              </div>
+              <label class="pfield grow" data-for="text">Numbers
+                <select class="tsel" id="list-style">
+                  <option value="bengali">১, ২, ৩</option>
+                  <option value="decimal">1, 2, 3</option>
+                  <option value="lower-roman">i, ii, iii</option>
+                  <option value="upper-roman">I, II, III</option>
+                  <option value="lower-alpha">a, b, c</option>
+                </select>
+              </label>
+              <label class="pfield grow" data-for="text">Bullets
+                <select class="tsel" id="bullet-style">
+                  <option value="disc">●</option>
+                  <option value="circle">○</option>
+                  <option value="square">■</option>
+                  <option value="'–  '">–</option>
+                </select>
+              </label>
+            </div>
+
+            <div data-for="text">
+              <h4>Spacing <span class="h4-note">· before/after are per paragraph</span></h4>
+              <div class="pfield-grid">
+                <label class="pfield">Line height
+                  <input class="tnum" id="line-height" type="number" min="0.5" max="5" step="0.05" value="1.2">
+                </label>
+                <label class="pfield">Letter (px)
+                  <input class="tnum" id="letter-spacing" type="number" min="-10" max="50" step="0.25" value="0">
+                </label>
+                <label class="pfield">Word (px)
+                  <input class="tnum" id="word-spacing" type="number" min="-10" max="50" step="0.5" value="0">
+                </label>
+                <label class="pfield"><span>Before (<span class="u">mm</span>)</span>
+                  <input class="tnum" id="space-before" data-len type="number" step="0.5" value="0">
+                </label>
+                <label class="pfield"><span>After (<span class="u">mm</span>)</span>
+                  <input class="tnum" id="space-after" data-len type="number" step="0.5" value="0">
+                </label>
+              </div>
+
+              <label class="field-check"><input type="checkbox" id="hyphenate"> Hyphenate English words</label>
+
+              <h4>Indents (<span class="u">mm</span>)</h4>
+              <div class="pfield-grid">
+                <label class="pfield">First line
+                  <input class="tnum" id="indent-first" data-len type="number" step="0.5" value="0">
+                </label>
+                <label class="pfield">Left
+                  <input class="tnum" id="indent-left" data-len type="number" step="0.5" value="0">
+                </label>
+                <label class="pfield">Right
+                  <input class="tnum" id="indent-right" data-len type="number" step="0.5" value="0">
+                </label>
+              </div>
+
+              <h4>Drop cap</h4>
+              <select class="tsel full" id="drop-cap" title="Enlarge the first letter of the box">
+                <option value="0">None</option>
+                <option value="2">2 lines</option>
+                <option value="3">3 lines</option>
+                <option value="4">4 lines</option>
+              </select>
+              <p class="pnote">Enter starts a new paragraph; Shift+Enter breaks the line within a paragraph.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ───────────── FRAME ───────────── -->
+        <section class="ppane" data-pane="frame" role="tabpanel">
+          <p class="pane-hint">Select an object to change its frame, fill and outline.</p>
+
+          <div class="psec" data-for="text" id="group-frame-text">
+            <h4>Text frame</h4>
+            <div class="pfield-grid">
+              <label class="pfield">Columns
+                <input class="tnum" id="frame-cols" type="number" min="1" max="6" step="1" value="1">
+              </label>
+              <label class="pfield"><span>Gap (<span class="u">mm</span>)</span>
+                <input class="tnum" id="frame-gap" data-len type="number" step="0.5" value="5">
+              </label>
+              <label class="pfield"><span>Inset (<span class="u">mm</span>)</span>
+                <input class="tnum" id="frame-inset" data-len type="number" step="0.5" value="2">
+              </label>
+            </div>
+            <h4>Vertical alignment</h4>
+            <div class="seg" role="group" aria-label="Vertical alignment">
+              <button class="tbtn" id="valign-top" title="Top"><svg viewBox="0 0 16 16"><path d="M2 2.5h12M5 6h6M5 9h6"/></svg></button>
+              <button class="tbtn" id="valign-middle" title="Middle"><svg viewBox="0 0 16 16"><path d="M5 6.5h6M5 9.5h6M2 2.5h12M2 13.5h12" stroke-dasharray="1.5 1.5"/></svg></button>
+              <button class="tbtn" id="valign-bottom" title="Bottom"><svg viewBox="0 0 16 16"><path d="M2 13.5h12M5 7h6M5 10h6"/></svg></button>
+            </div>
+            <button class="tbtn pbtn" id="frame-fit" title="Make the frame exactly as tall as its text">Fit frame to text</button>
+            <p class="pnote">A red <b>+</b> on a frame means some text doesn't fit.</p>
+          </div>
+
+          <div class="psec" data-for="text" id="group-thread">
+            <h4>Text flow <span class="h4-note">· continue a story in other frames</span></h4>
+            <p class="pnote first" id="thread-status">This frame stands alone.</p>
+            <div class="pbtn-col">
+              <button class="tbtn pbtn sm" id="thread-link" title="Then click an empty text frame, on any page">Flow into a frame…</button>
+              <button class="tbtn pbtn sm" id="thread-newpage" title="Make a frame of the same size on the next page and continue the text there">Flow to next page</button>
+              <button class="tbtn pbtn sm danger" id="thread-unlink" title="Text after this frame comes back here (shown as overset)">Stop flow here</button>
+            </div>
+          </div>
+
+          <div class="psec" data-for="image" id="group-frame-image">
+            <h4>Image</h4>
+            <label class="pfield">Fitting
+              <select class="tsel full" id="image-fit">
+                <option value="contain">Fit inside frame</option>
+                <option value="cover">Fill frame (crop edges)</option>
+                <option value="fill">Stretch to frame</option>
+              </select>
+            </label>
+            <button class="tbtn pbtn" id="image-replace">Replace image…</button>
+          </div>
+
+          <div class="psec" data-for="text image" id="group-frame-common">
+            <h4>Fill &amp; border</h4>
+            <div class="pfield-row tight">
+              <label class="field-check"><input type="checkbox" id="frame-fill-on"> Fill</label>
+              <input class="tcolor" id="frame-fill" type="color" value="#f3e1d6">
+            </div>
+            <div class="pfield-row tight">
+              <label class="pfield">Border (pt)
+                <input class="tnum" id="frame-border-w" type="number" min="0" max="20" step="0.25" value="0">
+              </label>
+              <label class="pfield inline">Colour
+                <input class="tcolor" id="frame-border-c" type="color" value="#000000">
+              </label>
+            </div>
+          </div>
+
+          <div class="psec" data-for="shape" id="group-shape">
+            <h4>Shape</h4>
+            <div class="pfield-row tight">
+              <label class="pfield grow">Type
+                <select class="tsel" id="shape-type">
+                  <option value="rectangle">Rectangle</option>
+                  <option value="circle">Ellipse</option>
+                  <option value="triangle">Triangle</option>
+                  <option value="diamond">Diamond</option>
+                  <option value="star">Star</option>
+                  <option value="line">Line</option>
+                </select>
+              </label>
+              <label class="pfield" id="f-star-points">Points
+                <input class="tnum" id="shape-points" type="number" min="3" max="24" step="1" value="5">
+              </label>
+              <label class="pfield" id="f-radius"><span>Corner (<span class="u">mm</span>)</span>
+                <input class="tnum" id="shape-radius" data-len type="number" step="0.5" value="0">
+              </label>
+            </div>
+            <div id="f-line-opts" class="pfield-row tight">
+              <label class="pfield grow">Direction
+                <select class="tsel" id="line-dir">
+                  <option value="h">Horizontal —</option>
+                  <option value="v">Vertical |</option>
+                  <option value="up">Rising ╱</option>
+                  <option value="down">Falling ╲</option>
+                </select>
+              </label>
+              <label class="pfield grow">Arrows
+                <select class="tsel" id="line-ends">
+                  <option value="none">None</option>
+                  <option value="end">At end →</option>
+                  <option value="start">At start ←</option>
+                  <option value="both">Both ↔</option>
+                </select>
+              </label>
+            </div>
+            <h4>Fill &amp; outline</h4>
+            <div class="pfield-row tight" id="f-shape-fill">
+              <label class="field-check"><input type="checkbox" id="shape-fill-on"> Fill</label>
+              <input class="tcolor" id="shape-fill-color" type="color" value="#FFFFFF">
+            </div>
+            <div class="pfield-grid">
+              <label class="pfield">Outline
+                <input class="tcolor" id="shape-stroke-color" type="color" value="#000000">
+              </label>
+              <label class="pfield">Width (pt)
+                <input class="tnum" id="shape-stroke-width" type="number" min="0" max="40" step="0.25" value="1">
+              </label>
+              <label class="pfield">Style
+                <select class="tsel" id="shape-dash">
+                  <option value="solid">Solid</option>
+                  <option value="dashed">Dashed</option>
+                  <option value="dotted">Dotted</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="psec" data-for="text table image shape" id="group-wrap">
+            <h4>Text wrap <span class="h4-note">· how other text flows round this</span></h4>
+            <div class="seg wrap-seg" role="group" aria-label="Text wrap">
+              <button class="tbtn" id="wrap-none" title="No wrap — text runs over or under this object"><svg viewBox="0 0 20 16"><path d="M2 3h16M2 7h16M2 11h16M2 15h16"/><rect x="7" y="5" width="6" height="8" class="fill" opacity=".35"/></svg></button>
+              <button class="tbtn" id="wrap-box" title="Wrap round the frame"><svg viewBox="0 0 20 16"><path d="M2 3h16M12 7h6M12 11h6M2 15h16"/><rect x="2" y="5.5" width="8" height="7" class="fill" opacity=".35"/></svg></button>
+              <button class="tbtn" id="wrap-contour" title="Wrap round the shape's outline (shapes)"><svg viewBox="0 0 20 16"><path d="M2 3h16M11 7h7M11 11h7M2 15h16"/><circle cx="6" cy="9" r="4" class="fill" opacity=".35"/></svg></button>
+              <button class="tbtn" id="wrap-jump" title="Jump: text stops above and continues below"><svg viewBox="0 0 20 16"><path d="M2 2h16M2 15h16"/><rect x="6" y="5" width="8" height="7" class="fill" opacity=".35"/></svg></button>
+            </div>
+            <div class="pfield-row tight">
+              <label class="pfield"><span>Offset (<span class="u">mm</span>)</span>
+                <input class="tnum" id="wrap-offset" data-len type="number" step="0.5" value="3">
+              </label>
+              <label class="field-check" data-for="text"><input type="checkbox" id="wrap-ignore"> This box ignores wraps</label>
+            </div>
+            <p class="pnote">Text wraps on the side with more room. Frames with columns or rotation don't wrap.</p>
+          </div>
+
+          <div class="psec" data-for="table" id="group-table">
+            <h4>Rows &amp; columns</h4>
+            <p class="pnote first">Click into a cell first; changes happen around it.</p>
+            <div class="pbtn-col">
+              <button class="tbtn pbtn sm" id="tbl-row-above">+ Row above</button>
+              <button class="tbtn pbtn sm" id="tbl-row-below">+ Row below</button>
+              <button class="tbtn pbtn sm" id="tbl-col-left">+ Column left</button>
+              <button class="tbtn pbtn sm" id="tbl-col-right">+ Column right</button>
+              <button class="tbtn pbtn sm danger" id="tbl-row-del">Delete row</button>
+              <button class="tbtn pbtn sm danger" id="tbl-col-del">Delete column</button>
+            </div>
+            <h4>Cell colours</h4>
+            <div class="pfield-row tight">
+              <label class="pfield grow">Apply to
+                <select class="tsel" id="tbl-scope">
+                  <option value="cell">This cell</option>
+                  <option value="row">This row</option>
+                  <option value="col">This column</option>
+                  <option value="table">Whole table</option>
+                </select>
+              </label>
+              <label class="pfield">Fill
+                <input class="tcolor" id="tbl-cell-fill" type="color" value="#FFFFFF">
+              </label>
+              <label class="pfield">Text
+                <input class="tcolor" id="tbl-cell-text" type="color" value="#000000">
+              </label>
+            </div>
+            <label class="pfield">Vertical alignment
+              <select class="tsel full" id="tbl-valign">
+                <option value="top">Top</option>
+                <option value="middle">Middle</option>
+                <option value="bottom">Bottom</option>
+              </select>
+            </label>
+            <h4>Grid</h4>
+            <div class="pfield-grid">
+              <label class="pfield">Border (px)
+                <input class="tnum" id="tbl-border-w" type="number" min="0" max="10" step="0.5" value="1">
+              </label>
+              <label class="pfield">Colour
+                <input class="tcolor" id="tbl-border-c" type="color" value="#000000">
+              </label>
+              <label class="pfield">Padding (px)
+                <input class="tnum" id="tbl-pad" type="number" min="0" max="30" step="1" value="4">
+              </label>
+            </div>
+          </div>
+        </section>
+
+        <!-- ───────────── ARRANGE ───────────── -->
+        <section class="ppane" data-pane="arrange" role="tabpanel">
+          <p class="pane-hint">Select an object on the page to arrange it.</p>
+
+          <div class="psec" data-for="text table image shape multi" id="group-geom">
+            <h4>Position &amp; size (<span class="u">mm</span>) <span class="h4-note" id="geo-note"></span></h4>
+            <div class="pfield-grid four">
+              <label class="pfield">X <input class="tnum" id="geo-x" data-len type="number" step="0.5"></label>
+              <label class="pfield">Y <input class="tnum" id="geo-y" data-len type="number" step="0.5"></label>
+              <label class="pfield">W <input class="tnum" id="geo-w" data-len type="number" step="0.5"></label>
+              <label class="pfield">H <input class="tnum" id="geo-h" data-len type="number" step="0.5"></label>
+            </div>
+            <div class="pfield-grid">
+              <label class="pfield">Rotate (°) <input class="tnum" id="geo-rot" type="number" min="-360" max="360" step="1"></label>
+              <label class="pfield">Opacity (%) <input class="tnum" id="geo-opacity" type="number" min="0" max="100" step="5"></label>
+              <label class="field-check lock-check"><input type="checkbox" id="geo-lock"> Lock</label>
+            </div>
+            <p class="pnote">Arrow keys nudge 1 mm (Shift: 5 mm). Shift-drag the corner to keep proportions. Shift-click or drag across the page to select several.</p>
+          </div>
+
+          <div class="psec" data-for="multi text table image shape" id="group-group">
+            <h4>Group</h4>
+            <div class="pbtn-col">
+              <button class="tbtn pbtn sm" id="obj-group" title="Group the selected objects — Ctrl+G">Group</button>
+              <button class="tbtn pbtn sm" id="obj-ungroup" title="Ungroup — Ctrl+Shift+G">Ungroup</button>
+            </div>
+            <p class="pnote">Click a group to select it; click a text box in it again to edit the text.</p>
+          </div>
+
+          <div class="psec" data-for="text table image shape multi" id="group-align">
+            <h4>Align</h4>
+            <label class="pfield">Relative to
+              <select class="tsel full" id="align-to">
+                <option value="margins">Page margins</option>
+                <option value="page">Page edges</option>
+                <option value="selection">Each other (selection)</option>
+              </select>
+            </label>
+            <div class="align-grid">
+              <button class="tbtn pbtn sm" id="obj-align-left" title="Align left edges"><svg viewBox="0 0 16 16"><path d="M2 1.5v13M4 4h8M4 10h5"/></svg></button>
+              <button class="tbtn pbtn sm" id="obj-align-hcenter" title="Centre horizontally"><svg viewBox="0 0 16 16"><path d="M8 1.5v13M3 4h10M5 10h6"/></svg></button>
+              <button class="tbtn pbtn sm" id="obj-align-right" title="Align right edges"><svg viewBox="0 0 16 16"><path d="M14 1.5v13M4 4h8M7 10h5"/></svg></button>
+              <button class="tbtn pbtn sm" id="obj-align-top" title="Align top edges"><svg viewBox="0 0 16 16"><path d="M1.5 2h13M4 4v8M10 4v5"/></svg></button>
+              <button class="tbtn pbtn sm" id="obj-align-vcenter" title="Centre vertically"><svg viewBox="0 0 16 16"><path d="M1.5 8h13M4 3v10M10 5v6"/></svg></button>
+              <button class="tbtn pbtn sm" id="obj-align-bottom" title="Align bottom edges"><svg viewBox="0 0 16 16"><path d="M1.5 14h13M4 4v8M10 7v5"/></svg></button>
+            </div>
+            <div class="pbtn-col spaced-top">
+              <button class="tbtn pbtn sm" id="obj-dist-h" title="Equal gaps left to right (3 or more objects)">Distribute ↔</button>
+              <button class="tbtn pbtn sm" id="obj-dist-v" title="Equal gaps top to bottom (3 or more objects)">Distribute ↕</button>
+            </div>
+          </div>
+
+          <div class="psec" data-for="text table image shape" id="group-objlink">
+            <h4>Hyperlink on the whole object</h4>
+            <p class="pnote first link-url" id="obj-link-text">None</p>
+            <div class="pbtn-col">
+              <button class="tbtn pbtn sm" id="obj-link-edit">Link object…</button>
+              <button class="tbtn pbtn sm" id="obj-link-remove">Remove</button>
+            </div>
+          </div>
+
+          <div class="psec" data-for="text table image shape multi" id="group-arrange">
+            <h4>Stacking</h4>
+            <div class="pbtn-col">
+              <button class="tbtn pbtn" id="layer-front" title="Put the selected object above all others">
+                <svg viewBox="0 0 20 20"><rect x="3" y="3" width="9" height="9" rx="1"/><rect x="8" y="8" width="9" height="9" rx="1" class="fill"/></svg>
+                To front
+              </button>
+              <button class="tbtn pbtn" id="layer-forward" title="Move up one level">
+                <svg viewBox="0 0 20 20"><path d="M10 15V5M6 9l4-4 4 4"/></svg>
+                Forward
+              </button>
+              <button class="tbtn pbtn" id="layer-backward" title="Move down one level">
+                <svg viewBox="0 0 20 20"><path d="M10 5v10M6 11l4 4 4-4"/></svg>
+                Backward
+              </button>
+              <button class="tbtn pbtn" id="layer-back" title="Put the selected object behind all others">
+                <svg viewBox="0 0 20 20"><rect x="8" y="8" width="9" height="9" rx="1" class="fill"/><rect x="3" y="3" width="9" height="9" rx="1" class="knock"/></svg>
+                To back
+              </button>
+            </div>
+            <h4>Visibility</h4>
+            <div class="pbtn-col">
+              <button class="tbtn pbtn" id="layer-hide" title="Hide: shown faintly here, left out of print">
+                <svg viewBox="0 0 20 20"><path d="M3 3l14 14M2 10c1.5-3 4.5-5 8-5 1.4 0 2.7.3 3.9.9M18 10c-.8 1.6-2 2.9-3.5 3.8M8.3 8.3a2.5 2.5 0 0 0 3.4 3.4"/></svg>
+                Hide
+              </button>
+              <button class="tbtn pbtn" id="layer-show" title="Show a hidden object again">
+                <svg viewBox="0 0 20 20"><path d="M2 10c1.5-3 4.5-5 8-5s6.5 2 8 5c-1.5 3-4.5 5-8 5s-6.5-2-8-5z"/><circle cx="10" cy="10" r="2.5"/></svg>
+                Show
+              </button>
+            </div>
+            <p class="pnote">Hidden objects appear as faint outlines and are not printed.</p>
+          </div>
+
+          <div class="psec" id="group-clip">
+            <h4>Copy &amp; paste</h4>
+            <div class="pbtn-col three">
+              <button class="tbtn pbtn sm" id="obj-copy" title="Copy object — Ctrl+C">Copy</button>
+              <button class="tbtn pbtn sm" id="obj-paste" title="Paste object onto this page — Ctrl+V">Paste</button>
+              <button class="tbtn pbtn sm" id="obj-duplicate" title="Duplicate — Ctrl+D">Duplicate</button>
+            </div>
+            <button class="tbtn pbtn danger" id="delete-box" title="Delete the selected object (Delete key)" disabled>
+              <svg viewBox="0 0 20 20"><path d="M3.5 5.5h13M8 5.5V4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1.5M5.5 5.5l.7 10a1 1 0 0 0 1 .9h5.6a1 1 0 0 0 1-.9l.7-10"/></svg>
+              Delete object
+            </button>
+          </div>
+        </section>
+
+        <!-- ───────────── PAGE ───────────── -->
+        <section class="ppane" data-pane="page" role="tabpanel">
+          <div class="psec">
+            <h4>Document</h4>
+            <label class="pfield">Title (used as the file name)
+              <input class="modal-text-input" id="doc-title" type="text" placeholder="Untitled">
+            </label>
+          </div>
+          <div class="psec" id="group-templates">
+            <h4>Layout</h4>
+            <p class="pnote first" id="page-summary"></p>
+            <button class="tbtn pbtn" id="page-setup" title="Page size, orientation, margins, columns, header/footer, numbering, bleed">
+              <svg viewBox="0 0 20 20"><path d="M5 2.5h10v15H5z"/><path d="M7.5 5.5h5v9h-5z" stroke-dasharray="1.5 1.5"/></svg>
+              Page setup…
+            </button>
+            <label class="pfield spaced">Template (margins &amp; columns)
+              <select class="tsel full" id="master-page" title="Apply a page template">
+                <option value="">Choose a template…</option>
+                <option value="blank">Blank</option>
+                <option value="twoColumn">Two column</option>
+                <option value="threeColumn">Three column</option>
+                <option value="newsletter">Newsletter</option>
+                <option value="bookPage">Book page</option>
+              </select>
+            </label>
+          </div>
+          <div class="psec">
+            <h4>This page</h4>
+            <div class="pbtn-col three">
+              <button class="tbtn pbtn sm" id="page-dup" title="Duplicate this page">Duplicate</button>
+              <button class="tbtn pbtn sm" id="page-up" title="Move this page earlier">Move up</button>
+              <button class="tbtn pbtn sm" id="page-down" title="Move this page later">Move down</button>
+            </div>
+            <label class="field-check"><input type="checkbox" id="page-skip-hf"> No header, footer or number on this page</label>
+          </div>
+          <div class="psec">
+            <h4>View</h4>
+            <label class="pfield">Units for rulers and measurements <span id="units-slot"></span></label>
+            <label class="field-check"><input type="checkbox" id="view-margins"> Show margin &amp; column guides</label>
+          </div>
+          <div class="psec">
+            <h4>Shortcuts</h4>
+            <dl class="shortcuts">
+              <dt>Ctrl+M</dt><dd>Phonetic typing on/off</dd>
+              <dt>Ctrl+S</dt><dd>Save project</dd>
+              <dt>Ctrl+Z / Y</dt><dd>Undo / redo</dd>
+              <dt>Ctrl+F</dt><dd>Find &amp; replace</dd>
+              <dt>Ctrl+B / I / U</dt><dd>Bold / italic / underline</dd>
+              <dt>Ctrl+[ / ]</dt><dd>Font size down / up</dd>
+              <dt>Shift+Enter</dt><dd>Line break (Enter: new paragraph)</dd>
+              <dt>Ctrl+C / X / V</dt><dd>Copy / cut / paste object</dd>
+              <dt>Ctrl+D</dt><dd>Duplicate object</dd>
+              <dt>Ctrl+K</dt><dd>Hyperlink</dd>
+              <dt>Ctrl+A</dt><dd>Select all objects on the page</dd>
+              <dt>Ctrl+G</dt><dd>Group (Shift: ungroup)</dd>
+              <dt>Shift+click</dt><dd>Add to / remove from selection</dd>
+              <dt>Ctrl+click</dt><dd>Follow a hyperlink</dd>
+              <dt>Arrows</dt><dd>Nudge 1 mm (Shift: 5 mm)</dd>
+              <dt>Ctrl+scroll</dt><dd>Zoom</dd>
+              <dt>Delete</dt><dd>Delete selected object</dd>
+              <dt>Esc</dt><dd>Cancel tool / deselect</dd>
+              <dt>F1</dt><dd>User manual (new tab)</dd>
+            </dl>
+          </div>
+        </section>
+
+      </div>
+    </aside>
+  </div>
+
+  <footer class="statusbar" id="statusbar" aria-label="Status">
+    <span class="sb-msg" id="sb-msg" role="status" aria-live="polite">Ready</span>
+    <span class="sb-item sb-p1" id="sb-page" title="Current page"></span>
+    <span class="sb-item sb-p4" id="sb-sel" title="Selection"></span>
+    <span class="sb-item sb-p2" id="sb-count"></span>
+    <span class="sb-item sb-warn" id="sb-overset" hidden title="Text that doesn't fit its frame on this page (marked with a red +)"></span>
+    <span class="sb-item sb-p5" id="sb-mem"></span>
+    <span class="sb-item sb-p3" id="sb-disk"></span>
+    <span class="sb-item sb-p1 sb-save" id="sb-save" title="Your work is kept automatically in this browser">Autosaved</span>
+  </footer>
+</div>
+
+<input type="file" id="image-input" accept="image/*" style="display:none">
+<input type="file" id="font-input" accept=".ttf,.otf,.woff,.woff2" style="display:none">
+<!-- ADDED FILE INPUT FOR OPENING .PUB PROJECTS -->
+<input type="file" id="project-input" accept=".pub,application/json" style="display:none">
+
+<div class="modal-overlay" id="saveas-overlay" hidden>
+  <div class="modal" id="saveas-modal" role="dialog" aria-modal="true" aria-labelledby="saveas-title">
+    <div class="modal-head">
+      <h2 id="saveas-title">Save as</h2>
+      <button class="modal-close" id="saveas-close" type="button" title="Close" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="pnote first" style="margin-top:14px">Saves a copy for another program. Keep your project (.pub) too: only Lekhoni can open everything in it.</p>
+      <div class="saveas-list">
+        <button class="saveas-opt" type="button" data-format="docx">
+          <span class="saveas-ext">.docx</span>
+          <span><b>Microsoft Word</b><br><small>Editable text, page by page: fonts, formatting, lists, links, tables, pictures, header, footer and page numbers. Shapes and exact positions are not kept.</small></span>
+        </button>
+        <button class="saveas-opt" type="button" data-format="idml">
+          <span class="saveas-ext">.idml</span>
+          <span><b>Adobe InDesign</b><br><small>The full layout: every frame, picture, shape and table where you placed it, linked text frames, paragraph styles. Opens in InDesign CS6 or later (File › Open).</small></span>
+        </button>
+        <button class="saveas-opt" type="button" data-format="txt">
+          <span class="saveas-ext">.txt</span>
+          <span><b>Plain text</b><br><small>Just the words (Unicode), in reading order. Table cells are separated by tabs.</small></span>
+        </button>
+      </div>
+      <p class="pnote" id="saveas-status" aria-live="polite"></p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="table-overlay" hidden>
+  <div class="modal" id="table-modal" role="dialog" aria-modal="true" aria-labelledby="table-title">
+    <div class="modal-head">
+      <h2 id="table-title">Insert Table</h2>
+      <button class="modal-close" id="table-close" type="button" title="Close" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <section class="modal-section">
+        <label class="field">Rows <input class="tnum" id="table-rows" type="number" min="1" max="100" value="3"></label>
+        <label class="field">Columns <input class="tnum" id="table-cols" type="number" min="1" max="20" value="3"></label>
+      </section>
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
+        <button class="tbtn" id="table-insert" style="flex: 1; padding: 8px;">Insert</button>
+        <button class="tbtn" id="table-cancel" style="flex: 1; padding: 8px;">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="setup-overlay" hidden>
+  <div class="modal wide" id="setup-modal" role="dialog" aria-modal="true" aria-labelledby="setup-title">
+    <div class="modal-head">
+      <h2 id="setup-title">Page setup</h2>
+      <button class="modal-close" id="setup-close" type="button" title="Close" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="pnote first">Changes apply to every page straight away and can be undone.</p>
+
+      <section class="modal-section">
+        <h3>Page size</h3>
+        <div class="field-row">
+          <label class="field">Preset
+            <select class="tsel" id="page-size-preset">
+              <optgroup label="ISO">
+                <option value="a3">A3 (297 × 420 mm)</option>
+                <option value="a4">A4 (210 × 297 mm)</option>
+                <option value="a5">A5 (148 × 210 mm)</option>
+                <option value="a6">A6 (105 × 148 mm)</option>
+                <option value="b4">B4 (250 × 353 mm)</option>
+                <option value="b5">B5 (176 × 250 mm)</option>
+              </optgroup>
+              <optgroup label="North American">
+                <option value="letter">Letter (8.5 × 11 in)</option>
+                <option value="legal">Legal (8.5 × 14 in)</option>
+                <option value="tabloid">Tabloid (11 × 17 in)</option>
+                <option value="executive">Executive (7.25 × 10.5 in)</option>
+              </optgroup>
+              <optgroup label="Books">
+                <option value="book55">5.5 × 8.5 in (140 × 216 mm)</option>
+                <option value="book6">6 × 9 in (152 × 229 mm)</option>
+              </optgroup>
+              <option value="custom">Custom</option>
+            </select>
+          </label>
+          <div class="field">Orientation
+            <div class="seg" role="group" aria-label="Orientation">
+              <button class="tbtn" type="button" id="orient-portrait" title="Portrait"><svg viewBox="0 0 16 16"><rect x="4" y="1.5" width="8" height="13" rx="1"/></svg> Portrait</button>
+              <button class="tbtn" type="button" id="orient-landscape" title="Landscape"><svg viewBox="0 0 16 16"><rect x="1.5" y="4" width="13" height="8" rx="1"/></svg> Landscape</button>
+            </div>
+          </div>
+        </div>
+        <div class="field-row">
+          <label class="field"><span>Width (<span class="u">mm</span>)</span> <input class="tnum" id="page-w" data-len type="number" step="0.1"></label>
+          <label class="field"><span>Height (<span class="u">mm</span>)</span> <input class="tnum" id="page-h" data-len type="number" step="0.1"></label>
+        </div>
+      </section>
+
+      <section class="modal-section">
+        <h3>Margins (<span class="u">mm</span>)</h3>
+        <div class="field-row">
+          <label class="field">Top <input class="tnum" id="margin-top" data-len type="number" step="0.5"></label>
+          <label class="field">Bottom <input class="tnum" id="margin-bottom" data-len type="number" step="0.5"></label>
+          <label class="field" id="lbl-margin-left">Left <input class="tnum" id="margin-left" data-len type="number" step="0.5"></label>
+          <label class="field" id="lbl-margin-right">Right <input class="tnum" id="margin-right" data-len type="number" step="0.5"></label>
+        </div>
+        <label class="field-check"><input type="checkbox" id="margin-guides"> Show margin guides on screen (not printed)</label>
+        <div class="field-row">
+          <label class="field"><span>Gutter / binding (<span class="u">mm</span>)</span> <input class="tnum" id="gutter-size" data-len type="number" step="0.5"></label>
+          <label class="field">Gutter side
+            <select class="tsel" id="gutter-mode">
+              <option value="none">None</option>
+              <option value="alternate">Inside (alternates, for books)</option>
+              <option value="left">Always left</option>
+              <option value="right">Always right</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section class="modal-section">
+        <h3>Columns</h3>
+        <div class="field-row">
+          <label class="field">Number of columns <input class="tnum" id="page-cols" type="number" min="1" max="8" step="1"></label>
+          <label class="field"><span>Gap between (<span class="u">mm</span>)</span> <input class="tnum" id="page-col-gap" data-len type="number" step="0.5"></label>
+        </div>
+        <p class="pnote">Column guides are drawn on the page and objects snap to them.</p>
+      </section>
+
+      <section class="modal-section">
+        <h3>Paper &amp; print</h3>
+        <div class="field-row">
+          <label class="field">Page colour <input class="tcolor" id="page-bg" type="color"></label>
+          <label class="field"><span>Bleed (<span class="u">mm</span>)</span> <input class="tnum" id="page-bleed" data-len type="number" step="0.5"></label>
+        </div>
+        <label class="field-check"><input type="checkbox" id="page-cropmarks"> Print crop marks (for trimming at a press)</label>
+        <p class="pnote">With bleed, objects and the page colour may run past the trim edge; the printed sheet grows to fit. Bleed is shown on screen as a dashed red line.</p>
+      </section>
+
+      <section class="modal-section">
+        <h3>Header</h3>
+        <label class="field-check"><input type="checkbox" id="header-enabled"> Show header</label>
+        <input type="text" class="modal-text-input" id="header-text" placeholder="Header text — use {page} and {total} for numbering">
+        <div class="field-row spaced">
+          <label class="field">Align
+            <select class="tsel" id="header-align">
+              <option value="left">Left</option>
+              <option value="center">Centre</option>
+              <option value="right">Right</option>
+              <option value="outside">Outside edge (books)</option>
+              <option value="inside">Inside edge (books)</option>
+            </select>
+          </label>
+          <label class="field">Size (pt) <input class="tnum" id="header-size" type="number" min="5" max="48" step="0.5"></label>
+          <label class="field">Colour <input class="tcolor" id="header-color" type="color"></label>
+        </div>
+        <label class="field-check"><input type="checkbox" id="header-rule"> Rule line under header</label>
+        <label class="field-check"><input type="checkbox" id="header-first"> Also show on first page</label>
+      </section>
+
+      <section class="modal-section">
+        <h3>Footer</h3>
+        <label class="field-check"><input type="checkbox" id="footer-enabled"> Show footer</label>
+        <input type="text" class="modal-text-input" id="footer-text" placeholder="Footer text — use {page} and {total} for numbering">
+        <div class="field-row spaced">
+          <label class="field">Align
+            <select class="tsel" id="footer-align">
+              <option value="left">Left</option>
+              <option value="center">Centre</option>
+              <option value="right">Right</option>
+              <option value="outside">Outside edge (books)</option>
+              <option value="inside">Inside edge (books)</option>
+            </select>
+          </label>
+          <label class="field">Size (pt) <input class="tnum" id="footer-size" type="number" min="5" max="48" step="0.5"></label>
+          <label class="field">Colour <input class="tcolor" id="footer-color" type="color"></label>
+        </div>
+        <label class="field-check"><input type="checkbox" id="footer-rule"> Rule line above footer</label>
+        <label class="field-check"><input type="checkbox" id="footer-first"> Also show on first page</label>
+      </section>
+
+      <section class="modal-section">
+        <h3>Page numbering</h3>
+        <label class="field-check"><input type="checkbox" id="pagenum-enabled"> Show automatic page numbers</label>
+        <div class="field-row">
+          <label class="field">Position
+            <select class="tsel" id="pagenum-position">
+              <option value="bottom-center">Bottom centre</option>
+              <option value="bottom-right">Bottom right</option>
+              <option value="bottom-left">Bottom left</option>
+              <option value="bottom-outside">Bottom outside (books)</option>
+              <option value="top-center">Top centre</option>
+              <option value="top-right">Top right</option>
+              <option value="top-left">Top left</option>
+              <option value="top-outside">Top outside (books)</option>
+            </select>
+          </label>
+          <label class="field">Format
+            <select class="tsel" id="pagenum-format">
+              <option value="{page}">1 / ১</option>
+              <option value="Page {page}">Page 1 / পৃষ্ঠা ১</option>
+              <option value="Page {page} of {total}">Page 1 of N / N এর পৃষ্ঠা ১</option>
+              <option value="- {page} -">- 1 - / - ১ -</option>
+            </select>
+          </label>
+          <label class="field">Number style
+            <select class="tsel" id="pagenum-style">
+              <option value="native">Bengali digits (১, ২, ৩)</option>
+              <option value="arabic">Western digits (1, 2, 3)</option>
+              <option value="words">Words (এক, দুই…)</option>
+              <option value="roman-lower">Roman (i, ii, iii)</option>
+              <option value="roman-upper">Roman (I, II, III)</option>
+            </select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field">Start at <input class="tnum" id="pagenum-start" type="number" min="1" max="9999"></label>
+          <label class="field">Size (pt) <input class="tnum" id="pagenum-size" type="number" min="5" max="48" step="0.5"></label>
+          <label class="field"><span>From edge (<span class="u">mm</span>)</span> <input class="tnum" id="pagenum-offset" data-len type="number" step="0.5"></label>
+        </div>
+      </section>
+
+      <section class="modal-section">
+        <h3>Header, footer &amp; number font</h3>
+        <select class="tsel" id="hf-font"></select>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="link-overlay" hidden>
+  <div class="modal" id="link-modal" role="dialog" aria-modal="true" aria-labelledby="link-title">
+    <div class="modal-head">
+      <h2 id="link-title">Hyperlink</h2>
+      <button class="modal-close" id="link-close" type="button" title="Close" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <label class="field">Link to
+        <select class="tsel" id="link-kind">
+          <option value="url">Web address</option>
+          <option value="email">Email address</option>
+          <option value="tel">Phone number</option>
+          <option value="page">A page in this document</option>
+        </select>
+      </label>
+      <label class="field spaced" id="link-target-wrap"><span id="link-target-label">Address</span>
+        <input type="text" class="modal-text-input" id="link-target" autocomplete="off" placeholder="example.com/page">
+      </label>
+      <label class="field spaced" id="link-page-wrap">Page
+        <select class="tsel" id="link-page"></select>
+      </label>
+      <label class="field spaced" id="link-text-wrap">Text to show
+        <input type="text" class="modal-text-input" id="link-text" autocomplete="off">
+      </label>
+      <p class="pnote">Links stay clickable in PDFs made with PDF / Print › Save as PDF. Ctrl+click a link here to follow it.</p>
+      <p class="pnote" id="link-error" role="alert"></p>
+      <div class="find-actions">
+        <button class="tbtn pbtn" id="link-apply" type="button">Apply</button>
+        <button class="tbtn pbtn" id="link-unlink" type="button">Remove link</button>
+        <button class="tbtn pbtn" id="link-cancel" type="button">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="link-bubble" id="link-bubble" hidden>
+  <span class="lb-url" id="lb-url"></span>
+  <button type="button" id="lb-open">Open</button>
+  <button type="button" id="lb-edit">Edit</button>
+  <button type="button" id="lb-remove">Remove</button>
+</div>
+
+<div class="modal-overlay floating" id="find-overlay" hidden>
+  <div class="modal find-panel" id="find-modal" role="dialog" aria-labelledby="find-title">
+    <div class="modal-head">
+      <h2 id="find-title">Find &amp; replace</h2>
+      <button class="modal-close" id="find-close" type="button" title="Close" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <label class="field">Find <input type="text" class="modal-text-input" id="find-text" autocomplete="off"></label>
+      <label class="field spaced">Replace with <input type="text" class="modal-text-input" id="replace-text" autocomplete="off"></label>
+      <div class="field-row spaced">
+        <label class="field-check"><input type="checkbox" id="find-case"> Match case</label>
+        <label class="field-check"><input type="checkbox" id="find-word"> Whole words</label>
+      </div>
+      <div class="find-actions">
+        <button class="tbtn pbtn" id="find-next" type="button">Find next</button>
+        <button class="tbtn pbtn" id="replace-one" type="button">Replace</button>
+        <button class="tbtn pbtn" id="replace-all" type="button">Replace all</button>
+      </div>
+      <p class="pnote" id="find-status" aria-live="polite"></p>
+    </div>
+  </div>
+</div>
+
+<script src="js/translit-engine.js?v=5.3.5"></script>
+<script src="js/translit-hooks.js?v=5.3.5"></script>
+<script src="js/translit-wrapper.js?v=5.3.5"></script>
+<script src="js/feature.js?v=5.3.5"></script>
+<!-- v4.0 DTP Feature Modules -->
+<script src="js/shapes.js?v=5.3.5"></script>
+<script src="js/typography.js?v=5.3.5"></script>
+<script src="js/masterpages.js?v=5.3.5"></script>
+<script src="js/colors.js?v=5.3.5"></script>
+<script src="js/layers.js?v=5.3.5"></script>
+<script src="js/export.js?v=5.3.5"></script>
+<script src="js/saveas.js?v=5.3.5"></script>
+<!-- Main Application -->
+<script src="js/app.js?v=5.3.5"></script>
+</body>
+</html>
