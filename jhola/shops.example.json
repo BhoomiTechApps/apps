@@ -1,0 +1,20 @@
+{
+  "app": "jhola",
+  "kind": "shops",
+  "version": 1,
+  "shops": [
+    {
+      "id": "sharma-store",
+      "name": "Sharma General Store",
+      "whatsapp": "98765 43210",
+      "upi": "sharmastore@okaxis",
+      "qr": "qr/sharma-store.png",
+      "address": "Shop 4, Main Market"
+    },
+    {
+      "name": "Fresh Veg Corner",
+      "whatsapp": "+91 91234 56789",
+      "upi": "freshveg@ybl"
+    }
+  ]
+}
