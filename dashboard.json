@@ -216,6 +216,14 @@
       "icon": "https://bhoomitechapps.github.io/apps/houserenter/icons/icon-192.png",
       "tag": "Utility",
       "desc": "Make easy houserent bills and payment history for rented assets."
+    },
+	{
+      "id": "translitlab",
+      "name": "TransLit-Lab",
+      "url": "https://bhoomitechfoundation.org/translitlab/",
+      "icon": "https://bhoomitechapps.github.io/apps/translitlab/icons/icon-192.png",
+      "tag": "Language",
+      "desc": "Roman - Eastern Nagari bothway transliteration logic builder."
     }  
   ]
 }
